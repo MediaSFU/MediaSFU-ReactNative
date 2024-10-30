@@ -2144,6 +2144,12 @@ npx react-native run-android
 npx react-native run-ios
 ```
 
+### c. **Clear Android Studio Cache**
+   - Open Android Studio.
+   - Go to **File** > **Invalidate Caches / Restart**.
+   - Select **Invalidate and Restart** to clear cached files and restart Android Studio.
+
+
 ## 3. Permission Issues
 
 Missing or incorrectly configured permissions can prevent functionalities like camera access, audio recording, or Bluetooth from working.
