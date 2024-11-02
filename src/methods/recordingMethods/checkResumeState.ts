@@ -17,7 +17,19 @@ export type CheckResumeStateType = (options: CheckResumeStateOptions) => Promise
  * @param {number} options.recordingAudioPausesLimit - The maximum number of pauses allowed for audio recording.
  * @param {number} options.pauseRecordCount - The current number of pauses that have occurred.
  * @returns {Promise<boolean>} - A promise that resolves to a boolean indicating whether the recording can be resumed.
+ * 
+ * @example
+ * ```typescript
+ * const canResume = await checkResumeState({
+ *   recordingMediaOptions: "video",
+ *   recordingVideoPausesLimit: 3,
+ *   recordingAudioPausesLimit: 5,
+ *   pauseRecordCount: 2,
+ * });
+ * console.log(canResume); // true if pauseRecordCount is within limits
+ * ```
  */
+
 export const checkResumeState = async ({
   recordingMediaOptions,
   recordingVideoPausesLimit,

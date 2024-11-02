@@ -215,11 +215,12 @@ export type UpdateRoomParametersClientType = (options: UpdateRoomParametersClien
  *     updateRecordingSupportForOtherOrientation: (support) => {},
  *     updateRecordingMultiFormatsSupport: (support) => {},
  *     updateRecordingVideoOptions: (options) => {},
- *     updateRecordingAudioOptions: (options) => {},
+ *     updateRecordingAudioOptions: (options) => {}, 
  *     updateMainHeightWidth: (heightWidth) => {},
  *   }
  * });
  */
+
 export const updateRoomParametersClient = ({ parameters }: UpdateRoomParametersClientOptions): void => {
   try {
     const {

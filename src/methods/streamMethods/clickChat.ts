@@ -22,7 +22,19 @@ export type ClickChatType = (options: ClickChatOptions) => Promise<void>;
  * @param {Function} [options.showAlert] - Optional function to show an alert message.
  *
  * @returns {Promise<void>} A promise that resolves when the operation is complete.
+ *
+ * @example
+ * ```typescript
+ * clickChat({
+ *   isMessagesModalVisible: false,
+ *   updateIsMessagesModalVisible: setIsMessagesModalVisible,
+ *   chatSetting: "allow",
+ *   islevel: "1",
+ *   showAlert: showAlertFunction
+ * });
+ * ```
  */
+
 export const clickChat = async (
   {
     isMessagesModalVisible, updateIsMessagesModalVisible, chatSetting, islevel, showAlert,

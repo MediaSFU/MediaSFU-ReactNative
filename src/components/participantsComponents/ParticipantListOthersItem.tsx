@@ -14,18 +14,42 @@ export type ParticipantListOthersItemType = (
 ) => JSX.Element;
 
 /**
- * Component representing an item in the participant list for others.
+ * ParticipantListOthersItem is a component that displays information about a single participant
+ * in the participants list, indicating their host, co-host, or muted status.
  *
  * @component
  * @param {ParticipantListOthersItemOptions} props - The properties for the component.
- * @param {Object} props.participant - The participant object.
+ * @param {Participant} props.participant - An object containing the participant's details.
  * @param {string} props.participant.name - The name of the participant.
- * @param {string} props.participant.islevel - The level of the participant.
- * @param {boolean} props.participant.muted - The muted status of the participant.
- * @param {string} props.member - The name of the current member.
- * @param {string} props.coHost - The name of the co-host.
- * @returns {JSX.Element} The rendered component.
+ * @param {string} props.participant.islevel - The level of the participant, indicating roles like host.
+ * @param {boolean} props.participant.muted - Indicates if the participant is currently muted.
+ * @param {string} props.member - The current user's name, used to label the participant if it matches.
+ * @param {string} props.coHost - The name of the co-host, to distinguish participants with this role.
+ * @returns {JSX.Element} The rendered ParticipantListOthersItem component.
+ *
+ * @example
+ * ```tsx
+ * import React from 'react';
+ * import { ParticipantListOthersItem } from 'mediasfu-reactnative';
+ * 
+ * function App() {
+ *   const participant = { name: 'Alice', islevel: '1', muted: false };
+ *   const member = 'Alice';
+ *   const coHost = 'Bob';
+ *   
+ *   return (
+ *     <ParticipantListOthersItem
+ *       participant={participant}
+ *       member={member}
+ *       coHost={coHost}
+ *     />
+ *   );
+ * }
+ * 
+ * export default App;
+ * ```
  */
+
 const ParticipantListOthersItem: React.FC<ParticipantListOthersItemOptions> = ({
   participant,
   member,

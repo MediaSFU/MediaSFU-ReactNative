@@ -40,10 +40,23 @@ export type DisconnectSocketType = (options: DisconnectSocketOptions) => Promise
  *
  * @returns {Promise<Socket>} A promise that resolves to the connected socket.
  *
- * @throws {Error} If any of the required parameters are missing or invalid.
- * @throws {Error} If the API key or token is invalid.
- * @throws {Error} If there is an error connecting to the media socket.
+ * @example
+ * ```typescript
+ * const options = {
+ *   apiUserName: "user123",
+ *   apiKey: "yourApiKeyHere",
+ *   link: "https://socketlink.com",
+ * };
+ * 
+ * try {
+ *   const socket = await connectSocket(options);
+ *   console.log("Connected to socket:", socket);
+ * } catch (error) {
+ *   console.error("Failed to connect to socket:", error);
+ * }
+ * ```
  */
+
 async function connectSocket(
   {
     apiUserName, apiKey, apiToken, link,
@@ -112,9 +125,23 @@ async function connectSocket(
 
 /**
  * Disconnects from the socket.
+ *
  * @param {Socket} socket - The socket instance to disconnect.
  * @returns {Promise<boolean>} - A promise that resolves once the socket is disconnected.
+ *
+ * @example
+ * ```typescript
+ * const options = { socket: socketInstance };
+ * 
+ * try {
+ *   const isDisconnected = await disconnectSocket(options);
+ *   console.log("Disconnected:", isDisconnected);
+ * } catch (error) {
+ *   console.error("Failed to disconnect:", error);
+ * }
+ * ```
  */
+
 async function disconnectSocket({ socket }: DisconnectSocketOptions): Promise<boolean> {
   if (socket) {
     await socket.disconnect();

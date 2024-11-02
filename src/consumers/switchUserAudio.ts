@@ -29,7 +29,7 @@ export type SwitchUserAudioType = (options: SwitchUserAudioOptions) => Promise<v
 
 /**
  * Switches the user's audio input device based on the provided audio preference.
- *
+ * 
  * @param {SwitchUserAudioOptions} options - The options for switching the user's audio input device.
  * @param {string} options.audioPreference - The preferred audio input device ID.
  * @param {Object} options.parameters - Additional parameters required for switching the audio input device.
@@ -41,11 +41,29 @@ export type SwitchUserAudioType = (options: SwitchUserAudioOptions) => Promise<v
  * @param {Function} options.parameters.streamSuccessAudioSwitch - Function to handle successful audio stream switch.
  * @param {Function} options.parameters.requestPermissionAudio - Function to request audio permission from the user.
  * @param {Function} options.parameters.checkMediaPermission - Function to check if media permission is granted.
- *
+ * 
  * @returns {Promise<void>} A promise that resolves when the audio input device has been successfully switched.
- *
+ * 
  * @throws Will throw an error if the audio input device cannot be accessed or if there is an unexpected error.
+ * 
+ * @example
+ * ```typescript
+ * await switchUserAudio({
+ *   audioPreference: 'audio-device-id',
+ *   parameters: {
+ *     mediaDevices,
+ *     prevAudioInputDevice: 'prev-audio-device-id',
+ *     showAlert,
+ *     hasAudioPermission,
+ *     updateUserDefaultAudioInputDevice,
+ *     streamSuccessAudioSwitch,
+ *     requestPermissionAudio,
+ *     checkMediaPermission,
+ *   },
+ * });
+ * ```
  */
+
 export async function switchUserAudio({ audioPreference, parameters }: SwitchUserAudioOptions): Promise<void> {
   const {
     mediaDevices,

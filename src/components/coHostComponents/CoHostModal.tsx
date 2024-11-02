@@ -43,6 +43,70 @@ export interface CoHostModalOptions {
 
 export type CoHostModalType = (options: CoHostModalOptions) => JSX.Element;
 
+
+/**
+ * CoHostModal component allows users to manage co-host settings in a virtual event.
+ *
+ * This component renders a modal interface where users can assign a new co-host from the list of participants,
+ * set responsibilities, and save the updated settings. It leverages a Socket instance for real-time updates
+ * and offers customizable modal position and styling options.
+ *
+ * @component
+ * @param {boolean} isCoHostModalVisible - Flag to control the visibility of the modal.
+ * @param {() => void} onCoHostClose - Callback to close the modal.
+ * @param {Function} [onModifyEventSettings=modifyCoHostSettings] - Callback to handle changes to event settings, defaulting to `modifyCoHostSettings`.
+ * @param {string} [currentCohost='No coHost'] - Name of the current co-host.
+ * @param {Participant[]} participants - List of event participants.
+ * @param {CoHostResponsibility[]} coHostResponsibility - List of co-host responsibilities and their statuses.
+ * @param {string} [position='topRight'] - Screen position of the modal.
+ * @param {string} [backgroundColor='#83c0e9'] - Background color for the modal.
+ * @param {string} roomName - Room identifier for the event.
+ * @param {ShowAlert} [showAlert] - Function to display alerts.
+ * @param {Function} updateCoHostResponsibility - Function to update co-host responsibility statuses.
+ * @param {Function} updateCoHost - Function to set a new co-host.
+ * @param {Function} updateIsCoHostModalVisible - Function to toggle modal visibility.
+ * @param {Socket} socket - Socket instance for real-time communication.
+ *
+ * @returns {JSX.Element} The CoHostModal component.
+ *
+ * @example
+ * ```tsx
+ * import React from 'react';
+ * import { CoHostModal } from 'mediasfu-reactnative';
+ * import { io } from 'socket.io-client';
+ *
+ * function App() {
+ *   const socket = io('http://localhost:3000');
+ *   
+ *   return (
+ *     <CoHostModal
+ *       isCoHostModalVisible={true}
+ *       onCoHostClose={() => console.log('Modal closed')}
+ *       currentCohost="John Doe"
+ *       participants={[
+ *         { name: 'John Doe', islevel: '1' },
+ *         { name: 'Jane Doe', islevel: '0' }
+ *       ]}
+ *       coHostResponsibility={[
+ *         { name: 'manageParticipants', value: true, dedicated: false }
+ *       ]}
+ *       position="topRight"
+ *       backgroundColor="#83c0e9"
+ *       roomName="Room 1"
+ *       showAlert={({ message, type }) => console.log(message, type)}
+ *       updateCoHostResponsibility={(responsibilities) => console.log(responsibilities)}
+ *       updateCoHost={(coHost) => console.log(coHost)}
+ *       updateIsCoHostModalVisible={(visible) => console.log(visible)}
+ *       socket={socket}
+ *     />
+ *   );
+ * }
+ *
+ * export default App;
+ * ```
+ */
+
+
 const CoHostModal: React.FC<CoHostModalOptions> = ({
   isCoHostModalVisible,
   onCoHostClose,

@@ -85,12 +85,56 @@ export interface MediaSettingsModalOptions {
 export type MediaSettingsModalType = (options: MediaSettingsModalOptions) => JSX.Element;
 
 /**
- * MediaSettingsModal - A React Native component for displaying a modal to manage media settings.
+ * MediaSettingsModal provides a modal interface for users to adjust media settings, such as selecting audio and video input devices and switching cameras.
  *
- * @component
- * @param {MediaSettingsModalOptions} props - The properties passed to the MediaSettingsModal component.
- * @returns {JSX.Element} - The MediaSettingsModal component JSX element.
+ * @example
+ * ```tsx
+ * import React, { useState } from 'react';
+ * import { MediaSettingsModal } from 'mediasfu-reactnative';
+ * import { io } from 'socket.io-client';
+ *
+ * const socket = io('https://your-server-url.com');
+ * const videoInputs = [
+ *   { deviceId: 'videoDevice1', label: 'Front Camera' },
+ *   { deviceId: 'videoDevice2', label: 'Back Camera' }
+ * ];
+ * const audioInputs = [
+ *   { deviceId: 'audioDevice1', label: 'Built-in Microphone' },
+ *   { deviceId: 'audioDevice2', label: 'External Microphone' }
+ * ];
+ *
+ * function App() {
+ *   const [isModalVisible, setModalVisible] = useState(true);
+ *
+ *   return (
+ *     <View>
+ *       <Button title="Open Media Settings" onPress={() => setModalVisible(true)} />
+ *       <MediaSettingsModal
+ *         isMediaSettingsModalVisible={isModalVisible}
+ *         onMediaSettingsClose={() => setModalVisible(false)}
+ *         position="bottomLeft"
+ *         backgroundColor="#f0f0f0"
+ *         parameters={{
+ *           userDefaultVideoInputDevice: 'videoDevice1',
+ *           userDefaultAudioInputDevice: 'audioDevice1',
+ *           videoInputs,
+ *           audioInputs,
+ *           getUpdatedAllParams: () => ({
+ *             userDefaultVideoInputDevice: 'videoDevice1',
+ *             userDefaultAudioInputDevice: 'audioDevice1',
+ *             videoInputs,
+ *             audioInputs,
+ *           }),
+ *         }}
+ *       />
+ *     </View>
+ *   );
+ * }
+ *
+ * export default App;
+ * ```
  */
+
 const MediaSettingsModal: React.FC<MediaSettingsModalOptions> = ({
   isMediaSettingsModalVisible,
   onMediaSettingsClose,

@@ -72,24 +72,41 @@ export interface ShareEventModalOptions {
 export type ShareEventModalType = (options: ShareEventModalOptions) => JSX.Element;
 
 /**
- * ShareEventModal component renders a modal for sharing event details.
+ * ShareEventModal component displays a modal that allows users to share event details,
+ * including the room name and an optional admin passcode, with other participants.
+ * This modal provides customizable options for positioning, appearance, and shared content.
  *
  * @component
- * @param {ShareEventModalOptions} props - The properties object.
+ * @param {ShareEventModalOptions} props - The properties for the ShareEventModal component.
  * @returns {JSX.Element} The rendered ShareEventModal component.
  *
  * @example
  * ```tsx
- * <ShareEventModal
- *   isShareEventModalVisible={modalVisible}
- *   onShareEventClose={() => setModalVisible(false)}
- *   roomName="Room123"
- *   adminPasscode="Passcode456"
- *   islevel="2"
- *   eventType="conference"
- * />
+ * import React, { useState } from 'react';
+ * import { ShareEventModal } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   const [modalVisible, setModalVisible] = useState(true);
+ *
+ *   return (
+ *     <ShareEventModal
+ *       isShareEventModalVisible={modalVisible}
+ *       onShareEventClose={() => setModalVisible(false)}
+ *       roomName="Room123"
+ *       adminPasscode="Passcode456"
+ *       islevel="2"
+ *       eventType="conference"
+ *       backgroundColor="rgba(255, 255, 255, 0.8)"
+ *       shareButtons={true}
+ *       position="topRight"
+ *     />
+ *   );
+ * }
+ *
+ * export default App;
  * ```
  */
+
 const ShareEventModal: React.FC<ShareEventModalOptions> = ({
   backgroundColor = 'rgba(255, 255, 255, 0.25)',
   isShareEventModalVisible,

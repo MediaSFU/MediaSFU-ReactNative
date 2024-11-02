@@ -61,9 +61,56 @@ export type ClickVideoType = (options: ClickVideoOptions) => Promise<void>;
 /**
  * Handles the click event to toggle the participant's video on/off and manages video permission requests.
  *
- * @param {ClickVideoParams} options - The function parameters.
+ * @param {ClickVideoOptions} options - The function parameters.
  * @returns {Promise<void>}
+ *
+ * @example
+ * ```typescript
+ * clickVideo({
+ *   parameters: {
+ *     checkMediaPermission: true,
+ *     hasCameraPermission: false,
+ *     videoAlreadyOn: false,
+ *     audioOnlyRoom: false,
+ *     recordStarted: true,
+ *     recordResumed: false,
+ *     recordPaused: true,
+ *     recordStopped: false,
+ *     recordingMediaOptions: "video",
+ *     islevel: "1",
+ *     youAreCoHost: false,
+ *     adminRestrictSetting: false,
+ *     videoRequestState: null,
+ *     videoRequestTime: Date.now(),
+ *     member: "John Doe",
+ *     socket: socketInstance,
+ *     roomName: "room123",
+ *     userDefaultVideoInputDevice: "default",
+ *     currentFacingMode: "user",
+ *     vidCons: { width: 1280, height: 720 },
+ *     frameRate: 30,
+ *     videoAction: false,
+ *     localStream: null,
+ *     audioSetting: "allow",
+ *     videoSetting: "allow",
+ *     screenshareSetting: "allow",
+ *     chatSetting: "allow",
+ *     updateRequestIntervalSeconds: 60,
+ *     showAlert: showAlertFunction,
+ *     updateVideoAlreadyOn: setVideoAlreadyOn,
+ *     updateVideoRequestState: setVideoRequestState,
+ *     updateLocalStream: setLocalStream,
+ *     mediaDevices: navigator.mediaDevices,
+ *     streamSuccessVideo: streamSuccessVideoFunction,
+ *     disconnectSendTransportVideo: disconnectVideoTransportFunction,
+ *     requestPermissionCamera: requestCameraPermissionFunction,
+ *     checkPermission: checkPermissionFunction,
+ *     getUpdatedAllParams: getUpdatedParamsFunction
+ *   }
+ * });
+ * ```
  */
+
 export const clickVideo = async ({ parameters }: ClickVideoOptions): Promise<void> => {
   let {
     checkMediaPermission,

@@ -44,19 +44,48 @@ export type ControlButtonsAltComponentType = (
 ) => React.ReactNode;
 
 /**
- * ControlButtonsAltComponent is a React functional component that renders a set of control buttons
- * with customizable alignment, direction, and styles.
+ * ControlButtonsAltComponent renders a set of customizable control buttons with adjustable layout, styling, and alignment options.
  *
- * @param {ControlButtonsAltComponentOptions} props - The properties object.
- * @param {Array<AltButton>} props.buttons - An array of button options to be rendered.
- * @param {string} [props.position='left'] - The horizontal alignment of the buttons ('left', 'right', 'middle').
- * @param {string} [props.location='top'] - The vertical alignment of the buttons ('top', 'bottom', 'center').
- * @param {string} [props.direction='horizontal'] - The direction of the button layout ('horizontal', 'vertical').
- * @param {StyleProp<ViewStyle>} [props.buttonsContainerStyle] - Additional styles for the buttons container.
- * @param {boolean} [props.showAspect=false] - Whether to display the buttons container.
+ * This component displays a collection of control buttons that can be horizontally or vertically aligned, with additional options
+ * to define icon behavior, active states, and color schemes. Each button can have an icon, alternate icon, or custom component.
  *
- * @returns {JSX.Element} The rendered component.
+ * @component
+ * @param {ControlButtonsAltComponentOptions} props - Configuration options for the control buttons.
+ * @param {AltButton[]} props.buttons - Array of button options, each with properties for icon, label, and behavior.
+ * @param {'left' | 'right' | 'middle'} [props.position='left'] - Horizontal alignment of the button group.
+ * @param {'top' | 'bottom' | 'center'} [props.location='top'] - Vertical alignment of the button group.
+ * @param {'horizontal' | 'vertical'} [props.direction='horizontal'] - Layout direction for the buttons.
+ * @param {StyleProp<ViewStyle>} [props.buttonsContainerStyle] - Custom styles for the container.
+ * @param {boolean} [props.showAspect=false] - Controls the visibility of the button group.
+ *
+ * @returns {JSX.Element} The rendered ControlButtonsAltComponent.
+ *
+ * @example
+ * ```tsx
+ * import React from 'react';
+ * import { ControlButtonsAltComponent } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   const buttons = [
+ *     { name: 'Play', icon: 'play', onPress: () => console.log('Play pressed'), active: true },
+ *     { name: 'Stop', icon: 'stop', onPress: () => console.log('Stop pressed') }
+ *   ];
+ *
+ *   return (
+ *     <ControlButtonsAltComponent
+ *       buttons={buttons}
+ *       position="middle"
+ *       location="bottom"
+ *       direction="horizontal"
+ *       showAspect={true}
+ *     />
+ *   );
+ * }
+ *
+ * export default App;
+ * ```
  */
+
 const ControlButtonsAltComponent: React.FC<ControlButtonsAltComponentOptions> = ({
   buttons,
   position = 'left',

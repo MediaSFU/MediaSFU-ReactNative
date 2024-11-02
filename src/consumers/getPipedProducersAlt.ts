@@ -21,16 +21,36 @@ export type GetPipedProducersAltType = (options: GetPipedProducersAltOptions) =>
 /**
  * Retrieves piped producers and signals new consumer transport for each retrieved producer.
  *
- * @param {Object} options - The options for retrieving piped producers.
- * @param {WebSocket} options.nsock - The WebSocket instance used for communication.
- * @param {boolean} options.islevel - A flag indicating the level of the request.
- * @param {Object} options.parameters - Additional parameters for the request.
+ * @param {GetPipedProducersAltOptions} options - The options for retrieving piped producers.
+ * @param {Socket} options.nsock - The WebSocket instance used for communication.
+ * @param {string} options.islevel - A flag indicating the level of the request.
+ * @param {GetPipedProducersAltParameters} options.parameters - Additional parameters for the request.
  * @param {string} options.parameters.member - The member identifier.
  * @param {Function} options.parameters.signalNewConsumerTransport - A function to signal new consumer transport.
  *
  * @returns {Promise<void>} A promise that resolves when the operation is complete.
  *
  * @throws {Error} If an error occurs during the process of retrieving producers.
+ *
+ * @example
+ * const options = {
+ *   nsock: socketInstance,
+ *   islevel: '1',
+ *   parameters: {
+ *     member: 'memberId',
+ *     signalNewConsumerTransport: async ({ nsock, remoteProducerId, islevel, parameters }) => {
+ *       // Implementation for signaling new consumer transport
+ *     },
+ *   },
+ * };
+ *
+ * getPipedProducersAlt(options)
+ *   .then(() => {
+ *     console.log('Successfully retrieved piped producers');
+ *   })
+ *   .catch((error) => {
+ *     console.error('Error retrieving piped producers:', error);
+ *   });
  */
 export const getPipedProducersAlt = async ({
   nsock,

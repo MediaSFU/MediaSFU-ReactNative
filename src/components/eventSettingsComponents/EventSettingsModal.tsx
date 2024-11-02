@@ -127,11 +127,45 @@ export interface EventSettingsModalOptions {
 export type EventSettingsModalType = (options: EventSettingsModalOptions) => JSX.Element;
 
 /**
- * EventSettingsModal - A React Native component for displaying a modal to modify event settings.
+ * EventSettingsModal provides an interface to configure event-related settings such as audio, video, screenshare, and chat permissions.
  *
- * @param {EventSettingsModalOptions} props - The properties passed to the EventSettingsModal component.
- * @returns {JSX.Element} - The EventSettingsModal component JSX element.
+ * @example
+ * ```tsx
+ * import React, { useState } from 'react';
+ * import { EventSettingsModal } from 'mediasfu-reactnative';
+ * import { io } from 'socket.io-client';
+ *
+ * const socket = io('https://your-server-url.com');
+ *
+ * function App() {
+ *   const [isModalVisible, setModalVisible] = useState(false);
+ *
+ *   return (
+ *     <View>
+ *       <Button title="Open Event Settings" onPress={() => setModalVisible(true)} />
+ *       <EventSettingsModal
+ *         isEventSettingsModalVisible={isModalVisible}
+ *         onEventSettingsClose={() => setModalVisible(false)}
+ *         audioSetting="allow"
+ *         videoSetting="approval"
+ *         screenshareSetting="disallow"
+ *         chatSetting="allow"
+ *         updateAudioSetting={(setting) => console.log('Audio setting updated:', setting)}
+ *         updateVideoSetting={(setting) => console.log('Video setting updated:', setting)}
+ *         updateScreenshareSetting={(setting) => console.log('Screenshare setting updated:', setting)}
+ *         updateChatSetting={(setting) => console.log('Chat setting updated:', setting)}
+ *         roomName="meeting-room"
+ *         socket={socket}
+ *         showAlert={(alert) => console.log('Alert:', alert)}
+ *       />
+ *     </View>
+ *   );
+ * }
+ *
+ * export default App;
+ * ```
  */
+
 const EventSettingsModal: React.FC<EventSettingsModalOptions> = ({
   isEventSettingsModalVisible,
   onEventSettingsClose,

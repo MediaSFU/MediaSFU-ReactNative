@@ -90,11 +90,52 @@ export interface MiniAudioOptions {
 export type MiniAudioType = (options: MiniAudioOptions) => JSX.Element;
 
 /**
- * MiniAudio component displays an audio player with optional waveform animation and draggable functionality.
+ * MiniAudio component renders a draggable audio player with customizable display options, including
+ * optional waveform animation, overlay positioning, and background image styling.
  *
- * @param {MiniAudioOptions} props - The properties for the MiniAudio component.
- * @returns {JSX.Element} The rendered MiniAudio component.
+ * This component provides an animated waveform that can be toggled, and it allows for flexible styling of the name, position, and image.
+ * The component is also draggable for convenient placement on the screen.
+ *
+ * @component
+ * @param {MiniAudioOptions} props - Configuration options for the MiniAudio component.
+ * @param {boolean} [props.visible=true] - Controls the visibility of the component.
+ * @param {StyleProp<ViewStyle>} [props.customStyle] - Custom styles for the component container.
+ * @param {string} props.name - Name to display on the audio player.
+ * @param {boolean} [props.showWaveform=false] - Toggles visibility of the waveform animation.
+ * @param {OverlayPosition} [props.overlayPosition='topLeft'] - Position of the overlay on the screen.
+ * @param {string} [props.barColor='red'] - Color of the waveform bars.
+ * @param {string} [props.textColor='white'] - Color of the displayed name text.
+ * @param {StyleProp<TextStyle>} [props.nameTextStyling] - Custom styles for the name text.
+ * @param {string} props.imageSource - URI for the background image.
+ * @param {boolean} [props.roundedImage=false] - Determines if the background image should be rounded.
+ * @param {StyleProp<ImageStyle>} [props.imageStyle] - Custom styles for the background image.
+ *
+ * @returns {JSX.Element} The MiniAudio component.
+ *
+ * @example
+ * ```tsx
+ * import React from 'react';
+ * import { MiniAudio } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   return (
+ *     <MiniAudio
+ *       visible={true}
+ *       name="John Doe"
+ *       showWaveform={true}
+ *       overlayPosition="bottomRight"
+ *       barColor="blue"
+ *       textColor="white"
+ *       imageSource="https://example.com/avatar.jpg"
+ *       roundedImage={true}
+ *     />
+ *   );
+ * }
+ *
+ * export default App;
+ * ```
  */
+
 const MiniAudio: React.FC<MiniAudioOptions> = ({
   visible = true,
   customStyle,

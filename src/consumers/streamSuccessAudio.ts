@@ -65,23 +65,23 @@ export type StreamSuccessAudioType = (options: StreamSuccessAudioOptions) => Pro
 /**
  * Handles the successful streaming of audio by setting up the necessary transports and updating the relevant states.
  *
- * @param {Object} options - The options for streaming success audio.
+ * @param {StreamSuccessAudioOptions} options - The options for streaming success audio.
  * @param {MediaStream} options.stream - The media stream containing the audio track.
  * @param {Object} options.parameters - The parameters required for setting up the audio stream.
- * @param {Object} options.parameters.socket - The socket connection.
- * @param {Array} options.parameters.participants - The list of participants.
- * @param {MediaStream} options.parameters.localStream - The local media stream.
+ * @param {Socket} options.parameters.socket - The socket connection for communication.
+ * @param {Array<Participant>} options.parameters.participants - The list of participants.
+ * @param {MediaStream | null} options.parameters.localStream - The local media stream.
  * @param {boolean} options.parameters.transportCreated - Flag indicating if the transport is created.
  * @param {boolean} options.parameters.transportCreatedAudio - Flag indicating if the audio transport is created.
  * @param {boolean} options.parameters.audioAlreadyOn - Flag indicating if the audio is already on.
  * @param {boolean} options.parameters.micAction - Flag indicating the microphone action.
- * @param {Object} options.parameters.audioParams - The audio parameters.
- * @param {MediaStream} options.parameters.localStreamAudio - The local audio stream.
+ * @param {ProducerOptions} options.parameters.audioParams - The audio parameters.
+ * @param {MediaStream | null} options.parameters.localStreamAudio - The local audio stream.
  * @param {string} options.parameters.defAudioID - The default audio device ID.
  * @param {string} options.parameters.userDefaultAudioInputDevice - The user default audio input device.
- * @param {Object} options.parameters.params - Additional parameters.
- * @param {Object} options.parameters.audioParamse - Additional audio parameters.
- * @param {Object} options.parameters.aParams - Additional parameters for audio.
+ * @param {ProducerOptions} options.parameters.params - Additional parameters.
+ * @param {ProducerOptions} options.parameters.audioParamse - Additional audio parameters.
+ * @param {ProducerOptions} options.parameters.aParams - Additional parameters for audio.
  * @param {string} options.parameters.hostLabel - The label of the host.
  * @param {string} options.parameters.islevel - The level of the user.
  * @param {string} options.parameters.member - The member name.
@@ -105,7 +105,60 @@ export type StreamSuccessAudioType = (options: StreamSuccessAudioOptions) => Pro
  * @param {Function} options.parameters.connectSendTransportAudio - Function to connect send transport audio.
  * @param {Function} options.parameters.resumeSendTransportAudio - Function to resume send transport audio.
  * @param {Function} options.parameters.prepopulateUserMedia - Function to prepopulate user media.
+ *
  * @returns {Promise<void>} A promise that resolves when the audio streaming setup is complete.
+ *
+ * @example
+ * const options = {
+ *   stream: localStream, // MediaStream object containing the audio track
+ *   parameters: {
+ *     socket: socketInstance,
+ *     participants: participantList,
+ *     localStream: null,
+ *     transportCreated: false,
+ *     transportCreatedAudio: false,
+ *     audioAlreadyOn: false,
+ *     micAction: false,
+ *     audioParams: {},
+ *     localStreamAudio: null,
+ *     defAudioID: "",
+ *     userDefaultAudioInputDevice: "",
+ *     params: {},
+ *     audioParamse: {},
+ *     aParams: {},
+ *     hostLabel: "Host",
+ *     islevel: "1",
+ *     member: "user1",
+ *     updateMainWindow: true,
+ *     lock_screen: false,
+ *     shared: false,
+ *     videoAlreadyOn: false,
+ *     showAlert: alertFunction,
+ *     updateParticipants: updateParticipantsFunction,
+ *     updateTransportCreated: updateTransportCreatedFunction,
+ *     updateTransportCreatedAudio: updateTransportCreatedAudioFunction,
+ *     updateAudioAlreadyOn: updateAudioAlreadyOnFunction,
+ *     updateMicAction: updateMicActionFunction,
+ *     updateAudioParams: updateAudioParamsFunction,
+ *     updateLocalStream: updateLocalStreamFunction,
+ *     updateLocalStreamAudio: updateLocalStreamAudioFunction,
+ *     updateDefAudioID: updateDefAudioIDFunction,
+ *     updateUserDefaultAudioInputDevice: updateUserDefaultAudioInputDeviceFunction,
+ *     updateUpdateMainWindow: updateUpdateMainWindowFunction,
+ *     createSendTransport: createSendTransportFunction,
+ *     connectSendTransportAudio: connectSendTransportAudioFunction,
+ *     resumeSendTransportAudio: resumeSendTransportAudioFunction,
+ *     prepopulateUserMedia: prepopulateUserMediaFunction,
+ *   },
+ * };
+ * 
+ * streamSuccessAudio(options)
+ *   .then(() => {
+ *     console.log('Audio streaming setup successfully');
+ *   })
+ *   .catch(error => {
+ *     console.error('Error setting up audio streaming:', error);
+ *   });
  */
 
 export const streamSuccessAudio = async ({

@@ -43,7 +43,7 @@ export type ProducerMediaPausedType = (options: ProducerMediaPausedOptions) => P
  * @param {string} options.producerId - The ID of the producer.
  * @param {string} options.kind - The kind of media (e.g., "audio", "video").
  * @param {string} options.name - The name of the producer.
- * @param {Parameters} options.parameters - The parameters for the event.
+ * @param {ProducerMediaPausedParameters} options.parameters - The parameters for the event.
  *
  * @returns {Promise<void>} A promise that resolves when the media paused handling is complete.
  *
@@ -51,9 +51,39 @@ export type ProducerMediaPausedType = (options: ProducerMediaPausedOptions) => P
  * This function handles the event when media is paused for a producer. It performs the following tasks:
  * - Updates the parameters.
  * - Iterates through participants and updates the UI based on their muted status and other conditions.
- * - Handles meeting display type and optimizes the UI accordingly.
- * - Manages audio media by updating the relevant participant's state.
+ * - Manages active sounds and screen sharing state.
+ * - Optimizes UI based on meeting display type and video optimization settings.
+ *
+ * @example
+ * ```typescript
+ * const options = {
+ *   producerId: "abc123",
+ *   kind: "audio",
+ *   name: "Participant1",
+ *   parameters: {
+ *     activeSounds: [],
+ *     meetingDisplayType: "media",
+ *     meetingVideoOptimized: false,
+ *     participants: [{ name: "Participant1", muted: true, islevel: "2", videoID: null }],
+ *     oldSoundIds: ["Participant1"],
+ *     shared: false,
+ *     shareScreenStarted: false,
+ *     updateMainWindow: false,
+ *     hostLabel: "Host",
+ *     islevel: "1",
+ *     updateActiveSounds: (sounds) => console.log("Active sounds updated:", sounds),
+ *     updateUpdateMainWindow: (update) => console.log("Main window update:", update),
+ *     reorderStreams: async (params) => console.log("Reordered streams:", params),
+ *     prepopulateUserMedia: async (params) => console.log("Prepopulated user media:", params),
+ *     reUpdateInter: async (params) => console.log("Re-updated interface:", params),
+ *     getUpdatedAllParams: () => ({ }),
+ *   },
+ * };
+ *
+ * await producerMediaPaused(options);
+ * ```
  */
+
 export const producerMediaPaused = async ({
   producerId,
   kind,

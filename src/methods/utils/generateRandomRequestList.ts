@@ -21,7 +21,26 @@ export type GenerateRandomRequestListType = (
  * @param {string} options.coHostName - The name of the co-host.
  * @param {number} options.numberOfRequests - The number of requests to generate for each participant.
  * @returns {Request[]} The generated list of requests.
+ *
+ * @example
+ * ```typescript
+ * generateRandomRequestList({
+ *   participants: [
+ *     { id: "1", name: "Alice" },
+ *     { id: "2", name: "Bob" },
+ *     { id: "3", name: "Charlie" },
+ *   ],
+ *   hostName: "Alice",
+ *   coHostName: "Bob",
+ *   numberOfRequests: 2,
+ * });
+ * // Returns [
+ * //   { id: "3", name: "charlie", icon: "fa-video", username: "charlie" },
+ * //   { id: "3", name: "charlie", icon: "fa-microphone", username: "charlie" }
+ * // ]
+ * ```
  */
+
 const generateRandomRequestList = (
   {
     participants, hostName, coHostName, numberOfRequests,

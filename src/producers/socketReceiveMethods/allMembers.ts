@@ -6,18 +6,34 @@ import {
 } from '../../@types/types';
 
 /**
- * allMembers - A method for handling various tasks related to participant management and UI updates.
- * @param {Object} params - The parameters passed to the allMembers method.
- * @param {Array} params.members - The array of participant members.
- * @param {Array} params.requestss - The array of requests.
- * @param {boolean} params.coHoste - The co-host state.
- * @param {boolean} params.coHostRes - The co-host responsibility state.
- * @param {Object} params.parameters - The object containing parameters for the allMembers method.
- * @param {Array} params.consume_sockets - The array of consume sockets.
+ * Handles participant management and UI updates for all members.
+ * 
+ * @param {Object} params - The parameters for the allMembers method.
+ * @param {Participant[]} params.members - The array of participant members.
+ * @param {Request[]} params.requestss - The array of requests.
+ * @param {string} params.coHoste - The co-host identifier.
+ * @param {CoHostResponsibility[]} params.coHostRes - The co-host responsibilities.
+ * @param {AllMembersParameters} params.parameters - The parameters object for allMembers handling.
+ * @param {ConsumeSocket[]} params.consume_sockets - The array of consume sockets.
  * @param {string} params.apiUserName - The API username.
  * @param {string} params.apiKey - The API key.
  * @param {string} params.apiToken - The API token.
- * @returns {void} - No return value.
+ * @returns {Promise<void>} - A promise that resolves when all participant management actions are completed.
+ * 
+ * @example
+ * ```typescript
+ * await allMembers({
+ *   members: participantList,
+ *   requestss: requestList,
+ *   coHoste: 'coHostName',
+ *   coHostRes: [{ type: 'moderate', allowed: true }],
+ *   parameters: allMembersParams,
+ *   consume_sockets: [socket1, socket2],
+ *   apiUserName: 'userAPI',
+ *   apiKey: 'apiKey123',
+ *   apiToken: 'tokenXYZ'
+ * });
+ * ```
  */
 
 export interface AllMembersParameters extends ReorderStreamsParameters, ConnectIpsParameters, OnScreenChangesParameters {

@@ -25,12 +25,12 @@ export interface HostRequestResponseOptions {
 export type HostRequestResponseType = (options: HostRequestResponseOptions) => Promise<void>;
 
 /**
- * Handles the response to a host request, updating the request list and performing actions based on the response.
+ * Handles a host's response to a participant request, updating the request list and performing actions based on the response.
  *
- * @param {Object} options - The options for handling the host request response.
- * @param {Object} options.requestResponse - The response to the request.
+ * @param {HostRequestResponseOptions} options - The options for handling the host's response to the participant request.
+ * @param {RequestResponse} options.requestResponse - The host's response to the request.
  * @param {Function} [options.showAlert] - Optional function to show alerts.
- * @param {Array} options.requestList - The current list of requests.
+ * @param {Request[]} options.requestList - The current list of participant requests.
  * @param {Function} options.updateRequestList - Function to update the request list.
  * @param {Function} options.updateMicAction - Function to update the microphone action state.
  * @param {Function} options.updateVideoAction - Function to update the video action state.
@@ -40,13 +40,38 @@ export type HostRequestResponseType = (options: HostRequestResponseOptions) => P
  * @param {Function} options.updateVideoRequestState - Function to update the video request state.
  * @param {Function} options.updateScreenRequestState - Function to update the screen request state.
  * @param {Function} options.updateChatRequestState - Function to update the chat request state.
- * @param {Function} options.updateAudioRequestTime - Function to update the audio request time.
- * @param {Function} options.updateVideoRequestTime - Function to update the video request time.
- * @param {Function} options.updateScreenRequestTime - Function to update the screen request time.
- * @param {Function} options.updateChatRequestTime - Function to update the chat request time.
- * @param {number} options.updateRequestIntervalSeconds - The interval in seconds to wait before allowing another request.
- * @returns {Promise<void>} A promise that resolves when the request response has been handled.
+ * @param {Function} options.updateAudioRequestTime - Function to set a cooldown for new audio requests.
+ * @param {Function} options.updateVideoRequestTime - Function to set a cooldown for new video requests.
+ * @param {Function} options.updateScreenRequestTime - Function to set a cooldown for new screenshare requests.
+ * @param {Function} options.updateChatRequestTime - Function to set a cooldown for new chat requests.
+ * @param {number} options.updateRequestIntervalSeconds - The interval in seconds to wait before allowing another request of the same type.
+ *
+ * @returns {Promise<void>} A promise that resolves when the host's response has been processed.
+ *
+ * @example
+ * ```typescript
+ * await hostRequestResponse({
+ *   requestResponse: { id: "req123", type: "fa-video", action: "accepted" },
+ *   showAlert: (alertOptions) => console.log(alertOptions.message),
+ *   requestList: [{ id: "req123", icon: "fa-video", name: "Video Request" }],
+ *   updateRequestList: (list) => console.log("Updated request list", list),
+ *   updateMicAction: (state) => console.log("Mic action:", state),
+ *   updateVideoAction: (state) => console.log("Video action:", state),
+ *   updateScreenAction: (state) => console.log("Screen action:", state),
+ *   updateChatAction: (state) => console.log("Chat action:", state),
+ *   updateAudioRequestState: (state) => console.log("Audio request state:", state),
+ *   updateVideoRequestState: (state) => console.log("Video request state:", state),
+ *   updateScreenRequestState: (state) => console.log("Screen request state:", state),
+ *   updateChatRequestState: (state) => console.log("Chat request state:", state),
+ *   updateAudioRequestTime: (time) => console.log("Audio request cooldown:", time),
+ *   updateVideoRequestTime: (time) => console.log("Video request cooldown:", time),
+ *   updateScreenRequestTime: (time) => console.log("Screenshare request cooldown:", time),
+ *   updateChatRequestTime: (time) => console.log("Chat request cooldown:", time),
+ *   updateRequestIntervalSeconds: 30,
+ * });
+ * ```
  */
+
 export const hostRequestResponse = async ({
   requestResponse,
   showAlert,

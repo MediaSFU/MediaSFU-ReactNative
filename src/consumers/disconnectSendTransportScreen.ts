@@ -17,6 +17,7 @@ export interface DisconnectSendTransportScreenOptions {
 // Export the type definition for the function
 export type DisconnectSendTransportScreenType = (options: DisconnectSendTransportScreenOptions) => Promise<void>;
 
+
 /**
  * Disconnects the send transport for screen sharing.
  *
@@ -26,13 +27,37 @@ export type DisconnectSendTransportScreenType = (options: DisconnectSendTranspor
  * @param {DisconnectSendTransportScreenOptions} options - The options for disconnecting the send transport.
  * @param {Object} options.parameters - The parameters required for disconnection.
  * @param {Function} options.parameters.getUpdatedAllParams - Function to get updated parameters.
- * @param {Object} options.parameters.screenProducer - The screen producer to be closed.
- * @param {Object} options.parameters.socket - The socket connection to notify the server.
+ * @param {Producer | null} options.parameters.screenProducer - The screen producer to be closed.
+ * @param {Socket} options.parameters.socket - The socket connection to notify the server.
  * @param {string} options.parameters.roomName - The name of the room.
  * @param {Function} options.parameters.updateScreenProducer - Function to update the screen producer state.
  * @returns {Promise<void>} A promise that resolves when the disconnection process is complete.
  * @throws {Error} If an error occurs during the disconnection process.
+ *
+ * @example
+ * const options = {
+ *   parameters: {
+ *     screenProducer: screenProducerInstance,
+ *     socket: socketInstance,
+ *     roomName: 'Room 1',
+ *     updateScreenProducer: (producer) => console.log('Updated screen producer:', producer),
+ *     getUpdatedAllParams: () => ({
+ *       screenProducer: screenProducerInstance,
+ *       socket: socketInstance,
+ *       roomName: 'Room 1',
+ *     }),
+ *   },
+ * };
+ *
+ * disconnectSendTransportScreen(options)
+ *   .then(() => {
+ *     console.log('Screen send transport disconnected successfully');
+ *   })
+ *   .catch((error) => {
+ *     console.error('Error disconnecting screen send transport:', error);
+ *   });
  */
+
 export const disconnectSendTransportScreen = async ({ parameters }: DisconnectSendTransportScreenOptions) : Promise<void> => {
   const { getUpdatedAllParams } = parameters;
   parameters = getUpdatedAllParams();

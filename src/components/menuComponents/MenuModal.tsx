@@ -83,7 +83,40 @@ export type MenuModalType = (options: MenuModalOptions) => JSX.Element;
  * @component
  * @param {MenuModalOptions} props - The properties passed to the MenuModal component.
  * @returns {JSX.Element} - The MenuModal component JSX element.
+ * @example
+ * ```tsx
+ * import React from 'react';
+ * import { MenuModal } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   return (
+ *     <MenuModal
+ *       backgroundColor="#83c0e9"
+ *       isVisible={true}
+ *       onClose={() => console.log('Modal closed')}
+ *       customButtons={[
+ *         {
+ *           action: () => console.log('Button pressed'),
+ *           show: true,
+ *           backgroundColor: '#4CAF50',
+ *           icon: 'check-circle',
+ *           text: 'Confirm',
+ *         },
+ *       ]}
+ *       shareButtons={true}
+ *       position="bottomRight"
+ *       roomName="MeetingRoom123"
+ *       adminPasscode="123456"
+ *       islevel="2"
+ *       eventType="video"
+ *     />
+ *   );
+ * }
+ *
+ * export default App;
+ * ```
  */
+
 const MenuModal: React.FC<MenuModalOptions> = ({
   backgroundColor = '#83c0e9',
   isVisible,

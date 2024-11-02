@@ -32,21 +32,42 @@ export type GetDomainsType = (options: GetDomainsOptions) => Promise<void>;
 /**
  * Asynchronously processes domain information and connects to specified IPs.
  *
- * @param {Object} options - The options for the getDomains function.
- * @param {string[]} options.domains - An array of domain names to process.
- * @param {Record<string, string>} options.alt_domains - A mapping of alternative domain names.
- * @param {string} options.apiUserName - The API username for authentication.
- * @param {string} options.apiKey - The API key for authentication.
- * @param {string} options.apiToken - The API token for authentication.
- * @param {Object} options.parameters - Additional parameters for processing.
- * @param {string[]} options.parameters.roomRecvIPs - An array of IPs that are already receiving.
- * @param {Function} options.parameters.consume_sockets - A function to get the latest consume sockets.
- * @param {Function} options.parameters.connectIps - A function to connect to the specified IPs.
+ * @param {GetDomainsOptions} options - The options for processing domains and connecting to IPs.
+ * @param {string[]} options.domains - Array of domain names to process.
+ * @param {AltDomains} options.alt_domains - Alternative domain mapping with IP addresses.
+ * @param {string} options.apiUserName - The API username for domain authentication.
+ * @param {string} options.apiKey - The API key for domain authentication.
+ * @param {string} options.apiToken - The API token for domain authentication.
+ * @param {GetDomainsParameters} options.parameters - Additional parameters for domain processing.
+ * @param {string[]} options.parameters.roomRecvIPs - Array of IPs that are already connected and receiving.
+ * @param {ConsumeSocket[]} options.parameters.consume_sockets - List of consume sockets.
+ * @param {ConnectIpsType} options.parameters.connectIps - Function to connect to specified IPs.
+ * @param {Function} options.parameters.getUpdatedAllParams - Function to get updated parameters.
  *
- * @returns {Promise<void>} A promise that resolves when the operation is complete.
+ * @returns {Promise<void>} A promise that resolves when the domain processing and IP connection is complete.
  *
- * @throws Will throw an error if the operation fails.
+ * @throws {Error} Will throw an error if the operation fails.
+ *
+ * @example
+ * ```typescript
+ * await getDomains({
+ *   domains: ["example1.com", "example2.com"],
+ *   alt_domains: { "example1.com": "192.168.1.1" },
+ *   apiUserName: "user123",
+ *   apiKey: "apikey123",
+ *   apiToken: "apitoken123",
+ *   parameters: {
+ *     roomRecvIPs: ["192.168.1.10"],
+ *     consume_sockets: [{ id: "socket1" }],
+ *     connectIps: async ({ consume_sockets, remIP, parameters, apiUserName, apiKey, apiToken }) => {
+ *       // Connect IP logic here
+ *     },
+ *     getUpdatedAllParams: () => ({ ...parameters }),
+ *   },
+ * });
+ * ```
  */
+
 export const getDomains = async ({
   domains,
   alt_domains,

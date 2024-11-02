@@ -104,22 +104,66 @@ export interface RecordingModalOptions {
 export type RecordingModalType = (options: RecordingModalOptions) => JSX.Element;
 
 /**
- * RecordingModal component renders a modal for recording settings.
+ * RecordingModal component displays a modal with settings for configuring and managing recordings. It includes sections for both standard and advanced recording options, allowing users to specify video types, display options, background colors, custom text, and other recording parameters.
  *
+ * @component
  * @param {RecordingModalOptions} props - The properties object.
  * @returns {JSX.Element} The rendered RecordingModal component.
  *
  * @example
  * ```tsx
- * <RecordingModal
- *   isRecordingModalVisible={isModalVisible}
- *   onClose={() => setModalVisible(false)}
- *   confirmRecording={handleConfirmRecording}
- *   startRecording={handleStartRecording}
- *   parameters={recordingParameters}
- * />
+ * import React from 'react';
+ * import { RecordingModal } from 'mediasfu-reactnative';
+ * 
+ * const recordingParameters = {
+ *   recordPaused: false,
+ *   recordingVideoType: 'fullDisplay',
+ *   recordingDisplayType: 'video',
+ *   recordingBackgroundColor: '#ffffff',
+ *   recordingNameTagsColor: '#000000',
+ *   recordingOrientationVideo: 'landscape',
+ *   recordingNameTags: true,
+ *   recordingAddText: false,
+ *   recordingCustomText: '',
+ *   recordingCustomTextPosition: 'top',
+ *   recordingCustomTextColor: '#000000',
+ *   recordingMediaOptions: 'default',
+ *   recordingAudioOptions: 'default',
+ *   recordingVideoOptions: 'default',
+ *   recordingAddHLS: false,
+ *   eventType: 'conference',
+ *   updateRecordingVideoType: (value) => {},
+ *   updateRecordingDisplayType: (value) => {},
+ *   updateRecordingBackgroundColor: (value) => {},
+ *   updateRecordingNameTagsColor: (value) => {},
+ *   updateRecordingOrientationVideo: (value) => {},
+ *   updateRecordingNameTags: (value) => {},
+ *   updateRecordingAddText: (value) => {},
+ *   updateRecordingCustomText: (value) => {},
+ *   updateRecordingCustomTextPosition: (value) => {},
+ *   updateRecordingCustomTextColor: (value) => {},
+ *   updateRecordingMediaOptions: (value) => {},
+ *   updateRecordingAudioOptions: (value) => {},
+ *   updateRecordingVideoOptions: (value) => {},
+ *   updateRecordingAddHLS: (value) => {},
+ * };
+ *
+ * function App() {
+ *   return (
+ *     <RecordingModal
+ *       isRecordingModalVisible={true}
+ *       onClose={() => console.log('Modal closed')}
+ *       confirmRecording={() => console.log('Confirm recording settings')}
+ *       startRecording={() => console.log('Start recording')}
+ *       parameters={recordingParameters}
+ *     />
+ *   );
+ * }
+ * 
+ * export default App;
  * ```
  */
+
 const RecordingModal: React.FC<RecordingModalOptions> = ({
   isRecordingModalVisible,
   onClose,

@@ -30,11 +30,11 @@ export type GetEstimateType = (options: GetEstimateOptions) => [number, number, 
  *
  * @param {GetEstimateOptions} options - The options for the estimation.
  * @param {number} options.n - The number of items to estimate for.
- * @param {Object} options.parameters - The parameters for the estimation.
+ * @param {GetEstimateParameters} options.parameters - The parameters for the estimation.
  * @param {number} options.parameters.fixedPageLimit - The fixed page limit.
  * @param {number} options.parameters.screenPageLimit - The screen page limit.
  * @param {boolean} options.parameters.shareScreenStarted - Indicates if screen sharing has started.
- * @param {boolean} options.parameters.shared - Indicates if sharing is active.
+ * @param {boolean} [options.parameters.shared] - Indicates if sharing is active.
  * @param {string} options.parameters.eventType - The type of event (e.g., "chat", "conference").
  * @param {boolean} options.parameters.removeAltGrid - Indicates if the alternate grid should be removed.
  * @param {boolean} options.parameters.isWideScreen - Indicates if the screen is wide.
@@ -42,10 +42,31 @@ export type GetEstimateType = (options: GetEstimateOptions) => [number, number, 
  * @param {Function} options.parameters.updateRemoveAltGrid - Function to update the removeAltGrid parameter.
  * @param {Function} options.parameters.calculateRowsAndColumns - Function to calculate rows and columns.
  *
- * @returns {number[]} An array containing the estimated number of items, rows, and columns.
+ * @returns {[number, number, number]} An array containing the estimated number of items, rows, and columns.
  *
  * @throws Will log an error message if an error occurs during estimation.
+ *
+ * @example
+ * const options = {
+ *   n: 10,
+ *   parameters: {
+ *     fixedPageLimit: 5,
+ *     screenPageLimit: 8,
+ *     shareScreenStarted: false,
+ *     shared: false,
+ *     eventType: 'conference',
+ *     removeAltGrid: false,
+ *     isWideScreen: true,
+ *     isMediumScreen: false,
+ *     updateRemoveAltGrid: (value) => console.log('Remove Alt Grid:', value),
+ *     calculateRowsAndColumns: ({ n }) => [3, 4], // Example implementation
+ *   },
+ * };
+ * 
+ * const estimate = getEstimate(options);
+ * console.log('Estimated:', estimate); // Output: Estimated: [10, 3, 4]
  */
+
 export function getEstimate({ n, parameters }: GetEstimateOptions): [number, number, number] {
   try {
     // Destructure parameters

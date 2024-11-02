@@ -11,14 +11,24 @@ export interface DisconnectOptions {
 export type DisconnectType = (options: DisconnectOptions) => Promise<void>;
 
 /**
- * Handles the disconnection logic by either redirecting to a specified URL or showing an alert.
+ * Disconnects the user from the specified room and bans them.
  *
- * @param {DisconnectOptions} options - The options for handling disconnection.
- * @param {Function} options.showAlert - Function to display an alert message.
- * @param {string} options.redirectURL - URL to redirect to if on the web.
- * @param {boolean} options.onWeb - Flag indicating if the operation is on the web.
- * @returns {Promise<void>} A promise that resolves when the disconnection handling is complete.
+ * @param {DisconnectUserSelfOptions} options - The options for disconnecting the user.
+ * @param {string} options.member - The username of the member to disconnect.
+ * @param {string} options.roomName - The name of the room from which the user will be disconnected.
+ * @param {Socket} options.socket - The socket instance used to emit the disconnection request.
+ * @returns {Promise<void>} A promise that resolves when the disconnection request has been emitted.
+ *
+ * @example
+ * ```typescript
+ * await disconnectUserSelf({
+ *   member: "user123",
+ *   roomName: "main-room",
+ *   socket: socketInstance,
+ * });
+ * ```
  */
+
 export const disconnect = async ({ showAlert, redirectURL, onWeb }: DisconnectOptions): Promise<void> => {
   // Redirect to the specified URL on the web
   if (onWeb && redirectURL) {

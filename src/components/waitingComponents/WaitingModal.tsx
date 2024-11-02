@@ -101,28 +101,51 @@ export type WaitingRoomModalType = (
 ) => JSX.Element;
 
 /**
- * WaitingRoomModal is a React Native functional component that displays a modal containing a list of participants waiting to join a room.
- * Users can search, accept, or reject participants from the waiting list.
+ * WaitingRoomModal is a React Native functional component that displays a modal containing a list of participants who are waiting to join a room. Users can filter, accept, or reject participants from the waiting list.
  *
  * @component
- * @param {WaitingRoomModalOptions} props - The properties object.
+ * @param {WaitingRoomModalOptions} props - The properties for the WaitingRoomModal component.
  * @returns {JSX.Element} The rendered WaitingRoomModal component.
  *
  * @example
  * ```tsx
- * <WaitingRoomModal
- *   isWaitingModalVisible={isModalVisible}
- *   onWaitingRoomClose={() => setModalVisible(false)}
- *   waitingRoomCounter={3}
- *   onWaitingRoomFilterChange={(filter) => handleFilterChange(filter)}
- *   waitingRoomList={waitingList}
- *   updateWaitingList={(newList) => setWaitingList(newList)}
- *   roomName="Main Room"
- *   socket={socketInstance}
- *   parameters={waitingRoomParameters}
- * />
+ * import React from 'react';
+ * import { WaitingRoomModal } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   const waitingRoomList = [
+ *     { id: 1, name: 'John Doe' },
+ *     { id: 2, name: 'Jane Smith' },
+ *   ];
+ *
+ *   const handleWaitingRoomItemPress = ({ participantId, type }) => {
+ *     console.log(`Participant ID ${participantId} was ${type ? 'accepted' : 'rejected'}`);
+ *   };
+ *
+ *   return (
+ *     <WaitingRoomModal
+ *       isWaitingModalVisible={true}
+ *       onWaitingRoomClose={() => console.log('Modal closed')}
+ *       waitingRoomCounter={waitingRoomList.length}
+ *       onWaitingRoomFilterChange={(filter) => console.log('Filter applied:', filter)}
+ *       waitingRoomList={waitingRoomList}
+ *       updateWaitingList={(updatedList) => console.log('Updated list:', updatedList)}
+ *       roomName="Main Room"
+ *       socket={socketInstance}
+ *       onWaitingRoomItemPress={handleWaitingRoomItemPress}
+ *       backgroundColor="#83c0e9"
+ *       position="topRight"
+ *       parameters={{
+ *         getUpdatedAllParams: () => ({ filteredWaitingRoomList: waitingRoomList }),
+ *       }}
+ *     />
+ *   );
+ * }
+ * export default App;
  * ```
  */
+
+
 const WaitingRoomModal: React.FC<WaitingRoomModalOptions> = ({
   isWaitingModalVisible,
   onWaitingRoomClose,

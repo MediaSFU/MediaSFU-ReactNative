@@ -55,25 +55,25 @@ export type StreamSuccessAudioSwitchType = (options: StreamSuccessAudioSwitchOpt
 /**
  * Handles the switching of the audio stream upon successful stream connection.
  *
- * @param {Object} options - The options for the stream success audio switch.
- * @param {MediaStream} options.stream - The new media stream.
- * @param {Object} options.parameters - The parameters required for the audio switch.
+ * @param {StreamSuccessAudioSwitchOptions} options - The options for the audio stream success switch.
+ * @param {MediaStream} options.stream - The new media stream containing the audio track.
+ * @param {Object} options.parameters - The parameters required for setting up the audio stream.
  * @param {Producer} options.parameters.audioProducer - The current audio producer.
- * @param {Socket} options.parameters.socket - The socket connection.
+ * @param {Socket} options.parameters.socket - The socket connection for communication.
  * @param {string} options.parameters.roomName - The name of the room.
- * @param {MediaStream} options.parameters.localStream - The local media stream.
- * @param {MediaStream} options.parameters.localStreamAudio - The local audio stream.
- * @param {Object} options.parameters.audioParams - The audio parameters.
+ * @param {MediaStream | null} options.parameters.localStream - The local media stream.
+ * @param {MediaStream | null} options.parameters.localStreamAudio - The local audio stream.
+ * @param {ProducerOptions} options.parameters.audioParams - The audio parameters.
  * @param {boolean} options.parameters.audioPaused - Indicates if the audio is paused.
  * @param {boolean} options.parameters.audioAlreadyOn - Indicates if the audio is already on.
  * @param {boolean} options.parameters.transportCreated - Indicates if the transport is created.
- * @param {Object} options.parameters.audioParamse - Additional audio parameters.
+ * @param {ProducerCodecOptions} options.parameters.audioParamse - Additional audio parameters.
  * @param {string} options.parameters.defAudioID - The default audio device ID.
  * @param {string} options.parameters.userDefaultAudioInputDevice - The user default audio input device.
- * @param {string} options.parameters.hostLabel - The host label.
+ * @param {string} options.parameters.hostLabel - The label of the host.
  * @param {boolean} options.parameters.updateMainWindow - Indicates if the main window should be updated.
  * @param {boolean} options.parameters.videoAlreadyOn - Indicates if the video is already on.
- * @param {string} options.parameters.islevel - The participant's level.
+ * @param {string} options.parameters.islevel - The level of the participant.
  * @param {boolean} options.parameters.lock_screen - Indicates if the screen is locked.
  * @param {boolean} options.parameters.shared - Indicates if the screen is shared.
  * @param {Function} options.parameters.updateAudioProducer - Function to update the audio producer.
@@ -87,8 +87,51 @@ export type StreamSuccessAudioSwitchType = (options: StreamSuccessAudioSwitchOpt
  * @param {Function} options.parameters.createSendTransport - Function to create a send transport.
  * @param {Function} options.parameters.connectSendTransportAudio - Function to connect the send transport for audio.
  *
- * @returns {Promise<void>} A promise that resolves when the audio switch is complete.
+ * @returns {Promise<void>} A promise that resolves when the audio stream switch is complete.
+ * 
+ * @example
+ * const options = {
+ *   stream: newAudioStream, // MediaStream object containing the new audio track
+ *   parameters: {
+ *     audioProducer: currentAudioProducer,
+ *     socket: socketInstance,
+ *     roomName: "Room1",
+ *     localStream: null,
+ *     localStreamAudio: null,
+ *     audioParams: audioProducerOptions,
+ *     audioPaused: false,
+ *     audioAlreadyOn: true,
+ *     transportCreated: false,
+ *     audioParamse: additionalAudioParams,
+ *     defAudioID: "default-audio-device-id",
+ *     userDefaultAudioInputDevice: "user-input-device-id",
+ *     hostLabel: "Host",
+ *     islevel: "1",
+ *     videoAlreadyOn: false,
+ *     lock_screen: false,
+ *     shared: false,
+ *     updateAudioProducer: updateAudioProducerFunction,
+ *     updateLocalStream: updateLocalStreamFunction,
+ *     updateAudioParams: updateAudioParamsFunction,
+ *     updateDefAudioID: updateDefAudioIDFunction,
+ *     updateUserDefaultAudioInputDevice: updateUserDefaultAudioInputDeviceFunction,
+ *     updateUpdateMainWindow: updateMainWindowFunction,
+ *     sleep: sleepFunction,
+ *     prepopulateUserMedia: prepopulateUserMediaFunction,
+ *     createSendTransport: createSendTransportFunction,
+ *     connectSendTransportAudio: connectSendTransportAudioFunction,
+ *   },
+ * };
+ * 
+ * streamSuccessAudioSwitch(options)
+ *   .then(() => {
+ *     console.log('Audio stream switched successfully');
+ *   })
+ *   .catch(error => {
+ *     console.error('Error switching audio stream:', error);
+ *   });
  */
+
 export const streamSuccessAudioSwitch = async ({
   stream,
   parameters,

@@ -27,7 +27,7 @@ export type CheckScreenShareType = (options: CheckScreenShareOptions) => Promise
 
 /**
  * Checks the current screen sharing status and either stops or requests screen sharing based on the provided parameters.
- *
+ * 
  * @param {CheckScreenShareOptions} options - The options for checking screen share.
  * @param {Object} options.parameters - The parameters for screen sharing.
  * @param {boolean} options.parameters.shared - Indicates if the screen is currently being shared.
@@ -38,11 +38,34 @@ export type CheckScreenShareType = (options: CheckScreenShareOptions) => Promise
  * @param {boolean} options.parameters.breakOutRoomEnded - Indicates if the breakout room session has ended.
  * @param {Function} options.parameters.stopShareScreen - Function to stop screen sharing.
  * @param {Function} options.parameters.requestScreenShare - Function to request screen sharing.
- *
+ * 
  * @returns {Promise<void>} A promise that resolves when the screen sharing status has been checked and the appropriate action has been taken.
- *
+ * 
  * @throws Will log an error message if an error occurs during the process.
+ * 
+ * @example
+ * const options = {
+ *   parameters: {
+ *     shared: false,
+ *     showAlert: showAlertFunction,
+ *     whiteboardStarted: false,
+ *     whiteboardEnded: false,
+ *     breakOutRoomStarted: false,
+ *     breakOutRoomEnded: false,
+ *     stopShareScreen: stopShareScreenFunction,
+ *     requestScreenShare: requestScreenShareFunction,
+ *   },
+ * };
+ * 
+ * checkScreenShare(options)
+ *   .then(() => {
+ *     console.log('Screen share checked successfully');
+ *   })
+ *   .catch((error) => {
+ *     console.error('Error checking screen share:', error);
+ *   });
  */
+
 export async function checkScreenShare({ parameters }: CheckScreenShareOptions): Promise<void> {
   try {
     const {

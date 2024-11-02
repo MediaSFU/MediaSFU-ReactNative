@@ -47,11 +47,52 @@ export interface FlexibleGridOptions {
 export type FlexibleGridType = (options: FlexibleGridOptions) => JSX.Element;
 
 /**
- * FlexibleGrid is a React Native component for rendering a flexible grid layout.
+ * FlexibleGrid is a React Native component that renders a customizable grid layout.
  *
- * @param {FlexibleGridOptions} props - The properties passed to the FlexibleGrid.
- * @returns {JSX.Element} The rendered grid layout.
+ * This component arranges an array of components or elements in a grid defined by specified rows and columns.
+ * Each grid item can have custom dimensions and background color, with optional aspect ratio settings.
+ *
+ * @component
+ * @param {FlexibleGridOptions} props - Properties for configuring the FlexibleGrid component.
+ * @param {number} props.customWidth - Custom width for each grid item.
+ * @param {number} props.customHeight - Custom height for each grid item.
+ * @param {number} props.rows - Number of rows in the grid.
+ * @param {number} props.columns - Number of columns in the grid.
+ * @param {React.ReactNode[]} props.componentsToRender - Array of components or elements to render in the grid.
+ * @param {boolean} [props.showAspect=false] - Flag to enable aspect ratio for the grid.
+ * @param {string} [props.backgroundColor='transparent'] - Background color for each grid item.
+ *
+ * @returns {JSX.Element} The rendered FlexibleGrid component.
+ *
+ * @example
+ * ```tsx
+ * import React from 'react';
+ * import { FlexibleGrid } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   const components = [
+ *     <Text key={1}>Item 1</Text>,
+ *     <Text key={2}>Item 2</Text>,
+ *     <Text key={3}>Item 3</Text>
+ *   ];
+ *
+ *   return (
+ *     <FlexibleGrid
+ *       customWidth={100}
+ *       customHeight={100}
+ *       rows={2}
+ *       columns={2}
+ *       componentsToRender={components}
+ *       showAspect={true}
+ *       backgroundColor="lightgray"
+ *     />
+ *   );
+ * }
+ *
+ * export default App;
+ * ```
  */
+
 const FlexibleGrid: React.FC<FlexibleGridOptions> = ({
   customWidth,
   customHeight,

@@ -1,5 +1,3 @@
-// WelcomePage.tsx
-
 import React, {useState, useEffect} from 'react';
 import {
   View,
@@ -109,9 +107,33 @@ export type WelcomePageType = (options: WelcomePageOptions) => JSX.Element;
  *
  * @example
  * ```tsx
- * <WelcomePage parameters={parameters} />
+ * import React from 'react';
+ * import { WelcomePage } from 'mediasfu-reactnative';
+ * 
+ * function App() {
+ *   const parameters = {
+ *     imgSrc: 'https://example.com/logo.png',
+ *     showAlert: alertFunction,
+ *     updateIsLoadingModalVisible: toggleLoadingModal,
+ *     connectSocket: connectToSocket,
+ *     updateSocket: setSocket,
+ *     updateValidated: setValidated,
+ *     updateApiUserName: setApiUserName,
+ *     updateApiToken: setApiToken,
+ *     updateLink: setEventLink,
+ *     updateRoomName: setRoomName,
+ *     updateMember: setUserName,
+ *   };
+ * 
+ *   return (
+ *     <WelcomePage parameters={parameters} />
+ *   );
+ * }
+ * 
+ * export default App;
  * ```
  */
+
 const WelcomePage: React.FC<WelcomePageOptions> = ({parameters}) => {
   // State variables for input fields
   const [name, setName] = useState<string>('');

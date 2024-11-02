@@ -43,7 +43,16 @@ export type SendMessageType = (options: SendMessageOptions) => Promise<void>;
  * @throws Will throw an error if the message count limit is exceeded.
  * @throws Will throw an error if the message, sender, or receivers are not valid.
  * @throws Will throw an error if the user is not allowed to send a message in the event room.
+ * 
+ * @example
+ * ```typescript
+ * launchMessages({
+ *   updateIsMessagesModalVisible: (visible) => console.log("Modal visibility:", visible),
+ *   isMessagesModalVisible: false,
+ * });
+ * ```
  */
+
 export const sendMessage = async ({
   member,
   islevel,

@@ -49,7 +49,7 @@ export type ReUpdateInterType = (options: ReUpdateInterOptions) => Promise<void>
 
 /**
  * Updates the interaction state based on the provided options and parameters.
- *
+ * 
  * @param {ReUpdateInterOptions} options - The options for updating the interaction.
  * @param {string} options.name - The name of the participant.
  * @param {boolean} [options.add=false] - Whether to add the participant to the interaction.
@@ -82,8 +82,46 @@ export type ReUpdateInterType = (options: ReUpdateInterOptions) => Promise<void>
  * @param {Function} options.parameters.onScreenChanges - Function to handle screen changes.
  * @param {Function} options.parameters.reorderStreams - Function to reorder streams.
  * @param {Function} options.parameters.changeVids - Function to change videos.
- *
+ * 
  * @returns {Promise<void>} A promise that resolves when the interaction update is complete.
+ *
+ * @throws {Error} Throws an error if there is an issue during the updating process.
+ *
+ * @example
+ * ```typescript
+ * await reUpdateInter({
+ *   name: 'participant1',
+ *   add: true,
+ *   parameters: {
+ *     screenPageLimit: 4,
+ *     itemPageLimit: 2,
+ *     reorderInterval: 500,
+ *     fastReorderInterval: 200,
+ *     eventType: 'conference',
+ *     participants: [...],
+ *     allVideoStreams: [...],
+ *     shared: false,
+ *     shareScreenStarted: false,
+ *     adminNameStream: 'Admin',
+ *     screenShareNameStream: 'Screen Share',
+ *     updateMainWindow: true,
+ *     sortAudioLoudness: false,
+ *     lastReorderTime: Date.now(),
+ *     newLimitedStreams: [],
+ *     newLimitedStreamsIDs: [],
+ *     oldSoundIds: [],
+ *     updateUpdateMainWindow: (value) => { console.log('your logic') },
+ *     updateSortAudioLoudness: (value) => { console.log('your logic') },
+ *     updateLastReorderTime: (value) => { console.log('your logic') },
+ *     updateNewLimitedStreams: (streams) => { console.log('your logic') },
+ *     updateNewLimitedStreamsIDs: (ids) => { console.log('your logic') },
+ *     updateOldSoundIds: (ids) => { console.log('your logic') },
+ *     onScreenChanges: async (options) => { console.log('your logic') },
+ *     reorderStreams: async (options) => { console.log('your logic') },
+ *     changeVids: async (options) => { console.log('your logic') },
+ *   },
+ * });
+ * ```
  */
 
 export async function reUpdateInter({

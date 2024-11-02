@@ -41,7 +41,8 @@ export type TriggerType = (options: TriggerOptions) => Promise<void>;
  *
  * @param {TriggerOptions} options - The options for triggering the update.
  * @param {string[]} options.ref_ActiveNames - Reference to the active names.
- * @param {Parameters} options.parameters - The parameters for the trigger.
+ * @param {TriggerParameters} options.parameters - The parameters for the trigger.
+ * 
  * @returns {Promise<void>} A promise that resolves when the trigger is complete.
  *
  * @throws Will throw an error if the updateScreenClient operation fails.
@@ -75,6 +76,7 @@ export type TriggerType = (options: TriggerOptions) => Promise<void>;
  * });
  * ```
  */
+
 export async function trigger({
   ref_ActiveNames,
   parameters,

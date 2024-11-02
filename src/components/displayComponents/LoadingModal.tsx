@@ -36,16 +36,37 @@ export interface LoadingModalOptions {
 export type LoadingModalType = (options: LoadingModalOptions) => JSX.Element;
 
 /**
- * LoadingModal component displays a modal with a loading spinner and text.
+ * LoadingModal component displays a centered loading spinner with text in a modal overlay.
+ *
+ * This component is useful for indicating loading states with a customizable background and display color.
  *
  * @component
- * @param {LoadingModalOptions} props - The properties for the LoadingModal component.
- * @param {boolean} props.isVisible - Determines if the modal is visible.
- * @param {string} [props.backgroundColor='rgba(0, 0, 0, 0.5)'] - The background color of the modal overlay.
- * @param {string} [props.displayColor='black'] - The color of the loading spinner and text.
+ * @param {LoadingModalOptions} props - Configuration options for the LoadingModal component.
+ * @param {boolean} props.isVisible - Controls the visibility of the modal.
+ * @param {string} [props.backgroundColor='rgba(0, 0, 0, 0.5)'] - Background color of the modal overlay.
+ * @param {string} [props.displayColor='black'] - Color for the loading spinner and text.
  *
  * @returns {JSX.Element} The rendered LoadingModal component.
+ *
+ * @example
+ * ```tsx
+ * import React from 'react';
+ * import { LoadingModal } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   return (
+ *     <LoadingModal
+ *       isVisible={true}
+ *       backgroundColor="rgba(0, 0, 0, 0.7)"
+ *       displayColor="white"
+ *     />
+ *   );
+ * }
+ *
+ * export default App;
+ * ```
  */
+
 const LoadingModal: React.FC<LoadingModalOptions> = ({
   isVisible,
   backgroundColor = 'rgba(0, 0, 0, 0.5)',

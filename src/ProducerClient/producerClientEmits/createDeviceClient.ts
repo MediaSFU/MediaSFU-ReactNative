@@ -24,6 +24,7 @@ export type CreateDeviceClientType = (options: CreateDeviceClientOptions) => Pro
  *   console.log("Failed to create device");
  * }
  */
+
 export const createDeviceClient = async ({
   rtpCapabilities,
 }: CreateDeviceClientOptions): Promise<Device | null> => {

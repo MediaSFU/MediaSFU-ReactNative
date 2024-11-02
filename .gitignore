@@ -75,3 +75,4 @@ yarn-error.log
 prebuild.js
 postbuild.js
 dist/
+docs/

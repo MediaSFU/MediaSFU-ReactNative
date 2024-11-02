@@ -24,20 +24,32 @@ export type ModifyCoHostSettingsType = (options: ModifyCoHostSettingsOptions) =>
  * @param {Function} options.showAlert - Function to show an alert message.
  * @param {string} options.selectedParticipant - The participant selected to be co-host.
  * @param {string} options.coHost - The current co-host.
- * @param {string} options.coHostResponsibility - The responsibility assigned to the co-host.
+ * @param {CoHostResponsibility[]} options.coHostResponsibility - The responsibilities assigned to the co-host.
  * @param {Function} options.updateIsCoHostModalVisible - Function to update the visibility of the co-host modal.
  * @param {Function} options.updateCoHostResponsibility - Function to update the co-host responsibility.
  * @param {Function} options.updateCoHost - Function to update the co-host.
- * @param {Object} options.socket - The socket instance for emitting events.
+ * @param {Socket} options.socket - The socket instance for emitting events.
  * @returns {Promise<void>} A promise that resolves when the co-host settings have been modified.
  *
- * @remarks
- * - If the room is in demo mode (room name starts with "d"), co-host cannot be added and an alert is shown.
- * - If a valid participant is selected, they are set as the new co-host.
- * - The co-host responsibility is updated.
- * - A socket event is emitted to update the co-host information.
- * - The co-host modal is closed after updating the settings.
+ * @example
+ * ```typescript
+ * const options: ModifyCoHostSettingsOptions = {
+ *   roomName: "mainRoom",
+ *   showAlert: (alert) => console.log(alert.message),
+ *   selectedParticipant: "User123",
+ *   coHost: "No coHost",
+ *   coHostResponsibility: [{ name: "media", value: true }],
+ *   updateIsCoHostModalVisible: setModalVisible,
+ *   updateCoHostResponsibility: setCoHostResponsibility,
+ *   updateCoHost: setCoHost,
+ *   socket: socketInstance,
+ * };
+ *
+ * modifyCoHostSettings(options);
+ * // Sets User123 as the new co-host with specific responsibilities and emits the update event.
+ * ```
  */
+
 export const modifyCoHostSettings = async ({
   roomName,
   showAlert,

@@ -57,11 +57,41 @@ const positions: Record<
 export type MeetingProgressTimerType = (options: MeetingProgressTimerOptions) => JSX.Element;
 
 /**
- * MeetingProgressTimer component displays a timer indicating the progress of a meeting.
+ * MeetingProgressTimer displays a timer badge indicating the progress time of a meeting, with customizable positioning and styles.
  *
- * @param {MeetingProgressTimerOptions} props - The properties for the MeetingProgressTimer component.
- * @returns {JSX.Element} The rendered MeetingProgressTimer component.
+ * This component is designed to show a timer in one of four corner positions with optional styling and background color customization.
+ *
+ * @component
+ * @param {MeetingProgressTimerOptions} props - Configuration options for MeetingProgressTimer.
+ * @param {string} props.meetingProgressTime - The current progress time of the meeting to display.
+ * @param {string} [props.initialBackgroundColor='green'] - Background color of the timer badge.
+ * @param {'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight'} [props.position='topLeft'] - Position of the timer on the screen.
+ * @param {StyleProp<TextStyle>} [props.textStyle] - Additional styles for the timer text.
+ * @param {boolean} [props.showTimer=true] - Controls whether the timer is visible.
+ *
+ * @returns {JSX.Element} The MeetingProgressTimer component.
+ *
+ * @example
+ * ```tsx
+ * import React from 'react';
+ * import { MeetingProgressTimer } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   return (
+ *     <MeetingProgressTimer
+ *       meetingProgressTime="15:30"
+ *       initialBackgroundColor="blue"
+ *       position="bottomRight"
+ *       showTimer={true}
+ *       textStyle={{ color: 'white', fontSize: 16 }}
+ *     />
+ *   );
+ * }
+ *
+ * export default App;
+ * ```
  */
+
 const MeetingProgressTimer: React.FC<MeetingProgressTimerOptions> = ({
   meetingProgressTime,
   initialBackgroundColor = 'green',

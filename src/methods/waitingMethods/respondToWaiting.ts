@@ -19,16 +19,30 @@ export type RespondToWaitingType = (options: RespondToWaitingOptions) => Promise
 /**
  * Responds to a participant waiting to join a room by either allowing or denying their entry.
  *
- * @param {Object} options - The options for responding to the waiting participant.
+ * @param {RespondToWaitingOptions} options - The options for responding to the waiting participant.
  * @param {string} options.participantId - The ID of the participant.
  * @param {string} options.participantName - The name of the participant.
  * @param {Function} options.updateWaitingList - The function to update the waiting list.
- * @param {Array} options.waitingList - The current waiting list of participants.
+ * @param {WaitingRoomParticipant[]} options.waitingList - The current waiting list of participants.
  * @param {boolean | string} options.type - The type of response, either "true" or "false".
  * @param {string} options.roomName - The name of the room.
- * @param {Object} options.socket - The socket instance to emit events.
- * @returns {Promise<void>} - A promise that resolves when the response has been processed.
+ * @param {Socket} options.socket - The socket instance to emit events.
+ * 
+ * @example
+ * ```typescript
+ * const options = {
+ *   participantId: "12345",
+ *   participantName: "John Doe",
+ *   updateWaitingList: (list) => console.log("Updated Waiting List:", list),
+ *   waitingList: [{ id: "12345", name: "John Doe" }],
+ *   type: true,
+ *   roomName: "room1",
+ *   socket: socketInstance,
+ * };
+ * respondToWaiting(options);
+ * ```
  */
+
 export const respondToWaiting = async ({
   participantId,
   participantName,

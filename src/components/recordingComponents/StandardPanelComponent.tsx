@@ -29,19 +29,39 @@ export interface StandardPanelParameters {
 }
 
 /**
- * StandardPanelComponent is a React Native functional component that provides a user interface
- * for configuring standard recording options. It allows users to select and update various
- * recording parameters such as media options, audio options, video options, and HLS settings.
+ * StandardPanelComponent provides a set of standard recording options for users, including media options, specific audio and video configurations, and HLS streaming settings. The component allows users to select recording parameters based on the event type.
  *
  * @component
- * @param {StandardPanelOptions} props - The properties object.
+ * @param {StandardPanelOptions} props - The properties object containing parameters for configuring standard recording options.
  * @returns {JSX.Element} The rendered StandardPanelComponent.
  *
  * @example
  * ```tsx
- * <StandardPanelComponent parameters={standardParameters} />
+ * import React from 'react';
+ * import { StandardPanelComponent } from 'mediasfu-reactnative';
+ * 
+ * const standardParameters = {
+ *   recordingMediaOptions: 'video',
+ *   recordingAudioOptions: 'all',
+ *   recordingVideoOptions: 'all',
+ *   recordingAddHLS: true,
+ *   updateRecordingMediaOptions: (value) => console.log('Media option updated:', value),
+ *   updateRecordingAudioOptions: (value) => console.log('Audio option updated:', value),
+ *   updateRecordingVideoOptions: (value) => console.log('Video option updated:', value),
+ *   updateRecordingAddHLS: (value) => console.log('HLS option updated:', value),
+ *   eventType: 'conference',
+ * };
+ *
+ * function App() {
+ *   return (
+ *     <StandardPanelComponent parameters={standardParameters} />
+ *   );
+ * }
+ * 
+ * export default App;
  * ```
  */
+
 const StandardPanelComponent: React.FC<StandardPanelOptions> = ({ parameters }) => {
   const {
     recordingMediaOptions,

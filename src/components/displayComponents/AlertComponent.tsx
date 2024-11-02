@@ -18,6 +18,46 @@ export interface AlertComponentOptions {
 
 export type AlertComponentType = (options: AlertComponentOptions) => JSX.Element;
 
+/**
+ * AlertComponent displays a modal alert message with customizable type, duration, and style options.
+ *
+ * This component shows a message overlay with optional styling for different alert types, duration,
+ * and an automatic hide function. The alert can be dismissed manually or after a set duration.
+ *
+ * @component
+ * @param {boolean} visible - Controls the visibility of the alert modal.
+ * @param {string} message - The message displayed in the alert.
+ * @param {'success' | 'danger'} [type='success'] - Type of the alert, determining its background color.
+ * @param {number} [duration=4000] - Duration (in milliseconds) for which the alert is visible.
+ * @param {() => void} [onHide] - Callback function executed when the alert hides.
+ * @param {string} [textColor='black'] - Text color for the alert message.
+ *
+ * @returns {JSX.Element} The AlertComponent.
+ *
+ * @example
+ * ```tsx
+ * import React from 'react';
+ * import { AlertComponent } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   const [alertVisible, setAlertVisible] = React.useState(true);
+ *
+ *   return (
+ *     <AlertComponent
+ *       visible={alertVisible}
+ *       message="Operation successful"
+ *       type="success"
+ *       duration={3000}
+ *       onHide={() => setAlertVisible(false)}
+ *       textColor="white"
+ *     />
+ *   );
+ * }
+ *
+ * export default App;
+ * ```
+ */
+
 const AlertComponent: React.FC<AlertComponentOptions> = ({
   visible,
   message,

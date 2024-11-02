@@ -19,13 +19,27 @@ export interface HandleCreatePollOptions {
 export type HandleCreatePollType = (options: HandleCreatePollOptions) => Promise<void>;
 
 /**
- * Handles the creation of a poll.
+ * Handles the creation of a poll by emitting a "createPoll" event with the provided details.
  *
- * @param {Object} options - The options for creating the poll.
- * @param {Poll} options.poll - The poll object containing the poll details.
- * @param {Object} options.parameters - Additional parameters for creating the poll.
- * @returns {Promise<void>} - A promise that resolves when the poll is created successfully.
+ * @param {HandleCreatePollOptions} options - The options for creating the poll.
+ * @param {NewPoll} options.poll - The poll object containing the poll question, type, and options.
+ * @param {Socket} options.socket - The socket instance used to communicate with the server.
+ * @param {string} options.roomName - The name of the room where the poll is created.
+ * @param {Function} [options.showAlert] - Optional function to show alert messages.
+ * @param {Function} options.updateIsPollModalVisible - Function to toggle the poll modal visibility.
+ *
+ * @example
+ * ```typescript
+ * handleCreatePoll({
+ *   poll: { question: "Favorite color?", type: "singleChoice", options: ["Red", "Blue", "Green"] },
+ *   socket: socketInstance,
+ *   roomName: "roomA",
+ *   showAlert: (message) => console.log(message),
+ *   updateIsPollModalVisible: (isVisible) => setIsPollModalVisible(isVisible),
+ * });
+ * ```
  */
+
 export const handleCreatePoll = async ({
   poll,
   socket,

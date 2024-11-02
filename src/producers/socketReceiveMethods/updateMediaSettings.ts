@@ -12,17 +12,36 @@ export interface UpdateMediaSettingsOptions {
 export type UpdateMediaSettingsType = (options: UpdateMediaSettingsOptions) => void;
 
 /**
- * Updates the media settings by invoking the provided update functions for each setting.
+ * Updates media settings by calling the respective update functions for each setting type.
  *
  * @param {UpdateMediaSettingsOptions} options - The options for updating media settings.
- * @param {Array} options.settings - An array containing the settings for audio, video, screenshare, and chat.
+ * @param {Settings} options.settings - The settings array containing values for audio, video, screenshare, and chat.
  * @param {Function} options.updateAudioSetting - Function to update the audio setting.
  * @param {Function} options.updateVideoSetting - Function to update the video setting.
  * @param {Function} options.updateScreenshareSetting - Function to update the screenshare setting.
  * @param {Function} options.updateChatSetting - Function to update the chat setting.
  *
- * @returns {void}
+ * @returns {void} Does not return a value, as it directly updates each setting via provided functions.
+ *
+ * @example
+ * ```typescript
+ * const options = {
+ *   settings: ["enabled", "enabled", "disabled", "enabled"],
+ *   updateAudioSetting: (value) => console.log("Audio setting:", value),
+ *   updateVideoSetting: (value) => console.log("Video setting:", value),
+ *   updateScreenshareSetting: (value) => console.log("Screenshare setting:", value),
+ *   updateChatSetting: (value) => console.log("Chat setting:", value),
+ * };
+ *
+ * updateMediaSettings(options);
+ * // Logs:
+ * // "Audio setting: enabled"
+ * // "Video setting: enabled"
+ * // "Screenshare setting: disabled"
+ * // "Chat setting: enabled"
+ * ```
  */
+
 export const updateMediaSettings = ({
   settings,
   updateAudioSetting,

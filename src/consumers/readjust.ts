@@ -46,7 +46,28 @@ export type ReadjustType = (options: ReadjustOptions) => Promise<void>;
  * @param {function} options.parameters.prepopulateUserMedia - Function to prepopulate user media.
  * @returns {Promise<void>} A promise that resolves when the layout adjustment is complete.
  * @throws {Error} Throws an error if there is an issue updating the grid sizes.
+ *
+ * @example
+ * ```typescript
+ * await readjust({
+ *   n: 5,
+ *   state: 1,
+ *   parameters: {
+ *     eventType: 'conference',
+ *     shareScreenStarted: false,
+ *     shared: false,
+ *     mainHeightWidth: 100,
+ *     prevMainHeightWidth: 80,
+ *     hostLabel: 'Host Name',
+ *     first_round: false,
+ *     lock_screen: false,
+ *     updateMainHeightWidth: updateMainHeightWidthFunction,
+ *     getUpdatedAllParams: getUpdatedAllParamsFunction,
+ *   },
+ * });
+ * ```
  */
+
 export async function readjust({ n, state, parameters }: ReadjustOptions): Promise<void> {
   const { getUpdatedAllParams } = parameters;
   parameters = getUpdatedAllParams();

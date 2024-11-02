@@ -1,4 +1,3 @@
-// BreakoutRoomsModal.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Modal,
@@ -178,7 +177,6 @@ const EditRoomModal: React.FC<EditRoomModalOptions> = ({
   );
 };
 
-// BreakoutRoomsModal component with types
 /**
  * BreakoutRoomsModal component is a React functional component that manages the breakout rooms modal.
  * It allows users to create, edit, and manage breakout rooms for participants in a meeting.
@@ -194,14 +192,28 @@ const EditRoomModal: React.FC<EditRoomModalOptions> = ({
  * @returns {JSX.Element} The rendered BreakoutRoomsModal component.
  *
  * @example
- * <BreakoutRoomsModal
- *   isVisible={true}
- *   onBreakoutRoomsClose={handleClose}
- *   parameters={parameters}
- *   position="topRight"
- *   backgroundColor="#83c0e9"
- * />
+ * ```tsx
+ * import React from 'react';
+ * import { BreakoutRoomsModal } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   const [modalVisible, setModalVisible] = useState(true);
+ *
+ *   return (
+ *     <BreakoutRoomsModal
+ *       isVisible={modalVisible}
+ *       onBreakoutRoomsClose={() => setModalVisible(false)}
+ *       parameters={breakoutParameters}
+ *       position="topRight"
+ *       backgroundColor="#83c0e9"
+ *     />
+ *   );
+ * }
+ *
+ * export default App;
+ * ```
  */
+
 const BreakoutRoomsModal: React.FC<BreakoutRoomsModalOptions> = ({
   isVisible,
   onBreakoutRoomsClose,

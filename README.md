@@ -54,8 +54,13 @@ MediaSFU's React Native SDK comes with a host of powerful features out of the bo
 # Getting Started <a name="getting-started"></a>
 
 This section will guide users through the initial setup and installation of the npm module.
-**Note: this is specifically for react-native (CLI).**
+
+> **Note:** this is specifically for **React-Native-CLI.**
 If you are integrating into a **React Native Expo** app, the best option is to use the core `mediasfu-reactnative-expo` package, which you can find on npm at [mediasfu-reactnative-expo](https://www.npmjs.com/package/mediasfu-reactnative-expo).
+
+### Documentation Reference
+
+For comprehensive documentation on the available methods, components, and functions, please visit [mediasfu.com](https://www.mediasfu.com/reactnative/). This resource provides detailed information for this guide and additional documentation.
 
 
 ## Installation
@@ -72,9 +77,9 @@ npm install mediasfu-reactnative
 
 You can get your API key by signing up or logging into your account at [mediasfu.com](https://www.mediasfu.com/).
 
-<div style="background-color:#f0f0f0; padding: 10px; border-radius: 5px;">
-  <h4 style="color:#d9534f;">Important:</h4>
-  <p style="font-size: 1.2em;">You must obtain an API key from <a href="https://www.mediasfu.com/">mediasfu.com</a> to use this package.</p>
+<div style="background-color:#f0f0f0; padding: 5px; border-radius: 5px;">
+  <h5 style="color:#d9534f;">Important:</h5>
+  <p style="font-size: 1.2em; color:black;">You must obtain an API key from <a href="https://www.mediasfu.com/">mediasfu.com</a> to use this package.</p>
 </div>
 
 ### 3. Configure Your Project
@@ -121,7 +126,7 @@ To support WebRTC video, audio, and Bluetooth functionalities, you need to add t
 
 Add the following permissions and features to your `AndroidManifest.xml`:
 
-```xml
+```bash
 <!-- Permissions -->
 <uses-permission android:name="android.permission.INTERNET" />
 <uses-permission android:name="android.permission.CAMERA" />
@@ -231,11 +236,15 @@ This guide provides a basic overview of how to set up and use the `mediasfu-reac
 
 To get started with `mediasfu-reactnative`, follow the instructions below. This module is optimized for use with Non-Expo dependencies, making it ideal for projects that require seamless deployment across web and mobile platforms.
 
-If you are integrating into a **React Native CLI** app, the best option is to use the core `mediasfu-reactnative` package, which you can find on npm at [mediasfu-reactnative](https://www.npmjs.com/package/mediasfu-reactnative).
+> **Note:** If you are integrating into a **React Native Expo** app, the best option is to use the core `mediasfu-reactnative-expo` package, which you can find on npm at [mediasfu-reactnative-expo](https://www.npmjs.com/package/mediasfu-reactnative-expo).
 
 ## Introduction
 
 MediaSFU is a 2-page application consisting of a prejoin/welcome page and the main events room page. This guide will walk you through the basic usage of the module for setting up these pages.
+
+### Documentation Reference
+
+For comprehensive documentation on the available methods, components, and functions, please visit [mediasfu.com](https://www.mediasfu.com/reactnative/). This resource provides detailed information for this guide and additional documentation.
 
 ## Prebuilt Event Rooms
 
@@ -1114,105 +1123,106 @@ Expands on the basic usage, covering more advanced features and scenarios.
 
 ### Intermediate Usage Guide
 
-In the Intermediate Usage Guide, we'll explore the core components and functionalities of the MediaSFU ReactNative module, focusing on media display, controls, and modal interactions.
+In the Intermediate Usage Guide, we'll explore the core components and functionalities of the MediaSFU ReactNative module, focusing on media display, controls, and modal interactions. **Click on any listed component/method to open the full documentation.**
 
 #### Core Components Overview
 
 The main items displayed on an event page are media components (such as video, audio, and blank cards) and control components (for pagination, navigation, etc.).
 
-##### Media Display Components
+> ##### **Media Display Components**
 
 | Component Name           | Description                                                                                     |
 |--------------------------|-------------------------------------------------------------------------------------------------|
-| **Main Aspect Component**| Serves as a container for the primary aspect of the user interface, typically containing the main content or focus of the application. |
-| **Main Screen Component**| Responsible for rendering the main screen layout of the application, providing the foundation for displaying various elements and content. |
-| **Main Grid Component**  | Crucial part of the user interface, organizing and displaying primary content or elements in a grid layout format. |
-| **Sub Aspect Component** | Acts as a secondary container within the user interface, often housing additional elements or controls related to the main aspect. |
-| **Main Container Component** | Primary container for the application's content, encapsulating all major components and providing structural organization. |
-| **Other Grid Component** | Complements the Main Grid Component by offering additional grid layouts, typically used for displaying secondary or auxiliary content. |
+| **[MainAspectComponent](https://www.mediasfu.com/reactnative/functions/MainAspectComponent)** | Serves as a container for the primary aspect of the user interface, typically containing the main content or focus of the application. |
+| **[MainScreenComponent](https://www.mediasfu.com/reactnative/functions/MainScreenComponent)** | Responsible for rendering the main screen layout of the application, providing the foundation for displaying various elements and content. |
+| **[MainGridComponent](https://www.mediasfu.com/reactnative/functions/MainGridComponent)**  | Crucial part of the user interface, organizing and displaying primary content or elements in a grid layout format. |
+| **[SubAspectComponent](https://www.mediasfu.com/reactnative/functions/SubAspectComponent)** | Acts as a secondary container within the user interface, often housing additional elements or controls related to the main aspect. |
+| **[MainContainerComponent](https://www.mediasfu.com/reactnative/functions/MainContainerComponent)** | Primary container for the application's content, encapsulating all major components and providing structural organization. |
+| **[OtherGridComponent](https://www.mediasfu.com/reactnative/functions/OtherGridComponent)** | Complements the Main Grid Component by offering additional grid layouts, typically used for displaying secondary or auxiliary content. |
 
-### Control Components
+> ##### **Control Components**
 
 | Component Name                | Description                                                                                     |
 |-------------------------------|-------------------------------------------------------------------------------------------------|
-| **Control Buttons Component** | Comprises a set of buttons or controls used for navigating, interacting, or managing various aspects of the application's functionality. |
-| **Control Buttons Alt Component** | Provides alternative button configurations or styles for controlling different aspects of the application. |
-| **Control Buttons Component Touch** | Specialized component designed for touch-enabled devices, offering floating buttons or controls for intuitive interaction with the application's features. |
+| **[ControlButtonsComponent](https://www.mediasfu.com/reactnative/functions/ControlButtonsComponent)** | Comprises a set of buttons or controls used for navigating, interacting, or managing various aspects of the application's functionality. |
+| **[ControlButtonsAltComponent](https://www.mediasfu.com/reactnative/functions/ControlButtonsAltComponent)** | Provides alternative button configurations or styles for controlling different aspects of the application. |
+| **[ControlButtonsComponentTouch](https://www.mediasfu.com/reactnative/functions/ControlButtonsComponentTouch)** | Specialized component designed for touch-enabled devices, offering floating buttons or controls for intuitive interaction with the application's features. |
+
 
 These components collectively contribute to the overall user interface, facilitating navigation, interaction, and content display within the application.
 
-##### Modal Components
+> ##### **Modal Components**
 
 | Modal Component | Description |
 |-----------------|-------------|
-| LoadingModal | Modal for displaying loading indicator during data fetching or processing. |
-| MainAspectComponent | Component responsible for displaying the main aspect of the event page. |
-| ControlButtonsComponent | Component for displaying control buttons such as pagination controls. |
-| ControlButtonsAltComponent | Alternate control buttons component for specific use cases. |
-| ControlButtonsComponentTouch | Touch-enabled control buttons component for mobile devices. |
-| OthergridComponent | Component for displaying additional grid elements on the event page. |
-| MainScreenComponent | Component for rendering the main screen content of the event. |
-| MainGridComponent | Main grid component for displaying primary event content. |
-| SubAspectComponent | Component for displaying secondary aspects of the event page. |
-| MainContainerComponent | Main container component for the event page content. |
-| AlertComponent | Modal for displaying alert messages to the user. |
-| MenuModal | Modal for displaying a menu with various options. |
-| RecordingModal | Modal for managing recording functionality during the event. |
-| RequestsModal | Modal for handling requests from participants during the event. |
-| WaitingRoomModal | Modal for managing waiting room functionality during the event. |
-| DisplaySettingsModal | Modal for adjusting display settings during the event. |
-| EventSettingsModal | Modal for configuring event settings. |
-| CoHostModal | Modal for managing co-host functionality during the event. |
-| ParticipantsModal | Modal for displaying participant information and controls. |
-| MessagesModal | Modal for managing messages and chat functionality during the event. |
-| MediaSettingsModal | Modal for adjusting media settings during the event. |
-| ConfirmExitModal | Modal for confirming exit from the event. |
-| ConfirmHereModal | Modal for confirming certain actions or selections. |
-| ShareEventModal | Modal for sharing the event with others. |
-| WelcomePage | Welcome page modal for the event. |
-| PreJoinPage | Prejoin page modal for the event. |
-| PollModal | Modal for conducting polls or surveys during the event. |
-| BreakoutRoomsModal | Modal for managing breakout rooms during the event. |
+| **[LoadingModal](https://www.mediasfu.com/reactnative/functions/LoadingModal)** | Modal for displaying loading indicator during data fetching or processing. |
+| **[MainAspectComponent](https://www.mediasfu.com/reactnative/functions/MainAspectComponent)** | Component responsible for displaying the main aspect of the event page. |
+| **[ControlButtonsComponent](https://www.mediasfu.com/reactnative/functions/ControlButtonsComponent)** | Component for displaying control buttons such as pagination controls. |
+| **[ControlButtonsAltComponent](https://www.mediasfu.com/reactnative/functions/ControlButtonsAltComponent)** | Alternate control buttons component for specific use cases. |
+| **[ControlButtonsComponentTouch](https://www.mediasfu.com/reactnative/functions/ControlButtonsComponentTouch)** | Touch-enabled control buttons component for mobile devices. |
+| **[OtherGridComponent](https://www.mediasfu.com/reactnative/functions/OtherGridComponent)** | Component for displaying additional grid elements on the event page. |
+| **[MainScreenComponent](https://www.mediasfu.com/reactnative/functions/MainScreenComponent)** | Component for rendering the main screen content of the event. |
+| **[MainGridComponent](https://www.mediasfu.com/reactnative/functions/MainGridComponent)** | Main grid component for displaying primary event content. |
+| **[SubAspectComponent](https://www.mediasfu.com/reactnative/functions/SubAspectComponent)** | Component for displaying secondary aspects of the event page. |
+| **[MainContainerComponent](https://www.mediasfu.com/reactnative/functions/MainContainerComponent)** | Main container component for the event page content. |
+| **[AlertComponent](https://www.mediasfu.com/reactnative/functions/AlertComponent)** | Modal for displaying alert messages to the user. |
+| **[MenuModal](https://www.mediasfu.com/reactnative/functions/MenuModal)** | Modal for displaying a menu with various options. |
+| **[RecordingModal](https://www.mediasfu.com/reactnative/functions/RecordingModal)** | Modal for managing recording functionality during the event. |
+| **[RequestsModal](https://www.mediasfu.com/reactnative/functions/RequestsModal)** | Modal for handling requests from participants during the event. |
+| **[WaitingRoomModal](https://www.mediasfu.com/reactnative/functions/WaitingRoomModal)** | Modal for managing waiting room functionality during the event. |
+| **[DisplaySettingsModal](https://www.mediasfu.com/reactnative/functions/DisplaySettingsModal)** | Modal for adjusting display settings during the event. |
+| **[EventSettingsModal](https://www.mediasfu.com/reactnative/functions/EventSettingsModal)** | Modal for configuring event settings. |
+| **[CoHostModal](https://www.mediasfu.com/reactnative/functions/CoHostModal)** | Modal for managing co-host functionality during the event. |
+| **[ParticipantsModal](https://www.mediasfu.com/reactnative/functions/ParticipantsModal)** | Modal for displaying participant information and controls. |
+| **[MessagesModal](https://www.mediasfu.com/reactnative/functions/MessagesModal)** | Modal for managing messages and chat functionality during the event. |
+| **[MediaSettingsModal](https://www.mediasfu.com/reactnative/functions/MediaSettingsModal)** | Modal for adjusting media settings during the event. |
+| **[ConfirmExitModal](https://www.mediasfu.com/reactnative/functions/ConfirmExitModal)** | Modal for confirming exit from the event. |
+| **[ConfirmHereModal](https://www.mediasfu.com/reactnative/functions/ConfirmHereModal)** | Modal for confirming certain actions or selections. |
+| **[ShareEventModal](https://www.mediasfu.com/reactnative/functions/ShareEventModal)** | Modal for sharing the event with others. |
+| **[WelcomePage](https://www.mediasfu.com/reactnative/functions/WelcomePage)** | Welcome page modal for the event. |
+| **[PreJoinPage](https://www.mediasfu.com/reactnative/functions/PreJoinPage)** | Prejoin page modal for the event. |
+| **[PollModal](https://www.mediasfu.com/reactnative/functions/PollModal)** | Modal for conducting polls or surveys during the event. |
+| **[BreakoutRoomsModal](https://www.mediasfu.com/reactnative/functions/BreakoutRoomsModal)** | Modal for managing breakout rooms during the event. |
 
 #### Modal Interactions
 
 Each modal has corresponding functions to trigger its usage:
 
-1. `launchMenuModal`: Launches the menu modal for settings and configurations.
-2. `launchRecording`: Initiates the recording modal for recording functionalities.
-3. `startRecording`: Starts the recording process.
-4. `confirmRecording`: Confirms and finalizes the recording.
-5. `launchWaiting`: Opens the waiting room modal for managing waiting room interactions.
-6. `launchCoHost`: Opens the co-host modal for managing co-host functionalities.
-7. `launchMediaSettings`: Launches the media settings modal for adjusting media-related configurations.
-8. `launchDisplaySettings`: Opens the display settings modal for adjusting display configurations.
-9. `launchSettings`: Initiates the settings modal for general event settings and configurations.
-10. `launchRequests`: Opens the requests modal for managing user requests.
-11. `launchParticipants`: Displays the participants modal for viewing and managing event participants.
-12. `launchMessages`: Opens the messages modal for communication through chat messages.
-13. `launchConfirmExit`: Prompts users to confirm before exiting the event.
+1. [`launchMenuModal`](https://www.mediasfu.com/reactnative/functions/launchMenuModal): Launches the menu modal for settings and configurations.
+2. [`launchRecording`](https://www.mediasfu.com/reactnative/functions/launchRecording): Initiates the recording modal for recording functionalities.
+3. [`startRecording`](https://www.mediasfu.com/reactnative/functions/startRecording): Starts the recording process.
+4. [`confirmRecording`](https://www.mediasfu.com/reactnative/functions/confirmRecording): Confirms and finalizes the recording.
+5. [`launchWaiting`](https://www.mediasfu.com/reactnative/functions/launchWaiting): Opens the waiting room modal for managing waiting room interactions.
+6. [`launchCoHost`](https://www.mediasfu.com/reactnative/functions/launchCoHost): Opens the co-host modal for managing co-host functionalities.
+7. [`launchMediaSettings`](https://www.mediasfu.com/reactnative/functions/launchMediaSettings): Launches the media settings modal for adjusting media-related configurations.
+8. [`launchDisplaySettings`](https://www.mediasfu.com/reactnative/functions/launchDisplaySettings): Opens the display settings modal for adjusting display configurations.
+9. [`launchSettings`](https://www.mediasfu.com/reactnative/functions/launchSettings): Initiates the settings modal for general event settings and configurations.
+10. [`launchRequests`](https://www.mediasfu.com/reactnative/functions/launchRequests): Opens the requests modal for managing user requests.
+11. [`launchParticipants`](https://www.mediasfu.com/reactnative/functions/launchParticipants): Displays the participants modal for viewing and managing event participants.
+12. [`launchMessages`](https://www.mediasfu.com/reactnative/functions/launchMessages): Opens the messages modal for communication through chat messages.
+13. [`launchConfirmExit`](https://www.mediasfu.com/reactnative/functions/launchConfirmExit): Prompts users to confirm before exiting the event.
 
 #### Media Display and Controls
 
 These components facilitate media display and control functionalities:
 
-1. **Pagination**: Handles pagination and page switching.
-2. **FlexibleGrid**: Renders flexible grid layouts for media display.
-3. **FlexibleVideo**: Displays videos in a flexible manner within the grid.
-4. **AudioGrid**: Renders audio components within the grid layout.
+1. **[Pagination](https://www.mediasfu.com/reactnative/functions/Pagination)**: Handles pagination and page switching.
+2. **[FlexibleGrid](https://www.mediasfu.com/reactnative/functions/FlexibleGrid)**: Renders flexible grid layouts for media display.
+3. **[FlexibleVideo](https://www.mediasfu.com/reactnative/functions/FlexibleVideo)**: Displays videos in a flexible manner within the grid.
+4. **[AudioGrid](https://www.mediasfu.com/reactnative/functions/AudioGrid)**: Renders audio components within the grid layout.
 
 These components enable seamless media presentation and interaction within the event environment, providing users with a rich and immersive experience.
 
 | UI Media Component | Description |
 |--------------|-------------|
-| MeetingProgressTimer | Component for displaying a timer indicating the progress of a meeting or event. |
-| MiniAudio | Component for rendering a compact audio player with basic controls. |
-| MiniCard | Component for displaying a minimized card view with essential information. |
-| AudioCard | Component for displaying audio content with control elements, details, and audio decibels. |
-| VideoCard | Component for displaying video content with control elements, details, and audio decibels. |
-| CardVideoDisplay | Video player component for displaying embedded videos with controls and details. |
-| MiniCardAudio | Component for rendering a compact card view with audio content and controls. |
-| MiniAudioPlayer | Utility method for playing audio and rendering a mini audio modal when the user is not actively displayed on the page. |
+| **[MeetingProgressTimer](https://www.mediasfu.com/reactnative/functions/MeetingProgressTimer)** | Component for displaying a timer indicating the progress of a meeting or event. |
+| **[MiniAudio](https://www.mediasfu.com/reactnative/functions/MiniAudio)** | Component for rendering a compact audio player with basic controls. |
+| **[MiniCard](https://www.mediasfu.com/reactnative/functions/MiniCard)** | Component for displaying a minimized card view with essential information. |
+| **[AudioCard](https://www.mediasfu.com/reactnative/functions/AudioCard)** | Component for displaying audio content with control elements, details, and audio decibels. |
+| **[VideoCard](https://www.mediasfu.com/reactnative/functions/VideoCard)** | Component for displaying video content with control elements, details, and audio decibels. |
+| **[CardVideoDisplay](https://www.mediasfu.com/reactnative/functions/CardVideoDisplay)** | Video player component for displaying embedded videos with controls and details. |
+| **[MiniCardAudio](https://www.mediasfu.com/reactnative/functions/MiniCardAudio)** | Component for rendering a compact card view with audio content and controls. |
+| **[MiniAudioPlayer](https://www.mediasfu.com/reactnative/functions/MiniAudioPlayer)** | Utility method for playing audio and rendering a mini audio modal when the user is not actively displayed on the page. |
 
 ---
 With the Intermediate Usage Guide, users can explore and leverage the core components and functionalities of the MediaSFU ReactNative module to enhance their event hosting and participation experiences.
@@ -1874,84 +1884,85 @@ These advanced media control functions encompass a wide range of functionalities
 
 This robust collection of functions empowers developers to tailor their applications to specific requirements, whether it involves intricate media streaming setups, real-time communication protocols, or sophisticated user interface interactions. With these tools at their disposal, developers can create rich and responsive media experiences that meet the demands of their users and applications.
 
-Here's a tabulated list of advanced control functions along with brief explanations:
+Here's a tabulated list of advanced control functions along with brief explanations (click the function(link) for full usage guide):
 
 | Function                         | Explanation                                                                                             |
 |----------------------------------|---------------------------------------------------------------------------------------------------------|
-| `connectSocket`                  | Connects to the WebSocket server.                                                                       |
-| `disconnectSocket`               | Disconnects from the WebSocket server.                                                                  |
-| `joinRoomClient`                 | Joins a room as a client.                                                                               |
-| `updateRoomParametersClient`     | Updates room parameters as a client.                                                                    |
-| `createDeviceClient`             | Creates a device as a client.                                                                           |
-| `switchVideoAlt`                 | Switches video/camera streams.                                                                          |
-| `clickVideo`                     | Handles clicking on video controls.                                                                     |
-| `clickAudio`                     | Handles clicking on audio controls.                                                                     |
-| `clickScreenShare`               | Handles clicking on screen share controls.                                                              |
-| `streamSuccessVideo`             | Handles successful video streaming.                                                                     |
-| `streamSuccessAudio`             | Handles successful audio streaming.                                                                     |
-| `streamSuccessScreen`            | Handles successful screen sharing.                                                                      |
-| `streamSuccessAudioSwitch`       | Handles successful audio switching.                                                                     |
-| `checkPermission`                | Checks for media access permissions.                                                                    |
-| `producerClosed`                 | Handles the closure of a producer.                                                                      |
-| `newPipeProducer`                | Creates receive transport for a new piped producer.                                                     |
-| `updateMiniCardsGrid`            | Updates the mini-grids (mini cards) grid.                                                               |
-| `mixStreams`                     | Mixes streams and prioritizes interesting ones together.                                                |
-| `dispStreams`                    | Displays streams (media).                                                                              |
-| `stopShareScreen`                | Stops screen sharing.                                                                                  |
-| `checkScreenShare`               | Checks for screen sharing availability.                                                                |
-| `startShareScreen`               | Starts screen sharing.                                                                                 |
-| `requestScreenShare`             | Requests permission for screen sharing.                                                                |
-| `reorderStreams`                 | Reorders streams (based on interest level).                                                            |
-| `prepopulateUserMedia`           | Populates user media (for main grid).                                                                  |
-| `getVideos`                      | Retrieves videos that are pending.                                                                     |
-| `rePort`                         | Handles re-porting (updates of changes in UI when recording).                                           |
-| `trigger`                        | Triggers actions (reports changes in UI to backend for recording).                                      |
-| `consumerResume`                 | Resumes consumers.                                                                                     |
-| `connectSendTransportAudio`      | Connects send transport for audio.                                                                     |
-| `connectSendTransportVideo`      | Connects send transport for video.                                                                     |
-| `connectSendTransportScreen`     | Connects send transport for screen sharing.                                                            |
-| `processConsumerTransports`      | Processes consumer transports to pause/resume based on the current active page.                         |
-| `resumePauseStreams`             | Resumes or pauses streams.                                                                             |
-| `readjust`                       | Readjusts display elements.                                                                            |
-| `checkGrid`                      | Checks the grid sizes to display.                                                                      |
-| `getEstimate`                    | Gets an estimate of grids to add.                                                                      |
-| `calculateRowsAndColumns`        | Calculates rows and columns for the grid.                                                              |
-| `addVideosGrid`                  | Adds videos to the grid.                                                                               |
-| `onScreenChanges`                | Handles screen changes (orientation and resize).                                                        |
-| `sleep`                          | Pauses execution for a specified duration.                                                             |
-| `changeVids`                     | Changes videos.                                                                                        |
-| `compareActiveNames`             | Compares active names (for recording UI changes reporting).                                             |
-| `compareScreenStates`            | Compares screen states (for recording changes in grid sizes reporting).                                 |
-| `createSendTransport`            | Creates a send transport.                                                                              |
-| `resumeSendTransportAudio`       | Resumes a send transport for audio.                                                                    |
-| `receiveAllPipedTransports`      | Receives all piped transports.                                                                         |
-| `disconnectSendTransportVideo`   | Disconnects send transport for video.                                                                  |
-| `disconnectSendTransportAudio`   | Disconnects send transport for audio.                                                                  |
-| `disconnectSendTransportScreen`  | Disconnects send transport for screen sharing.                                                         |
-| `connectSendTransport`           | Connects a send transport.                                                                             |
-| `getPipedProducersAlt`           | Gets piped producers.                                                                                  |
-| `signalNewConsumerTransport`     | Signals a new consumer transport.                                                                      |
-| `connectRecvTransport`           | Connects a receive transport.                                                                          |
-| `reUpdateInter`                   | Re-updates the interface based on audio decibels.                                                      |
-| `updateParticipantAudioDecibels` | Updates participant audio decibels.                                                                    |
-| `closeAndResize`                 | Closes and resizes the media elements.                                                                 |
-| `autoAdjust`                     | Automatically adjusts display elements.                                                                 |
-| `switchUserVideoAlt`             | Switches user video (alternate) (back/front).                                                          |
-| `switchUserVideo`                | Switches user video (specific video id).                                                               |
-| `switchUserAudio`                | Switches user audio.                                                                                   |
-| `receiveRoomMessages`            | Receives room messages.                                                                                |
-| `formatNumber`                   | Formats a number (for broadcast viewers).                                                              |
-| `connectIps`                     | Connects IPs (connect to consuming servers)
-| `startMeetingProgressTimer`      | Starts the meeting progress timer.       |
-| `stopRecording`                  | Stops the recording process. |
-| `pollUpdated`                    | Handles updated poll data. |
-| `handleVotePoll`                 | Handles voting in a poll. |
-| `handleCreatePoll`               | Handles creating a poll. |
-| `handleEndPoll`                  | Handles ending a poll. |
-| `breakoutRoomUpdated`           | Handles updated breakout room data. |
-| `captureCanvasStream`            | Captures a canvas stream. |
-| `resumePauseAudioStreams`        | Resumes or pauses audio streams. |
-|`processConsumerTransportsAudio`  | Processes consumer transports for audio. |
+| [`connectSocket`](https://www.mediasfu.com/reactnative/functions/connectSocket)                  | Connects to the WebSocket server.                                                                       |
+| [`disconnectSocket`](https://www.mediasfu.com/reactnative/functions/disconnectSocket)               | Disconnects from the WebSocket server.                                                                  |
+| [`joinRoomClient`](https://www.mediasfu.com/reactnative/functions/joinRoomClient)                 | Joins a room as a client.                                                                               |
+| [`updateRoomParametersClient`](https://www.mediasfu.com/reactnative/functions/updateRoomParametersClient)     | Updates room parameters as a client.                                                                    |
+| [`createDeviceClient`](https://www.mediasfu.com/reactnative/functions/createDeviceClient)             | Creates a device as a client.                                                                           |
+| [`switchVideoAlt`](https://www.mediasfu.com/reactnative/functions/switchVideoAlt)                 | Switches video/camera streams.                                                                          |
+| [`clickVideo`](https://www.mediasfu.com/reactnative/functions/clickVideo)                     | Handles clicking on video controls.                                                                     |
+| [`clickAudio`](https://www.mediasfu.com/reactnative/functions/clickAudio)                     | Handles clicking on audio controls.                                                                     |
+| [`clickScreenShare`](https://www.mediasfu.com/reactnative/functions/clickScreenShare)               | Handles clicking on screen share controls.                                                              |
+| [`streamSuccessVideo`](https://www.mediasfu.com/reactnative/functions/streamSuccessVideo)             | Handles successful video streaming.                                                                     |
+| [`streamSuccessAudio`](https://www.mediasfu.com/reactnative/functions/streamSuccessAudio)             | Handles successful audio streaming.                                                                     |
+| [`streamSuccessScreen`](https://www.mediasfu.com/reactnative/functions/streamSuccessScreen)            | Handles successful screen sharing.                                                                      |
+| [`streamSuccessAudioSwitch`](https://www.mediasfu.com/reactnative/functions/streamSuccessAudioSwitch)       | Handles successful audio switching.                                                                     |
+| [`checkPermission`](https://www.mediasfu.com/reactnative/functions/checkPermission)                | Checks for media access permissions.                                                                    |
+| [`producerClosed`](https://www.mediasfu.com/reactnative/functions/producerClosed)                 | Handles the closure of a producer.                                                                      |
+| [`newPipeProducer`](https://www.mediasfu.com/reactnative/functions/newPipeProducer)                | Creates receive transport for a new piped producer.                                                     |
+| [`updateMiniCardsGrid`](https://www.mediasfu.com/reactnative/functions/updateMiniCardsGrid)            | Updates the mini-grids (mini cards) grid.                                                               |
+| [`mixStreams`](https://www.mediasfu.com/reactnative/functions/mixStreams)                     | Mixes streams and prioritizes interesting ones together.                                                |
+| [`dispStreams`](https://www.mediasfu.com/reactnative/functions/dispStreams)                    | Displays streams (media).                                                                              |
+| [`stopShareScreen`](https://www.mediasfu.com/reactnative/functions/stopShareScreen)                | Stops screen sharing.                                                                                  |
+| [`checkScreenShare`](https://www.mediasfu.com/reactnative/functions/checkScreenShare)               | Checks for screen sharing availability.                                                                |
+| [`startShareScreen`](https://www.mediasfu.com/reactnative/functions/startShareScreen)               | Starts screen sharing.                                                                                 |
+| [`requestScreenShare`](https://www.mediasfu.com/reactnative/functions/requestScreenShare)             | Requests permission for screen sharing.                                                                |
+| [`reorderStreams`](https://www.mediasfu.com/reactnative/functions/reorderStreams)                 | Reorders streams (based on interest level).                                                            |
+| [`prepopulateUserMedia`](https://www.mediasfu.com/reactnative/functions/prepopulateUserMedia)           | Populates user media (for main grid).                                                                  |
+| [`getVideos`](https://www.mediasfu.com/reactnative/functions/getVideos)                      | Retrieves videos that are pending.                                                                     |
+| [`rePort`](https://www.mediasfu.com/reactnative/functions/rePort)                         | Handles re-porting (updates of changes in UI when recording).                                           |
+| [`trigger`](https://www.mediasfu.com/reactnative/functions/trigger)                        | Triggers actions (reports changes in UI to backend for recording).                                      |
+| [`consumerResume`](https://www.mediasfu.com/reactnative/functions/consumerResume)                 | Resumes consumers.                                                                                     |
+| [`connectSendTransportAudio`](https://www.mediasfu.com/reactnative/functions/connectSendTransportAudio)      | Connects send transport for audio.                                                                     |
+| [`connectSendTransportVideo`](https://www.mediasfu.com/reactnative/functions/connectSendTransportVideo)      | Connects send transport for video.                                                                     |
+| [`connectSendTransportScreen`](https://www.mediasfu.com/reactnative/functions/connectSendTransportScreen)    | Connects send transport for screen sharing.                                                            |
+| [`processConsumerTransports`](https://www.mediasfu.com/reactnative/functions/processConsumerTransports)      | Processes consumer transports to pause/resume based on the current active page.                         |
+| [`resumePauseStreams`](https://www.mediasfu.com/reactnative/functions/resumePauseStreams)             | Resumes or pauses streams.                                                                             |
+| [`readjust`](https://www.mediasfu.com/reactnative/functions/readjust)                       | Readjusts display elements.                                                                            |
+| [`checkGrid`](https://www.mediasfu.com/reactnative/functions/checkGrid)                      | Checks the grid sizes to display.                                                                      |
+| [`getEstimate`](https://www.mediasfu.com/reactnative/functions/getEstimate)                    | Gets an estimate of grids to add.                                                                      |
+| [`calculateRowsAndColumns`](https://www.mediasfu.com/reactnative/functions/calculateRowsAndColumns)        | Calculates rows and columns for the grid.                                                              |
+| [`addVideosGrid`](https://www.mediasfu.com/reactnative/functions/addVideosGrid)                  | Adds videos to the grid.                                                                               |
+| [`onScreenChanges`](https://www.mediasfu.com/reactnative/functions/onScreenChanges)                | Handles screen changes (orientation and resize).                                                        |
+| [`sleep`](https://www.mediasfu.com/reactnative/functions/sleep)                          | Pauses execution for a specified duration.                                                             |
+| [`changeVids`](https://www.mediasfu.com/reactnative/functions/changeVids)                     | Changes videos.                                                                                        |
+| [`compareActiveNames`](https://www.mediasfu.com/reactnative/functions/compareActiveNames)             | Compares active names (for recording UI changes reporting).                                             |
+| [`compareScreenStates`](https://www.mediasfu.com/reactnative/functions/compareScreenStates)           | Compares screen states (for recording changes in grid sizes reporting).                                 |
+| [`createSendTransport`](https://www.mediasfu.com/reactnative/functions/createSendTransport)            | Creates a send transport.                                                                              |
+| [`resumeSendTransportAudio`](https://www.mediasfu.com/reactnative/functions/resumeSendTransportAudio)       | Resumes a send transport for audio.                                                                    |
+| [`receiveAllPipedTransports`](https://www.mediasfu.com/reactnative/functions/receiveAllPipedTransports)      | Receives all piped transports.                                                                         |
+| [`disconnectSendTransportVideo`](https://www.mediasfu.com/reactnative/functions/disconnectSendTransportVideo)   | Disconnects send transport for video.                                                                  |
+| [`disconnectSendTransportAudio`](https://www.mediasfu.com/reactnative/functions/disconnectSendTransportAudio)   | Disconnects send transport for audio.                                                                  |
+| [`disconnectSendTransportScreen`](https://www.mediasfu.com/reactnative/functions/disconnectSendTransportScreen)  | Disconnects send transport for screen sharing.                                                         |
+| [`connectSendTransport`](https://www.mediasfu.com/reactnative/functions/connectSendTransport)           | Connects a send transport.                                                                             |
+| [`getPipedProducersAlt`](https://www.mediasfu.com/reactnative/functions/getPipedProducersAlt)           | Gets piped producers.                                                                                  |
+| [`signalNewConsumerTransport`](https://www.mediasfu.com/reactnative/functions/signalNewConsumerTransport)     | Signals a new consumer transport.                                                                      |
+| [`connectRecvTransport`](https://www.mediasfu.com/reactnative/functions/connectRecvTransport)           | Connects a receive transport.                                                                          |
+| [`reUpdateInter`](https://www.mediasfu.com/reactnative/functions/reUpdateInter)                   | Re-updates the interface based on audio decibels.                                                      |
+| [`updateParticipantAudioDecibels`](https://www.mediasfu.com/reactnative/functions/updateParticipantAudioDecibels) | Updates participant audio decibels.                                                                    |
+| [`closeAndResize`](https://www.mediasfu.com/reactnative/functions/closeAndResize)                 | Closes and resizes the media elements.                                                                 |
+| [`autoAdjust`](https://www.mediasfu.com/reactnative/functions/autoAdjust)                     | Automatically adjusts display elements.                                                                 |
+| [`switchUserVideoAlt`](https://www.mediasfu.com/reactnative/functions/switchUserVideoAlt)             | Switches user video (alternate) (back/front).                                                          |
+| [`switchUserVideo`](https://www.mediasfu.com/reactnative/functions/switchUserVideo)                | Switches user video (specific video id).                                                               |
+| [`switchUserAudio`](https://www.mediasfu.com/reactnative/functions/switchUserAudio)                | Switches user audio.                                                                                   |
+| [`receiveRoomMessages`](https://www.mediasfu.com/reactnative/functions/receiveRoomMessages)            | Receives room messages.                                                                                |
+| [`formatNumber`](https://www.mediasfu.com/reactnative/functions/formatNumber)                   | Formats a number (for broadcast viewers).                                                              |
+| [`connectIps`](https://www.mediasfu.com/reactnative/functions/connectIps)                     | Connects IPs (connect to consuming servers)                                                            |
+| [`startMeetingProgressTimer`](https://www.mediasfu.com/reactnative/functions/startMeetingProgressTimer)      | Starts the meeting progress timer.       |
+| [`stopRecording`](https://www.mediasfu.com/reactnative/functions/stopRecording)                  | Stops the recording process. |
+| [`pollUpdated`](https://www.mediasfu.com/reactnative/functions/pollUpdated)                    | Handles updated poll data. |
+| [`handleVotePoll`](https://www.mediasfu.com/reactnative/functions/handleVotePoll)                 | Handles voting in a poll. |
+| [`handleCreatePoll`](https://www.mediasfu.com/reactnative/functions/handleCreatePoll)               | Handles creating a poll. |
+| [`handleEndPoll`](https://www.mediasfu.com/reactnative/functions/handleEndPoll)                 | Handles ending a poll. |
+| [`breakoutRoomUpdated`](https://www.mediasfu.com/reactnative/functions/breakoutRoomUpdated)           | Handles updated breakout room data. |
+| [`captureCanvasStream`](https://www.mediasfu.com/reactnative/functions/captureCanvasStream)            | Captures a canvas stream. |
+| [`resumePauseAudioStreams`](https://www.mediasfu.com/reactnative/functions/resumePauseAudioStreams)        | Resumes or pauses audio streams. |
+| [`processConsumerTransportsAudio`](https://www.mediasfu.com/reactnative/functions/processConsumerTransportsAudio)  | Processes consumer transports for audio. |
+
 
 ### Room Socket Events
 
@@ -1961,37 +1972,37 @@ In the context of a room's real-time communication, various events occur, such a
 
 | Function                      | Explanation                                                                                             |
 |-------------------------------|---------------------------------------------------------------------------------------------------------|
-| `userWaiting`                 | Triggered when a user is waiting.                                                                       |
-| `personJoined`                | Triggered when a person joins the room.                                                                 |
-| `allWaitingRoomMembers`       | Triggered when information about all waiting room members is received.                                  |
-| `roomRecordParams`            | Triggered when room recording parameters are received.                                                  |
-| `banParticipant`              | Triggered when a participant is banned.                                                                 |
-| `updatedCoHost`               | Triggered when the co-host information is updated.                                                       |
-| `participantRequested`        | Triggered when a participant requests access.                                                            |
-| `screenProducerId`            | Triggered when the screen producer ID is received.                                                        |
-| `updateMediaSettings`         | Triggered when media settings are updated.                                                               |
-| `producerMediaPaused`         | Triggered when producer media is paused.                                                                 |
-| `producerMediaResumed`        | Triggered when producer media is resumed.                                                                |
-| `producerMediaClosed`         | Triggered when producer media is closed.                                                                 |
-| `controlMediaHost`            | Triggered when media control is hosted.                                                                  |
-| `meetingEnded`                | Triggered when the meeting ends.                                                                         |
-| `disconnectUserSelf`          | Triggered when a user disconnects.                                                                       |
-| `receiveMessage`              | Triggered when a message is received.                                                                    |
-| `meetingTimeRemaining`        | Triggered when meeting time remaining is received.                                                        |
-| `meetingStillThere`           | Triggered when the meeting is still active.                                                              |
-| `startRecords`                | Triggered when recording starts.                                                                         |
-| `reInitiateRecording`         | Triggered when recording needs to be re-initiated.                                                       |
-| `getDomains`                  | Triggered when domains are received.                                                                     |
-| `updateConsumingDomains`      | Triggered when consuming domains are updated.                                                            |
-| `recordingNotice`             | Triggered when a recording notice is received.                                                           |
-| `timeLeftRecording`           | Triggered when time left for recording is received.                                                       |
-| `stoppedRecording`            | Triggered when recording stops.                                                                          |
-| `hostRequestResponse`         | Triggered when the host request response is received.                                                    |
-| `allMembers`                  | Triggered when information about all members is received.                                                 |
-| `allMembersRest`              | Triggered when information about all members is received (rest of the members).                           |
-| `disconnect`                  | Triggered when a disconnect event occurs.                                                                |
-| `pollUpdated`                 | Triggered when a poll is updated.                                                                        |
-| `breakoutRoomUpdated`         | Triggered when a breakout room is updated.
+| [`userWaiting`](https://www.mediasfu.com/reactnative/functions/userWaiting)                 | Triggered when a user is waiting.                                                                       |
+| [`personJoined`](https://www.mediasfu.com/reactnative/functions/personJoined)                | Triggered when a person joins the room.                                                                 |
+| [`allWaitingRoomMembers`](https://www.mediasfu.com/reactnative/functions/allWaitingRoomMembers)       | Triggered when information about all waiting room members is received.                                  |
+| [`roomRecordParams`](https://www.mediasfu.com/reactnative/functions/roomRecordParams)            | Triggered when room recording parameters are received.                                                  |
+| [`banParticipant`](https://www.mediasfu.com/reactnative/functions/banParticipant)              | Triggered when a participant is banned.                                                                 |
+| [`updatedCoHost`](https://www.mediasfu.com/reactnative/functions/updatedCoHost)               | Triggered when the co-host information is updated.                                                      |
+| [`participantRequested`](https://www.mediasfu.com/reactnative/functions/participantRequested)        | Triggered when a participant requests access.                                                            |
+| [`screenProducerId`](https://www.mediasfu.com/reactnative/functions/screenProducerId)            | Triggered when the screen producer ID is received.                                                       |
+| [`updateMediaSettings`](https://www.mediasfu.com/reactnative/functions/updateMediaSettings)         | Triggered when media settings are updated.                                                               |
+| [`producerMediaPaused`](https://www.mediasfu.com/reactnative/functions/producerMediaPaused)         | Triggered when producer media is paused.                                                                 |
+| [`producerMediaResumed`](https://www.mediasfu.com/reactnative/functions/producerMediaResumed)        | Triggered when producer media is resumed.                                                                |
+| [`producerMediaClosed`](https://www.mediasfu.com/reactnative/functions/producerMediaClosed)         | Triggered when producer media is closed.                                                                 |
+| [`controlMediaHost`](https://www.mediasfu.com/reactnative/functions/controlMediaHost)            | Triggered when media control is hosted.                                                                  |
+| [`meetingEnded`](https://www.mediasfu.com/reactnative/functions/meetingEnded)                | Triggered when the meeting ends.                                                                         |
+| [`disconnectUserSelf`](https://www.mediasfu.com/reactnative/functions/disconnectUserSelf)          | Triggered when a user disconnects.                                                                       |
+| [`receiveMessage`](https://www.mediasfu.com/reactnative/functions/receiveMessage)              | Triggered when a message is received.                                                                    |
+| [`meetingTimeRemaining`](https://www.mediasfu.com/reactnative/functions/meetingTimeRemaining)        | Triggered when meeting time remaining is received.                                                        |
+| [`meetingStillThere`](https://www.mediasfu.com/reactnative/functions/meetingStillThere)           | Triggered when the meeting is still active.                                                              |
+| [`startRecords`](https://www.mediasfu.com/reactnative/functions/startRecords)                | Triggered when recording starts.                                                                         |
+| [`reInitiateRecording`](https://www.mediasfu.com/reactnative/functions/reInitiateRecording)         | Triggered when recording needs to be re-initiated.                                                       |
+| [`getDomains`](https://www.mediasfu.com/reactnative/functions/getDomains)                  | Triggered when domains are received.                                                                     |
+| [`updateConsumingDomains`](https://www.mediasfu.com/reactnative/functions/updateConsumingDomains)      | Triggered when consuming domains are updated.                                                            |
+| [`recordingNotice`](https://www.mediasfu.com/reactnative/functions/recordingNotice)             | Triggered when a recording notice is received.                                                           |
+| [`timeLeftRecording`](https://www.mediasfu.com/reactnative/functions/timeLeftRecording)           | Triggered when time left for recording is received.                                                       |
+| [`stoppedRecording`](https://www.mediasfu.com/reactnative/functions/stoppedRecording)           | Triggered when recording stops.                                                                          |
+| [`hostRequestResponse`](https://www.mediasfu.com/reactnative/functions/hostRequestResponse)         | Triggered when the host request response is received.                                                    |
+| [`allMembers`](https://www.mediasfu.com/reactnative/functions/allMembers)                  | Triggered when information about all members is received.                                                 |
+| [`allMembersRest`](https://www.mediasfu.com/reactnative/functions/allMembersRest)              | Triggered when information about all members is received (rest of the members).                           |
+| [`disconnect`](https://www.mediasfu.com/reactnative/functions/disconnect)                  | Triggered when a disconnect event occurs.                                                                |
+| [`pollUpdated`](https://www.mediasfu.com/reactnative/functions/pollUpdated)                 | Triggered when a poll is updated.                                                                        |
+| [`breakoutRoomUpdated`](https://www.mediasfu.com/reactnative/functions/breakoutRoomUpdated)         | Triggered when a breakout room is updated.  
 
 #### Sample Usage
 
@@ -2158,7 +2169,7 @@ Missing or incorrectly configured permissions can prevent functionalities like c
 
 Ensure all necessary permissions are added to your `AndroidManifest.xml`:
 
-```xml
+```bash
 <!-- Permissions -->
 <uses-permission android:name="android.permission.INTERNET" />
 <uses-permission android:name="android.permission.CAMERA" />

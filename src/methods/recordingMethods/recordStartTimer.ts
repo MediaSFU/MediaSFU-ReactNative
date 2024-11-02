@@ -33,7 +33,7 @@ export type RecordStartTimerType = (options: RecordStartTimerOptions) => Promise
  */
 /**
  * Starts a recording timer and manages its state.
- *
+ * 
  * @param {RecordStartTimerOptions} options - The options for starting the recording timer.
  * @param {Function} options.parameters.getUpdatedAllParams - Function to get updated parameters.
  * @param {number} options.parameters.recordStartTime - The start time of the recording.
@@ -45,14 +45,33 @@ export type RecordStartTimerType = (options: RecordStartTimerOptions) => Promise
  * @param {Function} options.parameters.updateRecordTimerInterval - Function to update the recording timer interval.
  * @param {Function} options.parameters.updateIsTimerRunning - Function to update the timer running state.
  * @param {Function} options.parameters.updateCanPauseResume - Function to update the pause/resume state.
- *
+ * 
  * @returns {Promise<void>} A promise that resolves when the timer is started.
- *
+ * 
  * @remarks
  * This function initializes the recording start time and sets up an interval to update the timer every second.
  * It also manages the state of the timer, including enabling and disabling pause/resume actions.
  * The timer is stopped if the recording is paused, stopped, or if the room name is invalid.
+ * 
+ * @example
+ * ```typescript
+ * recordStartTimer({
+ *   parameters: {
+ *     recordStartTime: Date.now(),
+ *     recordTimerInterval: null,
+ *     isTimerRunning: false,
+ *     canPauseResume: false,
+ *     recordChangeSeconds: 10000,
+ *     updateRecordStartTime: (time) => console.log("Start time:", time),
+ *     updateRecordTimerInterval: (interval) => console.log("Timer interval:", interval),
+ *     updateIsTimerRunning: (isRunning) => console.log("Is timer running:", isRunning),
+ *     updateCanPauseResume: (canPause) => console.log("Can pause/resume:", canPause),
+ *     getUpdatedAllParams: () => updatedParameters,
+ *   },
+ * });
+ * ```
  */
+
 export async function recordStartTimer({
   parameters,
 }: RecordStartTimerOptions): Promise<void> {

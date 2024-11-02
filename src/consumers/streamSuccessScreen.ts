@@ -55,10 +55,9 @@ export type StreamSuccessScreenType = (options: StreamSuccessScreenOptions) => P
  * @param {StreamSuccessScreenOptions} options - The options for the screen sharing success handler.
  * @param {MediaStream} options.stream - The media stream to be shared.
  * @param {Object} options.parameters - The parameters required for screen sharing.
- * @param {Function} options.parameters.getUpdatedAllParams - Function to get updated parameters.
  * @param {Socket} options.parameters.socket - The socket instance for communication.
  * @param {boolean} options.parameters.transportCreated - Flag indicating if the transport is already created.
- * @param {MediaStream} options.parameters.localStreamScreen - The local screen media stream.
+ * @param {MediaStream | null} options.parameters.localStreamScreen - The local screen media stream.
  * @param {boolean} options.parameters.screenAlreadyOn - Flag indicating if the screen is already being shared.
  * @param {boolean} options.parameters.screenAction - Flag indicating if the screen share action is requested.
  * @param {boolean} options.parameters.transportCreatedScreen - Flag indicating if the screen transport is created.
@@ -83,7 +82,44 @@ export type StreamSuccessScreenType = (options: StreamSuccessScreenOptions) => P
  * @param {Function} options.parameters.rePort - Function to reinitialize ports.
  *
  * @returns {Promise<void>} A promise that resolves when the screen sharing setup is complete.
+ * 
+ * @throws Will throw an error if there is an issue with screen sharing.
+ *  
+ * @example
+ * ```typescript
+ * await streamSuccessScreen({
+ *   stream: mediaStream,
+ *   parameters: {
+ *     socket,
+ *     transportCreated,
+ *     localStreamScreen: null,
+ *     screenAlreadyOn: false,
+ *     screenAction: true,
+ *     transportCreatedScreen: false,
+ *     hostLabel: "Host",
+ *     eventType: "conference",
+ *     showAlert,
+ *     annotateScreenStream: false,
+ *     updateTransportCreatedScreen,
+ *     updateScreenAlreadyOn,
+ *     updateScreenAction,
+ *     updateTransportCreated,
+ *     updateLocalStreamScreen,
+ *     updateShared,
+ *     updateIsScreenboardModalVisible,
+ *     sleep,
+ *     createSendTransport,
+ *     connectSendTransportScreen,
+ *     disconnectSendTransportScreen,
+ *     stopShareScreen,
+ *     reorderStreams,
+ *     prepopulateUserMedia,
+ *     rePort,
+ *   },
+ * });
+ * ```
  */
+
 export const streamSuccessScreen = async ({
   stream,
   parameters,

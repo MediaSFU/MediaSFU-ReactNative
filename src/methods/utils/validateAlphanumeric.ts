@@ -11,7 +11,15 @@ export type ValidateAlphanumericType = (options: ValidateAlphanumericOptions) =>
  * @param {ValidateAlphanumericOptions} options - The options containing the string to validate.
  * @param {string} options.str - The string to be validated.
  * @returns {Promise<boolean>} - A promise that resolves to `true` if the string is alphanumeric, otherwise `false`.
+ * 
+ * @example
+ * ```typescript 
+ * const isValid = await validateAlphanumeric({ str: "abc123" });
+ * console.log(isValid);
+ * // Output: true
+ * ```
  */
+
 const validateAlphanumeric = async ({ str }: ValidateAlphanumericOptions): Promise<boolean> => {
   let code: number; let i: number; let
     len: number;

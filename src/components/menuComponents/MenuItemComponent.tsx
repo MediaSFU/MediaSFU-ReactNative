@@ -35,15 +35,27 @@ export interface MenuItemComponentOptions {
  * @param {MenuItemComponentOptions} props - The properties for the MenuItemComponent.
  * @returns {JSX.Element} The rendered MenuItemComponent.
  *
+ * MenuItemComponent renders a menu item with an optional icon and text.
+ *
  * @example
  * ```tsx
- * <MenuItemComponent
- *   icon="bars"
- *   name="Menu"
- *   onPress={() => console.log('Menu pressed')}
- * />
+ * import React from 'react';
+ * import { MenuItemComponent } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   return (
+ *     <MenuItemComponent
+ *       icon="bars"
+ *       name="Menu"
+ *       onPress={() => console.log('Menu pressed')}
+ *     />
+ *   );
+ * }
+ *
+ * export default App;
  * ```
  */
+
 const MenuItemComponent: React.FC<MenuItemComponentOptions> = ({ icon, name, onPress }) => (
   <Pressable
     style={styles.listItem}

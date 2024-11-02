@@ -8,11 +8,20 @@ export type LaunchParticipantsType = (options: LaunchParticipantsOptions) => voi
 
 /**
  * Toggles the visibility of the participants modal.
- * @function
- * @param {Object} options - The options object containing necessary variables and functions.
+ *
+ * @param {LaunchParticipantsOptions} options - The options for toggling the participants modal.
  * @param {Function} options.updateIsParticipantsModalVisible - Function to update the visibility state of the participants modal.
  * @param {boolean} options.isParticipantsModalVisible - Current visibility state of the participants modal.
+ *
+ * @example
+ * ```typescript
+ * launchParticipants({
+ *   updateIsParticipantsModalVisible: (isVisible) => setParticipantsModalVisible(isVisible),
+ *   isParticipantsModalVisible: true,
+ * });
+ * ```
  */
+
 export const launchParticipants = ({
   updateIsParticipantsModalVisible,
   isParticipantsModalVisible,

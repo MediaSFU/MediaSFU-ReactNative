@@ -42,6 +42,50 @@ export interface PollModalOptions {
 
 export type PollModalType = (options: PollModalOptions) => JSX.Element;
 
+/**
+ * PollModal component allows users to create, manage, and vote in polls within an event.
+ *
+ * @component
+ * @param {PollModalOptions} props - The properties for the PollModal component.
+ * @returns {JSX.Element} The rendered PollModal component.
+ *
+ * @example
+ * ```tsx
+ * import React, { useState } from 'react';
+ * import { PollModal } from 'mediasfu-reactnative';
+ * 
+ * function App() {
+ *   const [isPollModalVisible, setPollModalVisible] = useState(false);
+ *   
+ *   const handleCreatePoll = (options) => { };
+ *   const handleEndPoll = (options) => { };
+ *   const handleVotePoll = (options) => { };
+ *
+ *   return (
+ *     <PollModal
+ *       isPollModalVisible={isPollModalVisible}
+ *       onClose={() => setPollModalVisible(false)}
+ *       position="topRight"
+ *       member="john_doe"
+ *       islevel="2"
+ *       polls={[{ id: '1', question: 'Is React Native awesome?', options: ['Yes', 'No'], status: 'active', voters: {}, votes: [3, 1] }]}
+ *       poll={{ id: '1', question: 'Is React Native awesome?', options: ['Yes', 'No'], status: 'active', voters: {}, votes: [3, 1] }}
+ *       socket={socketInstance}
+ *       roomName="MainRoom"
+ *       handleCreatePoll={handleCreatePoll}
+ *       handleEndPoll={handleEndPoll}
+ *       handleVotePoll={handleVotePoll}
+ *       showAlert={showAlertFunction}
+ *       updateIsPollModalVisible={setPollModalVisible}
+ *     />
+ *   );
+ * }
+ * 
+ * export default App;
+ * ```
+ */
+
+
 const PollModal: React.FC<PollModalOptions> = ({
   isPollModalVisible,
   onClose,

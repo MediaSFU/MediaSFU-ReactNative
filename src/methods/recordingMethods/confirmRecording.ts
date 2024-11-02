@@ -50,16 +50,16 @@ export type ConfirmRecordingType = (options: ConfirmRecordingOptions) => Promise
 
 /**
  * Confirms the recording settings based on the provided parameters and updates the recording state.
- *
+ * 
  * @param {ConfirmRecordingOptions} options - The options for confirming the recording.
  * @param {Parameters} options.parameters - The parameters for the recording.
- *
+ * 
  * @returns {Promise<void>} A promise that resolves when the recording settings have been confirmed.
- *
+ * 
  * @remarks
  * This function performs several checks to ensure that the recording settings are valid based on the provided parameters.
  * If any of the checks fail, an alert is shown and the function returns early without updating the recording state.
- *
+ * 
  * The function checks for the following conditions:
  * - Whether recording videos of all participants is allowed.
  * - Whether recording all participants is allowed.
@@ -69,16 +69,51 @@ export type ConfirmRecordingType = (options: ConfirmRecordingOptions) => Promise
  * - Whether recording all formats is allowed.
  * - Whether the recording display type is valid based on the meeting display type.
  * - Whether recording all participants with media is allowed.
- *
+ * 
  * If all checks pass, the function constructs the `mainSpecs`, `dispSpecs`, and `textSpecs` objects based on the state variables,
  * updates the user recording parameters, and confirms the recording.
- *
+ * 
  * @example
  * ```typescript
- * const options: ConfirmRecordingOptions = { parameters: someParameters };
- * await confirmRecording(options);
+ * confirmRecording({
+ *   parameters: {
+ *     showAlert: (alert) => console.log(alert.message),
+ *     recordingMediaOptions: "video",
+ *     recordingAudioOptions: "high",
+ *     recordingVideoOptions: "all",
+ *     recordingVideoType: "HD",
+ *     recordingDisplayType: "video",
+ *     recordingNameTags: true,
+ *     recordingBackgroundColor: "#000000",
+ *     recordingNameTagsColor: "#ffffff",
+ *     recordingOrientationVideo: "landscape",
+ *     recordingAddHLS: true,
+ *     recordingAddText: true,
+ *     recordingCustomText: "Meeting",
+ *     recordingCustomTextPosition: "top-right",
+ *     recordingCustomTextColor: "#ffffff",
+ *     meetingDisplayType: "video",
+ *     recordingVideoParticipantsFullRoomSupport: true,
+ *     recordingAllParticipantsSupport: true,
+ *     recordingVideoParticipantsSupport: true,
+ *     recordingSupportForOtherOrientation: true,
+ *     recordingPreferredOrientation: "landscape",
+ *     recordingMultiFormatsSupport: true,
+ *     recordingVideoOptimized: true,
+ *     recordingAllParticipantsFullRoomSupport: true,
+ *     meetingVideoOptimized: false,
+ *     eventType: "broadcast",
+ *     breakOutRoomStarted: false,
+ *     breakOutRoomEnded: true,
+ *     updateRecordingDisplayType: (displayType) => console.log(`Updated display type: ${displayType}`),
+ *     updateRecordingVideoOptimized: (optimized) => console.log(`Updated video optimized: ${optimized}`),
+ *     updateUserRecordingParams: (params) => console.log(`Updated recording params:`, params),
+ *     updateConfirmedToRecord: (confirmed) => console.log(`Confirmed to record: ${confirmed}`),
+ *   }
+ * });
  * ```
  */
+
 export const confirmRecording = async ({
   parameters,
 }: ConfirmRecordingOptions): Promise<void> => {

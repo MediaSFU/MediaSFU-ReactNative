@@ -51,22 +51,44 @@ export interface MiniCardOptions {
 export type MiniCardType = (options: MiniCardOptions) => JSX.Element;
 
 /**
- * MiniCard component displays a small card with either an image or initials.
+ * MiniCard component displays a small card with either an image or initials, providing flexible styling options.
+ *
+ * This component renders either an image or initials based on the provided props, supporting customizable
+ * font size, border radius, and additional styling for the card and image.
  *
  * @component
- * @param {MiniCardOptions} props - The properties for the MiniCard component.
- * @returns {JSX.Element} The rendered MiniCard component.
+ * @param {MiniCardOptions} props - Configuration options for the MiniCard component.
+ * @param {string} [props.initials] - Initials to display if no image is provided.
+ * @param {number} [props.fontSize=14] - Font size for the initials.
+ * @param {StyleProp<ViewStyle>} [props.customStyle] - Custom styles for the card container.
+ * @param {string} [props.imageSource] - URI of the image to display.
+ * @param {boolean} [props.roundedImage=true] - Determines if the image should have rounded corners.
+ * @param {StyleProp<ImageStyle>} [props.imageStyle] - Custom styles for the image.
+ *
+ * @returns {JSX.Element} The MiniCard component.
  *
  * @example
- * <MiniCard
- *   initials="AB"
- *   fontSize={18}
- *   customStyle={{ backgroundColor: '#f0f0f0' }}
- *   imageSource="https://example.com/image.jpg"
- *   roundedImage={true}
- *   imageStyle={{ width: 50, height: 50 }}
- * />
+ * ```tsx
+ * import React from 'react';
+ * import { MiniCard } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   return (
+ *     <MiniCard
+ *       initials="AB"
+ *       fontSize={18}
+ *       customStyle={{ backgroundColor: '#f0f0f0', borderRadius: 10 }}
+ *       imageSource="https://example.com/image.jpg"
+ *       roundedImage={true}
+ *       imageStyle={{ width: 50, height: 50 }}
+ *     />
+ *   );
+ * }
+ *
+ * export default App;
+ * ```
  */
+
 const MiniCard: React.FC<MiniCardOptions> = ({
   initials,
   fontSize = 14,

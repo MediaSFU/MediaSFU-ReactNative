@@ -33,10 +33,34 @@ export type SwitchVideoAltType = (options: SwitchVideoAltOptions) => Promise<voi
 
 /**
  * Switches the user's video device with alternate logic, taking into account recording state and camera access permissions.
- * @function
- * @async
- * @param {SwitchVideoAltParams} options - The parameters object containing necessary variables.
+ * 
+ * @param {SwitchVideoAltOptions} options - The parameters object containing necessary variables.
+ * @returns {Promise<void>}
+ * 
+ * @example
+ * ```typescript
+ * switchVideoAlt({
+ *   parameters: {
+ *     recordStarted: true,
+ *     recordResumed: false,
+ *     recordStopped: false,
+ *     recordPaused: false,
+ *     recordingMediaOptions: 'video',
+ *     videoAlreadyOn: true,
+ *     currentFacingMode: 'user',
+ *     prevFacingMode: 'environment',
+ *     allowed: true,
+ *     audioOnlyRoom: false,
+ *     updateCurrentFacingMode: (mode) => setCurrentFacingMode(mode),
+ *     updatePrevFacingMode: (mode) => setPrevFacingMode(mode),
+ *     updateIsMediaSettingsModalVisible: (isVisible) => setMediaSettingsModal(isVisible),
+ *     showAlert: (alertOptions) => showAlert(alertOptions),
+ *     switchUserVideoAlt: switchUserVideoAltFunction,
+ *   }
+ * });
+ * ```
  */
+
 export const switchVideoAlt = async ({ parameters }: SwitchVideoAltOptions): Promise<void> => {
   let {
     recordStarted,

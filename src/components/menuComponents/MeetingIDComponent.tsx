@@ -20,17 +20,28 @@ export interface MeetingIdComponentOptions {
 }
 
 /**
- * MeetingIdComponent displays a meeting ID in a read-only input field with an option to copy the ID.
+ * MeetingIdComponent displays a meeting ID in a read-only input field with an option to copy the ID to the clipboard.
  *
  * @component
- * @param {MeetingIdComponentOptions} props - The properties for the MeetingIdComponent.
- * @returns {JSX.Element} The rendered MeetingIdComponent.
- *
+ * @param {MeetingIdComponentOptions} props - Configuration options for the MeetingIdComponent.
+ * @param {string} [props.meetingID=''] - The meeting ID to display.
+ * @returns {JSX.Element} The rendered MeetingIdComponent component.
+ * 
  * @example
  * ```tsx
- * <MeetingIdComponent meetingID="1234567890" />
+ * import React from 'react';
+ * import { MeetingIdComponent } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   return (
+ *     <MeetingIdComponent meetingID="1234567890" />
+ *   );
+ * }
+ *
+ * export default App;
  * ```
  */
+
 const MeetingIdComponent: React.FC<MeetingIdComponentOptions> = ({ meetingID = '' }) => {
   /**
    * Copies the meeting ID to the clipboard and alerts the user.

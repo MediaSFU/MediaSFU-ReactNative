@@ -35,16 +35,48 @@ export type SwitchUserVideoAltType = (options: SwitchUserVideoAltOptions) => Pro
 
 /**
  * Switches the user's video stream based on the provided video preference and other parameters.
- *
- * @param {Object} options - The options for switching the user's video.
+ * 
+ * @param {SwitchUserVideoAltOptions} options - The options for switching the user's video.
  * @param {string} options.videoPreference - The preferred video facing mode (e.g., "user" or "environment").
  * @param {boolean} options.checkoff - A flag indicating whether to turn off the video before switching.
- * @param {SwitchUserVideoAltOptions} options.parameters - The parameters required for switching the video.
- *
+ * @param {SwitchUserVideoAltParameters} options.parameters - The parameters required for switching the video.
+ * 
  * @returns {Promise<void>} A promise that resolves when the video switching is complete.
- *
+ * 
  * @throws Will throw an error if there is an issue with switching the video.
+ * 
+ * @example
+ * ```typescript
+ * const options = {
+ *   videoPreference: "user",
+ *   checkoff: false,
+ *   parameters: {
+ *     audioOnlyRoom: false,
+ *     frameRate: 30,
+ *     vidCons: { width: 640, height: 480 },
+ *     showAlert: showNotification,
+ *     mediaDevices: navigator.mediaDevices,
+ *     hasCameraPermission: true,
+ *     updateVideoSwitching: updateVideoSwitchingState,
+ *     updateCurrentFacingMode: updateCurrentFacingMode,
+ *     requestPermissionCamera: requestCameraPermission,
+ *     streamSuccessVideo: streamSuccessVideoFunction,
+ *     sleep: sleepFunction,
+ *     checkMediaPermission: true,
+ *     getUpdatedAllParams: getUpdatedAllParamsFunction,
+ *   },
+ * };
+ * 
+ * switchUserVideoAlt(options)
+ *   .then(() => {
+ *     console.log("Video switched successfully");
+ *   })
+ *   .catch((error) => {
+ *     console.error("Error switching video:", error);
+ *   });
+ * ```
  */
+
 export async function switchUserVideoAlt({
   videoPreference,
   checkoff,

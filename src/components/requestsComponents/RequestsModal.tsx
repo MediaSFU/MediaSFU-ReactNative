@@ -103,32 +103,50 @@ export interface RequestsModalOptions {
 export type RequestsModalType = (options: RequestsModalOptions) => JSX.Element;
 
 /**
- * RequestsModal component displays a modal with a list of participant requests.
+ * RequestsModal component displays a modal that shows a list of participant requests with options to filter, accept, or reject requests.
  *
- * @param {RequestsModalOptions} props - The properties object.
+ * @component
+ * @param {RequestsModalOptions} props - The properties for the RequestsModal component.
  * @returns {JSX.Element} The rendered RequestsModal component.
  *
  * @example
  * ```tsx
- * <RequestsModal
- *   isRequestsModalVisible={modalVisible}
- *   onRequestClose={() => setModalVisible(false)}
- *   requestCounter={3}
- *   onRequestFilterChange={(text) => handleRequestFilterChange(text)}
- *   onRequestItemPress={(params) => handleRequestItemPress(params)}
- *   requestList={requestList}
- *   updateRequestList={(newRequestList) => updateRequestList(newRequestList)}
- *   roomName="exampleRoom"
- *   socket={socketInstance}
- *   renderRequestComponent={(options) => <RenderRequestComponent {...options} />}
- *   backgroundColor="#83c0e9"
- *   position="topRight"
- *   parameters={{
- *     getUpdatedAllParams: () => ({ filteredRequestList: filteredList }),
- *   }}
- * />
+ * import React from 'react';
+ * import { RequestsModal } from 'mediasfu-reactnative';
+ *
+ * const requestList = [
+ *   { id: 1, name: 'Request to share screen', icon: 'fa-desktop' },
+ *   { id: 2, name: 'Request to unmute', icon: 'fa-microphone' },
+ * ];
+ *
+ * function App() {
+ *   const handleRequestAction = (params) => {
+ *     console.log(`Request action taken: ${params.action}`);
+ *   };
+ * 
+ *   return (
+ *     <RequestsModal
+ *       isRequestsModalVisible={true}
+ *       onRequestClose={() => console.log('Modal closed')}
+ *       requestCounter={requestList.length}
+ *       onRequestFilterChange={(text) => console.log('Filter text:', text)}
+ *       onRequestItemPress={handleRequestAction}
+ *       requestList={requestList}
+ *       updateRequestList={(newList) => console.log('Updated request list:', newList)}
+ *       roomName="exampleRoom"
+ *       socket={socketInstance}
+ *       backgroundColor="#83c0e9"
+ *       position="topRight"
+ *       parameters={{
+ *         getUpdatedAllParams: () => ({ filteredRequestList: requestList }),
+ *       }}
+ *     />
+ *   );
+ * }
+ * export default App;
  * ```
  */
+
 const RequestsModal: React.FC<RequestsModalOptions> = ({
   isRequestsModalVisible,
   onRequestClose,

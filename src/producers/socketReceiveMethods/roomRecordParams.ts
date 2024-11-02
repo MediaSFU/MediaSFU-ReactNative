@@ -75,7 +75,53 @@ export type RoomRecordParamsType = ({
  * @param {Function} params.parameters.updateRecordingSupportForOtherOrientation - Function to update the support for other orientation.
  * @param {Function} params.parameters.updateRecordingMultiFormatsSupport - Function to update the multi-formats support.
  * @returns {Promise<void>} A promise that resolves when all parameters have been updated.
+ *
+ * @example
+ * ```typescript
+ * const recordParams = {
+ *   recordingAudioPausesLimit: 3,
+ *   recordingAudioPausesCount: 1,
+ *   recordingAudioSupport: true,
+ *   recordingAudioPeopleLimit: 10,
+ *   recordingAudioParticipantsTimeLimit: 60,
+ *   recordingVideoPausesCount: 1,
+ *   recordingVideoPausesLimit: 3,
+ *   recordingVideoSupport: true,
+ *   recordingVideoPeopleLimit: 10,
+ *   recordingVideoParticipantsTimeLimit: 60,
+ *   recordingAllParticipantsSupport: true,
+ *   recordingVideoParticipantsSupport: false,
+ *   recordingAllParticipantsFullRoomSupport: true,
+ *   recordingVideoParticipantsFullRoomSupport: false,
+ *   recordingPreferredOrientation: "landscape",
+ *   recordingSupportForOtherOrientation: true,
+ *   recordingMultiFormatsSupport: false,
+ * };
+ *
+ * const parameters = {
+ *   updateRecordingAudioPausesLimit: (value) => console.log("Audio Pauses Limit:", value),
+ *   updateRecordingAudioPausesCount: (value) => console.log("Audio Pauses Count:", value),
+ *   updateRecordingAudioSupport: (value) => console.log("Audio Support:", value),
+ *   updateRecordingAudioPeopleLimit: (value) => console.log("Audio People Limit:", value),
+ *   updateRecordingAudioParticipantsTimeLimit: (value) => console.log("Audio Participants Time Limit:", value),
+ *   updateRecordingVideoPausesCount: (value) => console.log("Video Pauses Count:", value),
+ *   updateRecordingVideoPausesLimit: (value) => console.log("Video Pauses Limit:", value),
+ *   updateRecordingVideoSupport: (value) => console.log("Video Support:", value),
+ *   updateRecordingVideoPeopleLimit: (value) => console.log("Video People Limit:", value),
+ *   updateRecordingVideoParticipantsTimeLimit: (value) => console.log("Video Participants Time Limit:", value),
+ *   updateRecordingAllParticipantsSupport: (value) => console.log("All Participants Support:", value),
+ *   updateRecordingVideoParticipantsSupport: (value) => console.log("Video Participants Support:", value),
+ *   updateRecordingAllParticipantsFullRoomSupport: (value) => console.log("All Participants Full Room Support:", value),
+ *   updateRecordingVideoParticipantsFullRoomSupport: (value) => console.log("Video Participants Full Room Support:", value),
+ *   updateRecordingPreferredOrientation: (value) => console.log("Preferred Orientation:", value),
+ *   updateRecordingSupportForOtherOrientation: (value) => console.log("Support For Other Orientation:", value),
+ *   updateRecordingMultiFormatsSupport: (value) => console.log("Multi-Formats Support:", value),
+ * };
+ *
+ * await roomRecordParams({ recordParams, parameters });
+ * ```
  */
+
 export const roomRecordParams = async ({
   recordParams,
   parameters,

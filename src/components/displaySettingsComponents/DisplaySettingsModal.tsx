@@ -43,11 +43,42 @@ export type DisplaySettingsModalType = (
 ) => JSX.Element;
 
 /**
- * DisplaySettingsModal - A modal component for managing display settings.
- *
- * @param {DisplaySettingsModalOptions} props - The properties passed to the DisplaySettingsModal component.
- * @returns {JSX.Element} - The DisplaySettingsModal component JSX element.
+ * DisplaySettingsModal provides an interface to manage and save various display settings in a modal.
+ * 
+ * @param {DisplaySettingsModalOptions} props - The configuration options for the DisplaySettingsModal component.
+ * 
+ * @example
+ * ```tsx
+ * import React, { useState } from 'react';
+ * import { DisplaySettingsModal } from 'mediasfu-reactnative';
+ * 
+ * function App() {
+ *   const [isModalVisible, setModalVisible] = useState(false);
+ * 
+ *   return (
+ *     <View>
+ *       <Button title="Open Display Settings" onPress={() => setModalVisible(true)} />
+ *       <DisplaySettingsModal
+ *         isDisplaySettingsModalVisible={isModalVisible}
+ *         onDisplaySettingsClose={() => setModalVisible(false)}
+ *         parameters={{
+ *           meetingDisplayType: 'video',
+ *           autoWave: true,
+ *           forceFullDisplay: false,
+ *           meetingVideoOptimized: false,
+ *           getUpdatedAllParams: () => ({}), // Function to fetch the latest parameters
+ *         }}
+ *         position="topRight"
+ *         backgroundColor="#83c0e9"
+ *       />
+ *     </View>
+ *   );
+ * }
+ * 
+ * export default App;
+ * ```
  */
+
 const DisplaySettingsModal: React.FC<DisplaySettingsModalOptions> = ({
   isDisplaySettingsModalVisible,
   onDisplaySettingsClose,

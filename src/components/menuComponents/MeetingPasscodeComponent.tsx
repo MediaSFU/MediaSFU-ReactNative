@@ -22,14 +22,25 @@ export interface MeetingPasscodeComponentOptions {
  * MeetingPasscodeComponent displays a meeting passcode in a read-only input field.
  *
  * @component
- * @param {MeetingPasscodeComponentOptions} props - The properties for the MeetingPasscodeComponent.
- * @returns {JSX.Element} The rendered MeetingPasscodeComponent.
- *
+ * @param {Object} props - Properties for configuring the MeetingPasscodeComponent.
+ * @param {string} props.meetingPasscode - The meeting passcode to display.
+ * @returns {JSX.Element} The MeetingPasscodeComponent.
+ * 
  * @example
  * ```tsx
- * <MeetingPasscodeComponent meetingPasscode="123456" />
+ * import React from 'react';
+ * import { MeetingPasscodeComponent } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   return (
+ *     <MeetingPasscodeComponent meetingPasscode="123456" />
+ *   );
+ * }
+ *
+ * export default App;
  * ```
  */
+
 const MeetingPasscodeComponent: React.FC<MeetingPasscodeComponentOptions> = ({
   meetingPasscode = '',
 }) => (

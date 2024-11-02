@@ -33,10 +33,10 @@ export type ConnectSendTransportType = (options: ConnectSendTransportOptions) =>
  * Connects the send transport based on the specified option.
  *
  * @param {ConnectSendTransportOptions} options - The options for connecting the send transport.
- * @param {string} options.option - The type of transport to connect ("audio", "video", "screen", or both).
- * @param {Object} options.parameters - The parameters required for connecting the transport.
- * @param {Object} options.parameters.audioParams - The audio parameters.
- * @param {Object} options.parameters.videoParams - The video parameters.
+ * @param {string} options.option - The type of transport to connect ("audio", "video", "screen", or "all").
+ * @param {ConnectSendTransportParameters} options.parameters - The parameters required for connecting the transport.
+ * @param {ProducerOptions} options.parameters.audioParams - The audio parameters.
+ * @param {ProducerOptions} options.parameters.videoParams - The video parameters.
  * @param {MediaStream} options.parameters.localStreamScreen - The local screen stream.
  * @param {MediaStream} options.parameters.canvasStream - The canvas stream.
  * @param {boolean} options.parameters.whiteboardStarted - Indicates if the whiteboard has started.
@@ -50,7 +50,34 @@ export type ConnectSendTransportType = (options: ConnectSendTransportOptions) =>
  * @returns {Promise<void>} A promise that resolves when the transport is connected.
  *
  * @throws Will throw an error if the connection fails.
+ *
+ * @example
+ * const options = {
+ *   option: 'audio',
+ *   parameters: {
+ *     audioParams: audioProducerOptions,
+ *     videoParams: videoProducerOptions,
+ *     localStreamScreen: localStream,
+ *     canvasStream: canvasStream,
+ *     whiteboardStarted: false,
+ *     whiteboardEnded: false,
+ *     shared: false,
+ *     islevel: '1',
+ *     connectSendTransportAudio: connectAudioFunction,
+ *     connectSendTransportVideo: connectVideoFunction,
+ *     connectSendTransportScreen: connectScreenFunction,
+ *   },
+ * };
+ * 
+ * connectSendTransport(options)
+ *   .then(() => {
+ *     console.log('Transport connected successfully');
+ *   })
+ *   .catch((error) => {
+ *     console.error('Error connecting transport:', error);
+ *   });
  */
+
 export const connectSendTransport = async ({ option, parameters }: ConnectSendTransportOptions): Promise<void> => {
   try {
     const {

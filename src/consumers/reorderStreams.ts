@@ -41,37 +41,51 @@ export type ReorderStreamsType = (options: ReorderStreamsOptions) => Promise<voi
 /**
  * Reorders the video streams based on the provided options and updates the UI accordingly.
  *
- * @param {Object} options - The options for reordering streams.
+ * @param {ReorderStreamsOptions} options - The options for reordering streams.
  * @param {boolean} [options.add=false] - Whether to add new streams or not.
  * @param {boolean} [options.screenChanged=false] - Whether the screen has changed or not.
- * @param {ReorderStreamsOptions} options.parameters - The parameters required for reordering streams.
+ * @param {Object} options.parameters - The parameters required for reordering streams.
+ * @param {Function} options.parameters.getUpdatedAllParams - Function to get updated parameters.
+ * @param {Array} options.parameters.allVideoStreams - Array of all video streams.
+ * @param {Array} options.parameters.participants - Array of participants.
+ * @param {Array} options.parameters.oldAllStreams - Array of old streams.
+ * @param {string} options.parameters.screenId - ID of the screen.
+ * @param {string} options.parameters.adminVidID - ID of the admin video.
+ * @param {Array} options.parameters.newLimitedStreams - Array of new limited streams.
+ * @param {Array} options.parameters.newLimitedStreamsIDs - Array of new limited stream IDs.
+ * @param {Array} options.parameters.activeSounds - Array of active sounds.
+ * @param {string} options.parameters.screenShareIDStream - ID of the screen share stream.
+ * @param {string} options.parameters.screenShareNameStream - Name of the screen share stream.
+ * @param {string} options.parameters.adminIDStream - ID of the admin stream.
+ * @param {string} options.parameters.adminNameStream - Name of the admin stream.
+ * @param {Function} options.parameters.updateNewLimitedStreams - Function to update new limited streams.
+ * @param {Function} options.parameters.updateNewLimitedStreamsIDs - Function to update new limited stream IDs.
+ * @param {Function} options.parameters.updateActiveSounds - Function to update active sounds.
+ * @param {Function} options.parameters.updateScreenShareIDStream - Function to update screen share ID stream.
+ * @param {Function} options.parameters.updateScreenShareNameStream - Function to update screen share name stream.
+ * @param {Function} options.parameters.updateAdminIDStream - Function to update admin ID stream.
+ * @param {Function} options.parameters.updateAdminNameStream - Function to update admin name stream.
+ * @param {Function} options.parameters.updateYouYouStream - Function to update YouYou stream.
+ * @param {Function} options.parameters.changeVids - Function to reflect changes on the UI.
  *
  * @returns {Promise<void>} A promise that resolves when the reordering is complete.
  *
- * @typedef {Object} ReorderStreamsOptions
- * @property {Function} getUpdatedAllParams - Function to get updated parameters.
- * @property {Array} allVideoStreams - Array of all video streams.
- * @property {Array} participants - Array of participants.
- * @property {Array} oldAllStreams - Array of old streams.
- * @property {string} screenId - ID of the screen.
- * @property {string} adminVidID - ID of the admin video.
- * @property {Array} newLimitedStreams - Array of new limited streams.
- * @property {Array} newLimitedStreamsIDs - Array of new limited stream IDs.
- * @property {Array} activeSounds - Array of active sounds.
- * @property {string} screenShareIDStream - ID of the screen share stream.
- * @property {string} screenShareNameStream - Name of the screen share stream.
- * @property {string} adminIDStream - ID of the admin stream.
- * @property {string} adminNameStream - Name of the admin stream.
- * @property {Function} updateNewLimitedStreams - Function to update new limited streams.
- * @property {Function} updateNewLimitedStreamsIDs - Function to update new limited stream IDs.
- * @property {Function} updateActiveSounds - Function to update active sounds.
- * @property {Function} updateScreenShareIDStream - Function to update screen share ID stream.
- * @property {Function} updateScreenShareNameStream - Function to update screen share name stream.
- * @property {Function} updateAdminIDStream - Function to update admin ID stream.
- * @property {Function} updateAdminNameStream - Function to update admin name stream.
- * @property {Function} updateYouYouStream - Function to update YouYou stream.
- * @property {Function} changeVids - Function to reflect changes on the UI.
+ * @throws {Error} Throws an error if there is an issue updating the streams.
+ *
+ * @example
+ * ```typescript
+ * await reorderStreams({
+ *   add: true,
+ *   screenChanged: false,
+ *   parameters: {
+ *     allVideoStreams: [...],
+ *     participants: [...],
+ *     // additional parameters...
+ *   },
+ * });
+ * ```
  */
+
 export const reorderStreams = async ({
   add = false,
   screenChanged = false,

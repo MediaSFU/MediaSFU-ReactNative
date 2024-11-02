@@ -1,5 +1,3 @@
-// ParticipantListItem.tsx
-
 import React from 'react';
 import {
   View, Text, Pressable, StyleSheet,
@@ -40,32 +38,50 @@ export interface ParticipantListItemOptions {
  * in the participant list. It provides actions to mute, message, and remove the participant.
  *
  * @component
- * @param {ParticipantListItemOptions} props - The properties object.
+ * @param {ParticipantListItemOptions} props - The properties object for the component.
  * @returns {JSX.Element} The rendered ParticipantListItem component.
  *
  * @example
  * ```tsx
- * <ParticipantListItem
- *   participant={participantObject}
- *   isBroadcast={false}
- *   onMuteParticipants={handleMute}
- *   onMessageParticipants={handleMessage}
- *   onRemoveParticipants={handleRemove}
- *   socket={socketInstance}
- *   coHostResponsibility={coHostResponsibilities}
- *   member="JohnDoe"
- *   islevel="2"
- *   showAlert={showAlertFunction}
- *   coHost="JaneDoe"
- *   roomName="MainRoom"
- *   updateIsMessagesModalVisible={updateModalVisibility}
- *   updateDirectMessageDetails={updateDMDetails}
- *   updateStartDirectMessage={startDM}
- *   participants={participantsArray}
- *   updateParticipants={updateParticipantList}
- * />
+ * import React from 'react';
+ * import { ParticipantListItem } from 'mediasfu-reactnative';
+ * 
+ * function App() {
+ *   const participant = {
+ *     id: '123',
+ *     name: 'John Doe',
+ *     muted: false,
+ *     islevel: '1',
+ *     // other participant properties
+ *   };
+ *   
+ *   return (
+ *     <ParticipantListItem
+ *       participant={participant}
+ *       isBroadcast={false}
+ *       onMuteParticipants={handleMute}
+ *       onMessageParticipants={handleMessage}
+ *       onRemoveParticipants={handleRemove}
+ *       socket={socketInstance}
+ *       coHostResponsibility={coHostResponsibilities}
+ *       member="JohnDoe"
+ *       islevel="2"
+ *       showAlert={showAlertFunction}
+ *       coHost="JaneDoe"
+ *       roomName="MainRoom"
+ *       updateIsMessagesModalVisible={updateModalVisibility}
+ *       updateDirectMessageDetails={updateDMDetails}
+ *       updateStartDirectMessage={startDM}
+ *       participants={participantsArray}
+ *       updateParticipants={updateParticipantList}
+ *     />
+ *   );
+ * }
+ * 
+ * export default App;
  * ```
  */
+
 const ParticipantListItem: React.FC<ParticipantListItemOptions> = ({
   participant,
   isBroadcast,

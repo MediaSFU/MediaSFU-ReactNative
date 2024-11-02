@@ -32,9 +32,35 @@ export type SwitchVideoType = (options: SwitchVideoOptions) => Promise<void>;
 
 /**
  * Switches the user's video device based on the provided video preference.
+ * 
+ * @param {SwitchVideoOptions} options - The function parameters.
+ * @returns {Promise<void>}
  *
- * @param {SwitchVideoParams} options - The function parameters.
+ * @example
+ * ```typescript
+ * switchVideo({
+ *   videoPreference: "newVideoDeviceID",
+ *   parameters: {
+ *     recordStarted: true,
+ *     recordResumed: false,
+ *     recordStopped: false,
+ *     recordPaused: false,
+ *     recordingMediaOptions: "video",
+ *     videoAlreadyOn: true,
+ *     userDefaultVideoInputDevice: "currentVideoDeviceID",
+ *     defVideoID: "defaultVideoDeviceID",
+ *     allowed: true,
+ *     updateDefVideoID: (deviceId) => setDefVideoID(deviceId),
+ *     updatePrevVideoInputDevice: (deviceId) => setPrevVideoDevice(deviceId),
+ *     updateUserDefaultVideoInputDevice: (deviceId) => setUserDefaultVideo(deviceId),
+ *     updateIsMediaSettingsModalVisible: (isVisible) => setMediaSettingsModal(isVisible),
+ *     showAlert: (alertOptions) => showAlert(alertOptions),
+ *     switchUserVideo: switchUserVideoFunction,
+ *   }
+ * });
+ * ```
  */
+
 export const switchVideo = async ({ videoPreference, parameters }: SwitchVideoOptions): Promise<void> => {
   let {
     recordStarted,

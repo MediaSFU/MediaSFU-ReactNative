@@ -67,6 +67,74 @@ export interface AudioCardOptions {
 
 export type AudioCardType = (options: AudioCardOptions) => JSX.Element;
 
+/**
+ * AudioCard component displays participant information, audio waveform, and media control buttons.
+ *
+ * This component provides an animated waveform for audio activity, control buttons to toggle audio and video,
+ * and options for customization of appearance, layout, and media controls. It leverages WebSocket for
+ * real-time updates and accommodates custom styling and control component integrations.
+ *
+ * @component
+ * @param {Function} [controlUserMedia=controlMedia] - Function to control user media settings.
+ * @param {StyleProp<ViewStyle>} [customStyle] - Custom styles for the card container.
+ * @param {string} name - Name of the participant displayed in the card.
+ * @param {string} [barColor='red'] - Color for the waveform bars.
+ * @param {string} [textColor='white'] - Color for participant name text.
+ * @param {string} [imageSource] - URL for participant image.
+ * @param {boolean} [roundedImage=false] - Flag to display the image with rounded corners.
+ * @param {StyleProp<ImageStyle>} [imageStyle] - Custom styles for participant image.
+ * @param {boolean} [showControls=true] - Flag to toggle the visibility of media control buttons.
+ * @param {boolean} [showInfo=true] - Flag to toggle the visibility of participant info.
+ * @param {React.ReactNode} [videoInfoComponent] - Custom component to replace default participant info.
+ * @param {React.ReactNode} [videoControlsComponent] - Custom component to replace default control buttons.
+ * @param {ControlsPosition} [controlsPosition='topLeft'] - Position for media control buttons overlay.
+ * @param {InfoPosition} [infoPosition='bottomLeft'] - Position for participant info overlay.
+ * @param {Participant} participant - Participant information.
+ * @param {string} [backgroundColor='#2c678f'] - Background color for the card.
+ * @param {AudioDecibels} [audioDecibels] - Audio decibels data for the waveform.
+ * @param {AudioCardParameters} parameters - Parameters with media and event settings.
+ *
+ * @returns {JSX.Element} The AudioCard component.
+ *
+ * @example
+ * ```tsx
+ * import React from 'react';
+ * import { AudioCard } from 'mediasfu-reactnative';
+ * import { io } from 'socket.io-client';
+ *
+ * function App() {
+ *   const socket = io('http://localhost:3000');
+ *   
+ *   return (
+ *     <AudioCard
+ *       name="John Doe"
+ *       barColor="blue"
+ *       textColor="white"
+ *       imageSource="https://example.com/image.jpg"
+ *       showControls={true}
+ *       showInfo={true}
+ *       participant={{ name: "John Doe", muted: false, videoOn: true }}
+ *       parameters={{
+ *         audioDecibels: [{ name: "John Doe", averageLoudness: 128 }],
+ *         participants: [{ name: "John Doe" }],
+ *         socket,
+ *         coHostResponsibility: [],
+ *         roomName: "Room 1",
+ *         coHost: "Admin",
+ *         islevel: "1",
+ *         member: "12345",
+ *         eventType: "meeting",
+ *         showAlert: ({ message, type }) => console.log(message, type),
+ *         getUpdatedAllParams: () => ({}),
+ *       }}
+ *     />
+ *   );
+ * }
+ *
+ * export default App;
+ * ```
+ */
+
 const AudioCard: React.FC<AudioCardOptions> = ({
   controlUserMedia = controlMedia,
   customStyle,

@@ -23,7 +23,18 @@ export type RecordUpdateTimerType = (options: RecordUpdateTimerOptions) => void;
  * @param {Function} options.updateRecordElapsedTime - Callback to update the elapsed recording time.
  * @param {Function} options.updateRecordingProgressTime - Callback to update the formatted recording time.
  * @returns {void}
+ * 
+ * @example
+ * ```typescript
+ * recordUpdateTimer({
+ *   recordElapsedTime: 0,
+ *   recordStartTime: Date.now(),
+ *   updateRecordElapsedTime: (elapsedTime) => console.log("Elapsed Time:", elapsedTime),
+ *   updateRecordingProgressTime: (formattedTime) => console.log("Recording Progress:", formattedTime),
+ * });
+ * ```
  */
+
 export function recordUpdateTimer({
   recordElapsedTime,
   recordStartTime,

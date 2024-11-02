@@ -21,7 +21,7 @@ export type ModifySettingsType = (options: ModifySettingsOptions) => Promise<voi
 
 /**
  * Modifies the settings for a given room and updates the state accordingly.
- *
+ * 
  * @param {Object} options - The options for modifying settings.
  * @param {Function} options.showAlert - Function to show alert messages.
  * @param {string} options.roomName - The name of the room.
@@ -35,11 +35,30 @@ export type ModifySettingsType = (options: ModifySettingsOptions) => Promise<voi
  * @param {Function} options.updateScreenshareSetting - Function to update the screenshare setting state.
  * @param {Function} options.updateChatSetting - Function to update the chat setting state.
  * @param {Function} options.updateIsSettingsModalVisible - Function to update the visibility of the settings modal.
- *
+ * 
  * @returns {Promise<void>} A promise that resolves when the settings have been modified.
- *
+ * 
  * @throws Will show an alert if any setting is set to "approval" in demo mode (room name starts with "d").
+ * 
+ * @example
+ * ```typescript
+ * modifySettings({
+ *   roomName: "d123",
+ *   audioSet: "allow",
+ *   videoSet: "allow",
+ *   screenshareSet: "deny",
+ *   chatSet: "allow",
+ *   socket: mySocketInstance,
+ *   updateAudioSetting: setAudioSetting,
+ *   updateVideoSetting: setVideoSetting,
+ *   updateScreenshareSetting: setScreenshareSetting,
+ *   updateChatSetting: setChatSetting,
+ *   updateIsSettingsModalVisible: setIsSettingsModalVisible,
+ *   showAlert: (options) => alertUser(options),
+ * });
+ * ```
  */
+
 export const modifySettings = async ({
   showAlert,
   roomName,

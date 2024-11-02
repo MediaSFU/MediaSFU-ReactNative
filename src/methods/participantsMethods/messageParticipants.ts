@@ -16,20 +16,35 @@ export interface MessageParticipantsOptions {
 export type MessageParticipantsType = (options: MessageParticipantsOptions) => void;
 
 /**
- * Sends a direct message to a participant if certain conditions are met.
- *s
- * @param coHostResponsibility - Array of responsibilities assigned to the co-host.
- * @param participant - The participant to whom the message is to be sent.
- * @param member - The current member attempting to send the message.
- * @param islevel - The level of the current member.
- * @param showAlert - Function to show an alert message.
- * @param coHost - The co-host member.
- * @param updateIsMessagesModalVisible - Function to update the visibility of the messages modal.
- * @param updateDirectMessageDetails - Function to update the details of the direct message.
- * @param updateStartDirectMessage - Function to start the direct message.
+ * Sends a direct message to a participant if the current member has the necessary permissions.
  *
- * @returns void
+ * @param {MessageParticipantsOptions} options - The options for messaging participants.
+ * @param {CoHostResponsibility[]} options.coHostResponsibility - Array of responsibilities assigned to the co-host.
+ * @param {Participant} options.participant - The participant to whom the message is to be sent.
+ * @param {string} options.member - The current member attempting to send the message.
+ * @param {string} options.islevel - The level of the current member.
+ * @param {ShowAlert} [options.showAlert] - Function to show an alert message.
+ * @param {string} options.coHost - The co-host member.
+ * @param {Function} options.updateIsMessagesModalVisible - Function to update the visibility of the messages modal.
+ * @param {Function} options.updateDirectMessageDetails - Function to update the details of the direct message.
+ * @param {Function} options.updateStartDirectMessage - Function to start the direct message.
+ *
+ * @example
+ * ```typescript
+ * messageParticipants({
+ *   coHostResponsibility: [{ name: "chat", value: true }],
+ *   participant: { name: "John Doe", islevel: "1" },
+ *   member: "currentMember",
+ *   islevel: "2",
+ *   showAlert: (alert) => console.log(alert.message),
+ *   coHost: "coHostMember",
+ *   updateIsMessagesModalVisible: (isVisible) => setMessagesModalVisible(isVisible),
+ *   updateDirectMessageDetails: (participant) => setDirectMessageDetails(participant),
+ *   updateStartDirectMessage: (start) => setStartDirectMessage(start),
+ * });
+ * ```
  */
+
 export const messageParticipants = ({
 
   coHostResponsibility,

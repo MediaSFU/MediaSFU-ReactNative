@@ -35,6 +35,7 @@ export interface SwitchUserVideoOptions {
 // Export the type definition for the function
 export type SwitchUserVideoType = (options: SwitchUserVideoOptions) => Promise<void>;
 
+
 /**
  * Switches the user's video input device based on the provided options.
  *
@@ -56,10 +57,35 @@ export type SwitchUserVideoType = (options: SwitchUserVideoOptions) => Promise<v
  * @param {Function} options.parameters.sleep - Function to pause execution for a specified duration.
  * @param {Function} options.parameters.checkMediaPermission - Function to check media permissions.
  *
- * @returns {Promise<void>} A promise that resolves when the video input device has been switched.
+ * @returns {Promise<void>} A promise that resolves when the video input device has been successfully switched.
  *
- * @throws Will throw an error if switching the video input device fails.
+ * @throws Will throw an error if the audio input device cannot be accessed or if there is an unexpected error.
+ *
+ * @example
+ * ```typescript
+ * await switchUserVideo({
+ *   videoPreference: 'video-device-id',
+ *   checkoff: false,
+ *   parameters: {
+ *     audioOnlyRoom: false,
+ *     frameRate: 30,
+ *     vidCons: { width: 640, height: 480 },
+ *     prevVideoInputDevice: 'prev-video-device-id',
+ *     showAlert: showAlertFunction,
+ *     mediaDevices: navigator.mediaDevices,
+ *     hasCameraPermission: true,
+ *     updateVideoSwitching: updateVideoSwitchingFunction,
+ *     updateUserDefaultVideoInputDevice: updateUserDefaultVideoInputDeviceFunction,
+ *     requestPermissionCamera: requestPermissionCameraFunction,
+ *     streamSuccessVideo: streamSuccessVideoFunction,
+ *     sleep: sleepFunction,
+ *     checkMediaPermission: true,
+ *     getUpdatedAllParams: getUpdatedAllParamsFunction,
+ *   },
+ * });
+ * ```
  */
+
 export async function switchUserVideo({
   videoPreference,
   checkoff,

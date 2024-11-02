@@ -251,27 +251,37 @@ export type PreJoinPageType = (options: PreJoinPageOptions) => JSX.Element;
  *
  * @example
  * ```tsx
- * <PreJoinPage
- *   parameters={{
- *     showAlert: showAlertFunction,
- *     updateIsLoadingModalVisible: updateLoadingFunction,
- *     connectSocket: connectSocketFunction,
- *     updateSocket: updateSocketFunction,
- *     updateValidated: updateValidatedFunction,
- *     updateApiUserName: updateApiUserNameFunction,
- *     updateApiToken: updateApiTokenFunction,
- *     updateLink: updateLinkFunction,
- *     updateRoomName: updateRoomNameFunction,
- *     updateMember: updateMemberFunction,
- *     imgSrc: 'https://example.com/logo.png',
- *   }}
- *   credentials={{
- *     apiUserName: 'user123',
- *     apiKey: 'apikey123',
- *   }}
- * />
+ * import React from 'react';
+ * import { PreJoinPage } from 'mediasfu-reactnative';
+ * 
+ * function App() {
+ *   return (
+ *     <PreJoinPage
+ *       parameters={{
+ *         showAlert: showAlertFunction,
+ *         updateIsLoadingModalVisible: updateLoadingFunction,
+ *         connectSocket: connectSocketFunction,
+ *         updateSocket: updateSocketFunction,
+ *         updateValidated: updateValidatedFunction,
+ *         updateApiUserName: updateApiUserNameFunction,
+ *         updateApiToken: updateApiTokenFunction,
+ *         updateLink: updateLinkFunction,
+ *         updateRoomName: updateRoomNameFunction,
+ *         updateMember: updateMemberFunction,
+ *         imgSrc: 'https://example.com/logo.png',
+ *       }}
+ *       credentials={{
+ *         apiUserName: 'user123',
+ *         apiKey: 'apikey123',
+ *       }}
+ *     />
+ *   );
+ * }
+ * 
+ * export default App;
  * ```
  */
+
 const PreJoinPage: React.FC<PreJoinPageOptions> = ({
   parameters,
   credentials,

@@ -37,16 +37,26 @@ export type ConfirmHereModalType = (
  *
  * @example
  * ```tsx
- * <ConfirmHereModal
- *   isConfirmHereModalVisible={isModalVisible}
- *   onConfirmHereClose={() => setModalVisible(false)}
- *   parameters={{
- *     countdownDuration: 120,
- *     socket: socketInstance,
- *     roomName: 'Main Room',
- *     member: 'User123',
- *   }}
- * />
+ * import React, { useState } from 'react';
+ * import { ConfirmHereModal } from 'mediasfu-reactnative';
+ * 
+ * function App() {
+ *   const [isModalVisible, setModalVisible] = useState(true);
+
+ *   return (
+ *     <ConfirmHereModal
+ *       isConfirmHereModalVisible={isModalVisible}
+ *       onConfirmHereClose={() => setModalVisible(false)}
+ *       countdownDuration={120}
+ *       socket={socketInstance}
+ *       roomName="Main Room"
+ *       member="User123"
+ *       backgroundColor="#83c0e9"
+ *     />
+ *   );
+ * }
+
+ * export default App;
  * ```
  */
 

@@ -71,14 +71,52 @@ export type MainContainerComponentType = (
 ) => JSX.Element;
 
 /**
- * MainContainerComponent is a React Native functional component that renders a container
- * with customizable dimensions and margins. The dimensions of the container are
- * calculated based on the window size and the provided fractions for width and height.
- * The component also updates its dimensions dynamically when the window size changes.
+ * MainContainerComponent renders a container with customizable dimensions, margins, and padding.
+ * The container's width and height adjust based on window size and specified fractions.
  *
- * @param {MainContainerComponentOptions} props - The properties for the MainContainerComponent.
- * @returns {JSX.Element} The rendered container component.
+ * This component is responsive to window size changes, recalculating its dimensions dynamically
+ * and supporting customization of margins, padding, and background color.
+ *
+ * @component
+ * @param {MainContainerComponentOptions} props - Configuration options for MainContainerComponent.
+ * @param {string} [props.backgroundColor='transparent'] - Background color of the container.
+ * @param {React.ReactNode} props.children - Elements to render inside the container.
+ * @param {number} [props.containerWidthFraction=1] - Fraction of window width for container width.
+ * @param {number} [props.containerHeightFraction=1] - Fraction of window height for container height.
+ * @param {number} [props.marginLeft=0] - Left margin of the container.
+ * @param {number} [props.marginRight=0] - Right margin of the container.
+ * @param {number} [props.marginTop=0] - Top margin of the container.
+ * @param {number} [props.marginBottom=0] - Bottom margin of the container.
+ * @param {number} [props.padding=0] - Padding inside the container.
+ *
+ * @returns {JSX.Element} The MainContainerComponent with responsive dimensions and customizable styling.
+ *
+ * @example
+ * ```tsx
+ * import React from 'react';
+ * import { MainContainerComponent } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   return (
+ *     <MainContainerComponent
+ *       backgroundColor="lightblue"
+ *       containerWidthFraction={0.9}
+ *       containerHeightFraction={0.8}
+ *       marginLeft={10}
+ *       marginRight={10}
+ *       marginTop={20}
+ *       marginBottom={20}
+ *       padding={15}
+ *     >
+ *       <Text>Main Content</Text>
+ *     </MainContainerComponent>
+ *   );
+ * }
+ *
+ * export default App;
+ * ```
  */
+
 const MainContainerComponent: React.FC<MainContainerComponentOptions> = ({
   backgroundColor = 'transparent',
   children,

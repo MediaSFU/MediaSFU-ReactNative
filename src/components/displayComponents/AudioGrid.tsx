@@ -12,16 +12,37 @@ export interface AudioGridOptions {
 export type AudioGridType = (options: AudioGridOptions) => React.ReactNode;
 
 /**
- * AudioGrid component
+ * AudioGrid component renders a grid layout of audio components or elements.
  *
- * This component is responsible for rendering a grid of audio components.
+ * This component organizes an array of audio components or elements into a flexible grid.
  *
  * @component
- * @param {AudioGridOptions} props - The properties for the AudioGrid component.
- * @param {React.ReactNode[]} props.componentsToRender - An array of React components to be rendered in the grid.
+ * @param {AudioGridOptions} props - Properties for the AudioGrid component.
+ * @param {React.ReactNode[]} props.componentsToRender - Array of React components or elements to render in the grid.
  *
- * @returns {JSX.Element} The rendered grid of audio components.
+ * @returns {JSX.Element} The AudioGrid component rendering a grid of audio components.
+ *
+ * @example
+ * ```tsx
+ * import React from 'react';
+ * import { AudioGrid, AudioCard } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   const components = [
+ *     <AudioCard name="Participant 1" />,
+ *     <AudioCard name="Participant 2" />,
+ *     <AudioCard name="Participant 3" />
+ *   ];
+ *
+ *   return (
+ *     <AudioGrid componentsToRender={components} />
+ *   );
+ * }
+ *
+ * export default App;
+ * ```
  */
+
 const AudioGrid: React.FC<AudioGridOptions> = ({ componentsToRender }) => {
   /**
    * renderGrid - Renders componentsToRender array into a grid.

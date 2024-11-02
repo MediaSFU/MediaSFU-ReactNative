@@ -76,33 +76,49 @@ export interface CustomButtonsOptions {
 export type CustomButtonsType = (options: CustomButtonsOptions) => JSX.Element;
 
 /**
- * CustomButtons component renders a list of customizable buttons.
- *
- * @component
- * @param {CustomButtonsOptions} props - The properties for the CustomButtons component.
- * @param {CustomButton[]} props.buttons - An array of button configurations.
- * @returns {JSX.Element} The rendered CustomButtons component.
+ * CustomButtons renders a list of customizable buttons, each with configurable actions, icons, and display options.
  *
  * @example
  * ```tsx
- * <CustomButtons
- *   buttons={[
- *     {
- *       action: () => console.log('Button 1 pressed'),
- *       show: true,
- *       backgroundColor: '#4CAF50',
- *       icon: 'check-circle',
- *       text: 'Confirm',
- *     },
- *     {
- *       action: () => console.log('Button 2 pressed'),
- *       show: false,
- *       text: 'Hidden Button',
- *     },
- *   ]}
- * />
+ * import React from 'react';
+ * import { CustomButtons } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   return (
+ *     <CustomButtons
+ *       buttons={[
+ *         {
+ *           action: () => console.log('Confirm pressed'),
+ *           show: true,
+ *           backgroundColor: '#4CAF50',
+ *           icon: 'check-circle',
+ *           text: 'Confirm',
+ *           textStyle: { color: 'white', fontWeight: 'bold' },
+ *         },
+ *         {
+ *           action: () => console.log('Delete pressed'),
+ *           show: true,
+ *           backgroundColor: '#F44336',
+ *           icon: 'trash',
+ *           text: 'Delete',
+ *           textStyle: { color: 'white' },
+ *         },
+ *         {
+ *           action: () => console.log('Disabled pressed'),
+ *           show: true,
+ *           disabled: true,
+ *           backgroundColor: '#9E9E9E',
+ *           text: 'Disabled',
+ *         },
+ *       ]}
+ *     />
+ *   );
+ * }
+ *
+ * export default App;
  * ```
  */
+
 const CustomButtons: React.FC<CustomButtonsOptions> = ({ buttons }) => (
   <View style={styles.customButtonsContainer}>
     {buttons.map((button, index) => (

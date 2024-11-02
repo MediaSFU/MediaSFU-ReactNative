@@ -41,6 +41,23 @@ export type ResumeSendTransportAudioType = (options: ResumeSendTransportAudioOpt
  * @returns {Promise<void>} A promise that resolves when the send transport is resumed and the UI is updated.
  *
  * @throws {Error} Throws an error if there is an issue during the process of resuming the audio send transport.
+ *
+ * @example
+ * ```typescript
+ * await resumeSendTransportAudio({
+ *   parameters: {
+ *     audioProducer: producer,
+ *     islevel: '1',
+ *     hostLabel: 'Host',
+ *     lock_screen: false,
+ *     shared: false,
+ *     updateAudioProducer: updateProducerFunction,
+ *     videoAlreadyOn: false,
+ *     updateUpdateMainWindow: updateWindowFunction,
+ *     prepopulateUserMedia: prepopulateFunction,
+ *   },
+ * });
+ * ```
  */
 
 export const resumeSendTransportAudio = async ({

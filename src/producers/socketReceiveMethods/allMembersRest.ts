@@ -67,31 +67,36 @@ export type AllMembersRestType = (options: AllMembersRestOptions) => Promise<voi
 
 /**
  * Handles the reception and processing of all members' data.
- *
+ * 
  * @param {Object} options - The options for the function.
  * @param {Array} options.members - The list of members.
- * @param {Array} options.settings - The settings for audio, video, screenshare, and chat.
- * @param {any} options.coHoste - The co-host information.
- * @param {any} options.coHostRes - The co-host responsibility information.
- * @param {Object} options.parameters - The parameters for the function.
- * @param {Array} options.consume_sockets - The sockets to consume.
+ * @param {Settings} options.settings - The settings for audio, video, screenshare, and chat.
+ * @param {string} [options.coHoste] - Optional co-host information.
+ * @param {CoHostResponsibility[]} [options.coHostRes] - Optional co-host responsibility information.
+ * @param {AllMembersRestParameters} options.parameters - The parameters for the function.
+ * @param {ConsumeSocket[]} options.consume_sockets - The sockets to consume.
  * @param {string} options.apiUserName - The API username.
  * @param {string} options.apiKey - The API key.
  * @param {string} options.apiToken - The API token.
- *
+ * 
  * @returns {Promise<void>} A promise that resolves when the function completes.
- *
- * @typedef {Object} AllMembersRestOptions
- * @property {Array} members - The list of members.
- * @property {Array} settings - The settings for audio, video, screenshare, and chat.
- * @property {any} coHoste - The co-host information.
- * @property {any} coHostRes - The co-host responsibility information.
- * @property {Object} parameters - The parameters for the function.
- * @property {Array} consume_sockets - The sockets to consume.
- * @property {string} apiUserName - The API username.
- * @property {string} apiKey - The API key.
- * @property {string} apiToken - The API token.
+ * 
+ * @example
+ * ```typescript
+ * await allMembersRest({
+ *   members: memberList,
+ *   settings: { audio: 'on', video: 'on', screenshare: 'off', chat: 'on' },
+ *   coHoste: 'coHostName',
+ *   coHostRes: [{ type: 'moderate', allowed: true }],
+ *   parameters: allParams,
+ *   consume_sockets: [socket1, socket2],
+ *   apiUserName: 'apiUser',
+ *   apiKey: 'apiKey123',
+ *   apiToken: 'tokenXYZ'
+ * });
+ * ```
  */
+
 export const allMembersRest = async ({
   members,
   settings,

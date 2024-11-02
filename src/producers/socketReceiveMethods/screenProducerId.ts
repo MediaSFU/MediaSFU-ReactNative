@@ -16,18 +16,43 @@ export interface ScreenProducerIdOptions {
 export type ScreenProducerIdType = (options: ScreenProducerIdOptions) => void;
 
 /**
- * Handles the screen producer id.
+ * Manages and updates screen sharing based on the producer ID.
  *
- * @param producerId - The id of the producer.
- * @param screenId - The id of the screen.
- * @param membersReceived - Whether the members data has been received.
- * @param shareScreenStarted - Whether the screen sharing has started.
- * @param deferScreenReceived - Whether the screen sharing has been deferred.
- * @param participants - The list of participants.
- * @param updateScreenId - Function to update the screen id.
- * @param updateShareScreenStarted - Function to update the screen sharing status.
- * @param updateDeferScreenReceived - Function to update the screen sharing defer status.
+ * @param {ScreenProducerIdOptions} options - The configuration options.
+ * @param {string} options.producerId - The producer's unique ID for screen sharing.
+ * @param {string} options.screenId - The current screen ID.
+ * @param {boolean} options.membersReceived - Indicates if member data has been received.
+ * @param {boolean} options.shareScreenStarted - Indicates if screen sharing has started.
+ * @param {boolean} options.deferScreenReceived - Indicates if screen sharing should be deferred.
+ * @param {Participant[]} options.participants - List of participants.
+ * @param {Function} options.updateScreenId - Function to update the screen ID.
+ * @param {Function} options.updateShareScreenStarted - Function to update the screen sharing status.
+ * @param {Function} options.updateDeferScreenReceived - Function to update the defer screen sharing status.
+ *
+ * @returns {void}
+ *
+ * @example
+ * ```typescript
+ * const options = {
+ *   producerId: "abc123",
+ *   screenId: "screen1",
+ *   membersReceived: true,
+ *   shareScreenStarted: false,
+ *   deferScreenReceived: false,
+ *   participants: [{ ScreenID: "screen1", ScreenOn: true }],
+ *   updateScreenId: (id) => console.log("Screen ID updated to:", id),
+ *   updateShareScreenStarted: (started) => console.log("Share screen started:", started),
+ *   updateDeferScreenReceived: (deferred) => console.log("Defer screen received:", deferred),
+ * };
+ *
+ * screenProducerId(options);
+ * // Output:
+ * // Screen ID updated to: abc123
+ * // Share screen started: true
+ * // Defer screen received: false
+ * ```
  */
+
 export const screenProducerId = ({
   producerId,
   screenId,

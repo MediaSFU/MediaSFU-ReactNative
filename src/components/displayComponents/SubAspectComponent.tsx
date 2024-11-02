@@ -50,24 +50,41 @@ export interface SubAspectComponentOptions {
 export type SubAspectComponentType = (options: SubAspectComponentOptions) => JSX.Element;
 
 /**
- * SubAspectComponent is a React Native functional component that renders a sub-aspect
- * of a media display with optional controls. The component adjusts its width
- * and height based on the window size and provided fractions.
+ * SubAspectComponent is a flexible sub-container for media or content displays, adjusting its dimensions
+ * based on screen size and optional control visibility.
  *
- * @param {SubAspectComponentOptions} props - The properties for the SubAspectComponent.
- * @returns {JSX.Element} The rendered sub-aspect component.
+ * @param {Object} props - Properties for configuring the SubAspectComponent.
+ * @param {string} props.backgroundColor - Background color of the component.
+ * @param {React.ReactNode} props.children - The elements to render inside the component.
+ * @param {boolean} [props.showControls=true] - Whether to display the sub-aspect; affects height calculation.
+ * @param {number} [props.containerWidthFraction=1.0] - Fraction of window width used for component width.
+ * @param {number} [props.containerHeightFraction=1.0] - Fraction of window height used for component height.
+ * @param {number} [props.defaultFractionSub=0.0] - Height fraction adjustment when `showControls` is `true`.
  *
  * @example
- * <SubAspectComponent
- *   backgroundColor="#ffffff"
- *   showControls={true}
- *   containerWidthFraction={0.8}
- *   containerHeightFraction={0.1}
- *   defaultFractionSub={0.5}
- * >
- *   <ChildComponent />
- * </SubAspectComponent>
+ * ```tsx
+ * import React from 'react';
+ * import { SubAspectComponent } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   return (
+ *     <SubAspectComponent
+ *       backgroundColor="#e0e0e0"
+ *       showControls={true}
+ *       containerWidthFraction={0.8}
+ *       containerHeightFraction={0.15}
+ *       defaultFractionSub={0.5}
+ *     >
+ *       <Text>Content inside sub-container</Text>
+ *     </SubAspectComponent>
+ *   );
+ * }
+ *
+ * export default App;
+ * ```
  */
+
+
 const SubAspectComponent: React.FC<SubAspectComponentOptions> = ({
   backgroundColor,
   children,

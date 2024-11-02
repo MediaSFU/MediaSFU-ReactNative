@@ -51,10 +51,7 @@ export interface AdvancedPanelOptions {
 }
 
 /**
- * AdvancedPanelComponent is a React Native functional component that provides a user interface
- * for configuring advanced recording options. It allows users to select and update various
- * recording parameters such as video type, display type, background color, custom text,
- * name tags, and video orientation.
+ * AdvancedPanelComponent provides an interface for users to configure advanced recording options such as video type, display settings, background color, custom text, name tags, and video orientation.
  *
  * @component
  * @param {AdvancedPanelOptions} props - The properties object.
@@ -62,9 +59,41 @@ export interface AdvancedPanelOptions {
  *
  * @example
  * ```tsx
- * <AdvancedPanelComponent parameters={advancedParameters} />
+ * import React from 'react';
+ * import { AdvancedPanelComponent } from 'mediasfu-reactnative';
+ *
+ * const advancedParameters = {
+ *   recordingVideoType: 'fullDisplay',
+ *   recordingDisplayType: 'video',
+ *   recordingBackgroundColor: '#ffffff',
+ *   recordingNameTagsColor: '#000000',
+ *   recordingOrientationVideo: 'landscape',
+ *   recordingNameTags: true,
+ *   recordingAddText: false,
+ *   recordingCustomText: '',
+ *   recordingCustomTextPosition: 'top',
+ *   recordingCustomTextColor: '#000000',
+ *   updateRecordingVideoType: (value) => {  },
+ *   updateRecordingDisplayType: (value) => {  },
+ *   updateRecordingBackgroundColor: (value) => {  },
+ *   updateRecordingNameTagsColor: (value) => {  },
+ *   updateRecordingOrientationVideo: (value) => {  },
+ *   updateRecordingNameTags: (value) => {  },
+ *   updateRecordingAddText: (value) => {  },
+ *   updateRecordingCustomText: (value) => {  },
+ *   updateRecordingCustomTextPosition: (value) => {  },
+ *   updateRecordingCustomTextColor: (value) => {  },
+ *   eventType: 'conference',
+ * };
+ *
+ * function App() {
+ *   return <AdvancedPanelComponent parameters={advancedParameters} />;
+ * }
+ * 
+ * export default App;
  * ```
  */
+
 const AdvancedPanelComponent: React.FC<AdvancedPanelOptions> = ({
   parameters,
 }) => {

@@ -40,6 +40,49 @@ export interface RenderRequestComponentOptions {
   socket: Socket;
 }
 
+/**
+ * RenderRequestComponent displays a single request item in a list, providing actions to accept or reject the request.
+ * It uses FontAwesome icons to represent different request types.
+ *
+ * @component
+ * @param {RenderRequestComponentOptions} props - The properties for the RenderRequestComponent.
+ * @returns {JSX.Element} The rendered RenderRequestComponent.
+ *
+ * @example
+ * ```tsx
+ * import React from 'react';
+ * import { RenderRequestComponent } from 'mediasfu-reactnative';
+ *
+ * const request = {
+ *   id: 1,
+ *   name: 'Request to share screen',
+ *   icon: 'fa-desktop',
+ * };
+ *
+ * function handleRequestAction(action) {
+ *   console.log(`Request ${action}`);
+ * }
+ *
+ * const requestList = [request];
+ *
+ * function App() {
+ *   return (
+ *     <RenderRequestComponent
+ *       request={request}
+ *       onRequestItemPress={handleRequestAction}
+ *       requestList={requestList}
+ *       updateRequestList={(newRequestList) => console.log(newRequestList)}
+ *       roomName="MainRoom"
+ *       socket={socketInstance}
+ *     />
+ *   );
+ * }
+ *
+ * export default App;
+ * ```
+ */
+
+
 const RenderRequestComponent: React.FC<RenderRequestComponentOptions> = ({
   request,
   onRequestItemPress,

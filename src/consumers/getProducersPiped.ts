@@ -21,17 +21,38 @@ export type GetProducersPipedType = (options: GetProducersPipedOptions) => Promi
 /**
  * Retrieves piped producers and signals new consumer transport for each retrieved producer.
  *
- * @param {Object} options - The options for getting piped producers.
- * @param {WebSocket} options.nsock - The WebSocket instance used for communication.
- * @param {boolean} options.islevel - A flag indicating the level of the operation.
- * @param {Object} options.parameters - Additional parameters for the operation.
+ * @param {GetProducersPipedOptions} options - The options for getting piped producers.
+ * @param {Socket} options.nsock - The WebSocket instance used for communication.
+ * @param {string} options.islevel - A flag indicating the level of the operation.
+ * @param {GetProducersPipedParameters} options.parameters - Additional parameters for the operation.
  * @param {string} options.parameters.member - The member identifier.
  * @param {Function} options.parameters.signalNewConsumerTransport - The function to signal new consumer transport.
  *
  * @returns {Promise<void>} A promise that resolves when the operation is complete.
  *
  * @throws {Error} If an error occurs during the process of retrieving producers.
+ *
+ * @example
+ * const options = {
+ *   nsock: socketInstance,
+ *   islevel: '1',
+ *   parameters: {
+ *     member: 'memberId',
+ *     signalNewConsumerTransport: async ({ remoteProducerId, islevel, nsock, parameters }) => {
+ *       // Implementation for signaling new consumer transport
+ *     },
+ *   },
+ * };
+ *
+ * getProducersPiped(options)
+ *   .then(() => {
+ *     console.log('Successfully retrieved piped producers');
+ *   })
+ *   .catch((error) => {
+ *     console.error('Error retrieving piped producers:', error);
+ *   });
  */
+
 export const getProducersPiped = async ({
   nsock,
   islevel,

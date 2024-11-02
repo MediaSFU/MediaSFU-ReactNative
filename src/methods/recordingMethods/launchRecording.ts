@@ -38,7 +38,26 @@ export type LaunchRecordingType = (options: LaunchRecordingOptions) => void;
  * @param {boolean} options.localUIMode - Indicates if the local UI mode is active.
  *
  * @returns {void}
+ * 
+ * @example
+ * ```typescript
+ * launchRecording({
+ *   updateIsRecordingModalVisible: (visible) => console.log(`Modal visible: ${visible}`),
+ *   isRecordingModalVisible: false,
+ *   showAlert: (alert) => console.log(alert.message),
+ *   stopLaunchRecord: false,
+ *   canLaunchRecord: true,
+ *   recordingAudioSupport: true,
+ *   recordingVideoSupport: true,
+ *   updateCanRecord: (canRecord) => console.log(`Can record: ${canRecord}`),
+ *   updateClearedToRecord: (cleared) => console.log(`Cleared to record: ${cleared}`),
+ *   recordStarted: false,
+ *   recordPaused: false,
+ *   localUIMode: false
+ * });
+ * ```
  */
+
 export const launchRecording = ({
   updateIsRecordingModalVisible,
   isRecordingModalVisible,

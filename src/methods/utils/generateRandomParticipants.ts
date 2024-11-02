@@ -19,7 +19,19 @@ export type GenerateRandomParticipantsType = (options: GenerateRandomParticipant
  * @param {string} options.host - The host to include in the participants list.
  * @param {boolean} [options.forChatBroadcast=false] - Whether the participants are for a chat broadcast.
  * @returns {Participant[]} An array of generated participants.
+ *
+ * @example
+ * ```typescript
+ * generateRandomParticipants({
+ *   member: "Alice",
+ *   coHost: "Bob",
+ *   host: "Carol",
+ *   forChatBroadcast: true,
+ * });
+ * // Returns an array of Participant objects, e.g., [{ name: "Alice", islevel: "1", muted: false, id: "0", audioID: "audio-0", videoID: "video-0" }, ...]
+ * ```
  */
+
 const generateRandomParticipants = (
   {
     member, coHost = '', host, forChatBroadcast = false,

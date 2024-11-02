@@ -74,14 +74,62 @@ export interface VideoCardOptions {
 export type VideoCardType = (options: VideoCardOptions) => JSX.Element;
 
 /**
- * VideoCard Component
+ * VideoCard is a flexible React Native component for displaying a participant's video stream with optional controls and information.
+ * It includes an animated waveform based on audio decibels.
  *
- * A React Native component for displaying a video stream with optional controls and information.
- * It also includes an animated waveform based on audio decibels.
+ * @param {VideoCardOptions} props - The configuration options for the VideoCard component.
  *
- * @param {VideoCardOptions} props - The properties for the VideoCard component.
- * @returns {JSX.Element} The rendered VideoCard component.
+ * @example
+ * ```tsx
+ * import React from 'react';
+ * import { VideoCard } from 'mediasfu-reactnative';
+ * import { Socket } from 'socket.io-client';
+ * 
+ * const socket = Socket('https://example.com'); // Example socket instance
+ * 
+ * function App() {
+ *   return (
+ *     <VideoCard
+ *       name="John Doe"
+ *       remoteProducerId="1234"
+ *       eventType="meeting"
+ *       forceFullDisplay={true}
+ *       videoStream={null}
+ *       participant={{
+ *         name: 'John Doe',
+ *         id: '123',
+ *         videoOn: true,
+ *         muted: false,
+ *       }}
+ *       parameters={{
+ *         socket,
+ *         roomName: 'room1',
+ *         coHostResponsibility: [],
+ *         getUpdatedAllParams: () => ({
+ *           socket,
+ *           roomName: 'room1',
+ *           coHostResponsibility: [],
+ *           audioDecibels: [],
+ *           participants: [{ name: 'John Doe', id: '123', videoOn: true, muted: false }],
+ *           member: '123',
+ *           islevel: '1',
+ *           coHost: 'coHostId',
+ *         }),
+ *       }}
+ *       backgroundColor="#2c678f"
+ *       showControls={true}
+ *       showInfo={true}
+ *       barColor="green"
+ *       textColor="white"
+ *       doMirror={false}
+ *     />
+ *   );
+ * }
+ * 
+ * export default App;
+ * ```
  */
+
 const VideoCard: React.FC<VideoCardOptions> = ({
   customStyle,
   name,

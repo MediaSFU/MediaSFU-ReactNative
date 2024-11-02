@@ -17,7 +17,22 @@ export type AllWaitingRoomMembersType = (options: AllWaitingRoomMembersOptions) 
  * @param {Function} options.updateWaitingRoomList - A function to update the waiting room participants list.
  * @param {Function} options.updateTotalReqWait - A function to update the total count of waiting room participants.
  * @returns {Promise<void>} A promise that resolves when the updates are complete.
+ *
+ * @example
+ * ```typescript
+ * const participants = [
+ *   { name: "Alice", waitingSince: "10:30" },
+ *   { name: "Bob", waitingSince: "10:35" },
+ * ];
+ *
+ * await allWaitingRoomMembers({
+ *   waitingParticipants: participants,
+ *   updateWaitingRoomList: setWaitingRoomParticipants,
+ *   updateTotalReqWait: setTotalWaitingRequests,
+ * });
+ * ```
  */
+
 export const allWaitingRoomMembers = async ({
   waitingParticipants,
   updateWaitingRoomList, updateTotalReqWait,

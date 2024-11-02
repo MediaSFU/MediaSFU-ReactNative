@@ -1,7 +1,7 @@
 {
  "name": "mediasfu-reactnative",
- "version": "1.0.1",
-  "main": "dist/main.js",
+ "version": "1.0.2",
+ "main": "dist/main.js",
  "types": "dist/types/main.d.ts",
  "type": "module",
  "module": "dist/main.js",
@@ -9,14 +9,14 @@
  "license": "MIT",
  "description": "MediaSFU Prebuilt React Native SDK",
  "repository": {
-    "type": "git",
-    "url": "https://github.com/MediaSFU/MediaSFU-ReactNative"
-  },
-  "homepage": "https://github.com/MediaSFU/MediaSFU-ReactNative",
-  "bugs": {
-    "url": "https://github.com/MediaSFU/MediaSFU-ReactNative/issues",
-    "email": "info@mediasfu.com"
-  },
+  "type": "git",
+  "url": "https://github.com/MediaSFU/MediaSFU-ReactNative"
+ },
+ "homepage": "https://github.com/MediaSFU/MediaSFU-ReactNative",
+ "bugs": {
+  "url": "https://github.com/MediaSFU/MediaSFU-ReactNative/issues",
+  "email": "info@mediasfu.com"
+ },
  "files": [
   "dist/",
   "README.md"
@@ -35,7 +35,8 @@
   "build:copy": "cp -r src/assets dist/assets",
   "buildnpm": "npm run build:clean && npm run build:ts",
   "lint": "eslint src/**/*.ts src/**/*.tsx",
-  "lint:fix": "eslint src/**/*.ts src/**/*.tsx --fix"
+  "lint:fix": "eslint src/**/*.ts src/**/*.tsx --fix",
+  "build-docs": "typedoc"
  },
  "peerDependencies": {
   "@react-native-async-storage/async-storage": "^2.0.0",
@@ -111,6 +112,9 @@
   "reanimated-color-picker": "^3.0.4",
   "socket.io-client": "^4.8.1",
   "standardized-audio-context": "^25.3.77",
+  "typedoc": "^0.26.11",
+  "typedoc-plugin-extras": "^3.1.0",
+  "typedoc-plugin-markdown": "^4.2.10",
   "typescript": "5.6.3"
  },
  "keywords": [

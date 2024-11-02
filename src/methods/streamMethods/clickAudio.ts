@@ -69,18 +69,22 @@ export type ClickAudioType = (options: ClickAudioOptions) => Promise<void>;
 
 /**
  * Handles the click event for toggling audio in a media session.
- *
+ * 
  * @param {ClickAudioOptions} parameters - The parameters required for handling the audio click event.
  * @returns {Promise<void>} A promise that resolves when the audio click event has been handled.
- *
+ * 
  * The function performs the following actions:
  * - If the event is audio-only, it shows an alert and exits.
  * - If the audio is already on, it handles the logic for turning it off, including checking recording states and permissions.
  * - If the audio is off, it checks for admin restrictions, user permissions, and handles the logic for turning the audio on.
  * - It updates various states and emits socket events as necessary.
- *
- * The function makes use of several helper functions and state update functions passed in through the parameters.
+ * 
+ * @example
+ * ```typescript
+ * clickAudio({ parameters });
+ * ```
  */
+
 export const clickAudio = async ({ parameters }: ClickAudioOptions): Promise<void> => {
   let {
     checkMediaPermission,

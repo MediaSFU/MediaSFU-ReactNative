@@ -24,9 +24,9 @@ export type CompareScreenStatesType = (options: CompareScreenStatesOptions) => P
 /**
  * Compares the current screen states with the previous screen states and triggers actions based on changes.
  *
- * @param {Object} options - The options for comparing screen states.
+ * @param {CompareScreenStatesOptions} options - The options for comparing screen states.
  * @param {boolean} [options.restart=false] - Whether to restart the comparison process.
- * @param {CompareScreenStatesOptions} options.parameters - The parameters for the comparison.
+ * @param {CompareScreenStatesParameters} options.parameters - The parameters for the comparison.
  * @param {Function} options.parameters.getUpdatedAllParams - Function to get updated parameters.
  * @param {string} options.parameters.recordingDisplayType - The type of display being recorded.
  * @param {boolean} options.parameters.recordingVideoOptimized - Whether the recording is optimized for video.
@@ -38,7 +38,27 @@ export type CompareScreenStatesType = (options: CompareScreenStatesOptions) => P
  * @returns {Promise<void>} A promise that resolves when the comparison and any triggered actions are complete.
  *
  * @throws Will log an error message if an error occurs during the comparison process.
+ * 
+ * @example
+ * const options = {
+ *   restart: false,
+ *   parameters: {
+ *     getUpdatedAllParams: getUpdatedAllParamsFunction,
+ *     recordingDisplayType: 'video',
+ *     recordingVideoOptimized: true,
+ *     screenStates: [{ key1: 'value1' }, { key2: 'value2' }],
+ *     prevScreenStates: [{ key1: 'value1' }, { key2: 'value2' }],
+ *     activeNames: ['name1', 'name2'],
+ *     trigger: triggerFunction,
+ *   },
+ * };
+ * 
+ * compareScreenStates(options)
+ *   .then(() => {
+ *     console.log('Screen states compared successfully');
+ *   });
  */
+
 export async function compareScreenStates({
   restart = false,
   parameters,

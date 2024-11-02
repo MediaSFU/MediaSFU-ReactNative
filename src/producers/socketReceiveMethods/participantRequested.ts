@@ -16,13 +16,30 @@ export type ParticipantRequestedType = (options: ParticipantRequestedOptions) =>
  * Handles a participant's request by adding it to the request list and updating the total count of requests and waiting room participants.
  *
  * @param {ParticipantRequestedOptions} options - The options for handling the participant's request.
- * @param {UserRequest} options.userRequest - The user request to be added to the request list.
- * @param {UserRequest[]} options.requestList - The current list of user requests.
- * @param {UserRequest[]} options.waitingRoomList - The current list of participants in the waiting room.
+ * @param {Request} options.userRequest - The user request to be added to the request list.
+ * @param {Request[]} options.requestList - The current list of user requests.
+ * @param {WaitingRoomParticipant[]} options.waitingRoomList - The current list of participants in the waiting room.
  * @param {Function} options.updateTotalReqWait - Function to update the total count of requests and waiting room participants.
  * @param {Function} options.updateRequestList - Function to update the request list.
  * @returns {Promise<void>} A promise that resolves when the participant's request has been handled.
+ *
+ * @example
+ * ```typescript
+ * const options = {
+ *   userRequest: { id: "user123", reason: "join" },
+ *   requestList: [{ id: "user1", reason: "help" }],
+ *   waitingRoomList: [{ id: "user2", name: "Alice" }],
+ *   updateTotalReqWait: (count) => console.log("Total requests:", count),
+ *   updateRequestList: (list) => console.log("Updated request list:", list),
+ * };
+ *
+ * await participantRequested(options);
+ * // Output:
+ * // "Updated request list: [{ id: 'user1', reason: 'help' }, { id: 'user123', reason: 'join' }]"
+ * // "Total requests: 3"
+ * ```
  */
+
 export const participantRequested = async ({
   userRequest,
   requestList,

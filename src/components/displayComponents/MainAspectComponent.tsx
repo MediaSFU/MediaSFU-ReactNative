@@ -68,13 +68,51 @@ export type MainAspectComponentType = (
 ) => JSX.Element;
 
 /**
- * MainAspectComponent is a React Native functional component that adjusts its dimensions
- * based on the window size and specified fractions. It also updates screen size
- * states (wide, medium, small) based on the container's width.
+ * MainAspectComponent dynamically adjusts its dimensions based on window size and user-defined fractions, 
+ * updating screen size states (wide, medium, small) based on container width.
  *
- * @param {MainAspectComponentOptions} props - The properties for the MainAspectComponent.
- * @returns {JSX.Element} The rendered component with adjusted dimensions and background color.
+ * This component supports responsive layouts by adjusting its height and width based on fractions of the window size.
+ * It also provides callbacks to update screen size states and toggles dimensions based on control visibility.
+ *
+ * @component
+ * @param {MainAspectComponentOptions} props - Properties for configuring the MainAspectComponent.
+ * @param {string} [props.backgroundColor='transparent'] - Background color of the component.
+ * @param {React.ReactNode} props.children - Elements to render inside the component.
+ * @param {boolean} [props.showControls=true] - Toggles height adjustment when controls are visible.
+ * @param {number} [props.containerWidthFraction=1] - Fraction of the window width for container width.
+ * @param {number} [props.containerHeightFraction=1] - Fraction of the window height for container height.
+ * @param {number} [props.defaultFraction=0.94] - Default height adjustment fraction when controls are shown.
+ * @param {Function} props.updateIsWideScreen - Callback to set wide screen state.
+ * @param {Function} props.updateIsMediumScreen - Callback to set medium screen state.
+ * @param {Function} props.updateIsSmallScreen - Callback to set small screen state.
+ *
+ * @returns {JSX.Element} The MainAspectComponent with responsive dimensions and background.
+ *
+ * @example
+ * ```tsx
+ * import React from 'react';
+ * import { MainAspectComponent } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   return (
+ *     <MainAspectComponent
+ *       backgroundColor="lightgray"
+ *       containerWidthFraction={0.8}
+ *       containerHeightFraction={0.8}
+ *       showControls={true}
+ *       updateIsWideScreen={(isWide) => console.log("Wide screen:", isWide)}
+ *       updateIsMediumScreen={(isMedium) => console.log("Medium screen:", isMedium)}
+ *       updateIsSmallScreen={(isSmall) => console.log("Small screen:", isSmall)}
+ *     >
+ *       <Text>Responsive Component</Text>
+ *     </MainAspectComponent>
+ *   );
+ * }
+ *
+ * export default App;
+ * ```
  */
+
 const MainAspectComponent: React.FC<MainAspectComponentOptions> = ({
   backgroundColor = 'transparent',
   children,

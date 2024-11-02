@@ -56,19 +56,47 @@ export type ControlButtonsComponentType = (
 ) => JSX.Element;
 
 /**
- * ControlButtonsComponent is a React Native functional component that renders a set of control buttons.
+ * ControlButtonsComponent renders a set of customizable control buttons with options for layout, style, and alignment.
  *
- * @param {ControlButtonsComponentOptions} props - The properties for the component.
- * @param {Array<Button>} props.buttons - An array of button options to render.
- * @param {string} [props.buttonBackgroundColor.default] - The default background color for the buttons.
- * @param {string} [props.buttonBackgroundColor.pressed] - The background color for the buttons when pressed.
- * @param {string} [props.alignment='flex-start'] - The alignment of the buttons within the container.
- * @param {boolean} [props.vertical=false] - Whether the buttons should be arranged vertically.
- * @param {StyleProp<ViewStyle>} [props.buttonsContainerStyle] - Additional styles for the buttons container.
- * @param {boolean} [props.showAspect=false] - Whether to display the buttons container.
+ * This component supports flexible alignment, background colors, vertical/horizontal orientation, and custom icon behavior.
+ * Each button can display an icon, alternate icon, or a custom component with active and disabled states.
  *
- * @returns {JSX.Element} The rendered component.
+ * @component
+ * @param {ControlButtonsComponentOptions} props - Configuration options for the control buttons.
+ * @param {Button[]} props.buttons - Array of button configurations, including icon, color, and onPress behavior.
+ * @param {string} [props.buttonColor] - Default color for the button icons.
+ * @param {object} [props.buttonBackgroundColor] - Background colors for buttons, with `default` and `pressed` states.
+ * @param {'flex-start' | 'center' | 'flex-end' | 'space-between' | 'space-around' | 'space-evenly'} [props.alignment='flex-start'] - Alignment of buttons in the container.
+ * @param {boolean} [props.vertical=false] - Determines whether buttons are arranged vertically.
+ * @param {StyleProp<ViewStyle>} [props.buttonsContainerStyle] - Additional custom styles for the container.
+ *
+ * @returns {JSX.Element} The rendered ControlButtonsComponent.
+ *
+ * @example
+ * ```tsx
+ * import React from 'react';
+ * import { ControlButtonsComponent } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   const buttons = [
+ *     { name: 'Play', icon: 'play', onPress: () => console.log('Play pressed'), active: true },
+ *     { name: 'Stop', icon: 'stop', onPress: () => console.log('Stop pressed') }
+ *   ];
+ *
+ *   return (
+ *     <ControlButtonsComponent
+ *       buttons={buttons}
+ *       alignment="center"
+ *       buttonBackgroundColor={{ default: '#333', pressed: '#555' }}
+ *       vertical={false}
+ *     />
+ *   );
+ * }
+ *
+ * export default App;
+ * ```
  */
+
 const ControlButtonsComponent: React.FC<ControlButtonsComponentOptions> = ({
   buttons,
   buttonBackgroundColor,

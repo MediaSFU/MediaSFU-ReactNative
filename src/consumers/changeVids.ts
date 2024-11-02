@@ -80,9 +80,10 @@ export type ChangeVidsType = (options: ChangeVidsOptions) => Promise<void>;
 /**
  * Asynchronously changes the video streams based on the provided options.
  *
- * @param {Object} options - The options for changing video streams.
+ * @function
+ * @param {ChangeVidsOptions} options - The options for changing video streams.
  * @param {boolean} [options.screenChanged=false] - Indicates if the screen has changed.
- * @param {ChangeVidsOptions} options.parameters - The parameters for changing video streams.
+ * @param {ChangeVidsParameters} options.parameters - The parameters for changing video streams.
  * @returns {Promise<void>} A promise that resolves when the video streams have been changed.
  *
  * @typedef {Object} ChangeVidsOptions
@@ -123,7 +124,7 @@ export type ChangeVidsType = (options: ChangeVidsOptions) => Promise<void>;
  * @property {boolean} breakOutRoomEnded - Indicates if breakout room has ended.
  * @property {Object} virtualStream - Virtual stream object.
  * @property {number} mainRoomsLength - Length of main rooms.
- * @property {string} memberRoom - Room of the member.
+ * @property {number} memberRoom - Room of the member.
  * @property {Function} updateP_activeNames - Function to update active participant names.
  * @property {Function} updateActiveNames - Function to update active names.
  * @property {Function} updateDispActiveNames - Function to update displayed active names.
@@ -142,6 +143,74 @@ export type ChangeVidsType = (options: ChangeVidsOptions) => Promise<void>;
  * @property {Function} updateMemberRoom - Function to update member room.
  * @property {Function} mixStreams - Function to mix streams.
  * @property {Function} dispStreams - Function to display streams.
+ * 
+ * @example
+ * const options = {
+ *   screenChanged: false,
+ *   parameters: {
+ *     getUpdatedAllParams: () => updatedParameters,
+ *     allVideoStreams: allStreams,
+ *     p_activeNames: activeNames,
+ *     activeNames: activeNames,
+ *     dispActiveNames: displayedActiveNames,
+ *     shareScreenStarted: false,
+ *     shared: false,
+ *     newLimitedStreams: limitedStreams,
+ *     non_alVideoStreams: nonAlStreams,
+ *     ref_participants: referenceParticipants,
+ *     participants: participants,
+ *     eventType: "conference",
+ *     islevel: "2",
+ *     member: "John Doe",
+ *     sortAudioLoudness: true,
+ *     audioDecibels: audioLevels,
+ *     mixed_alVideoStreams: mixedStreams,
+ *     non_alVideoStreams_muted: mutedNonAlStreams,
+ *     remoteProducerId: "12345",
+ *     localStreamVideo: localStream,
+ *     oldAllStreams: oldStreams,
+ *     screenPageLimit: 10,
+ *     meetingDisplayType: "video",
+ *     meetingVideoOptimized: true,
+ *     recordingVideoOptimized: false,
+ *     recordingDisplayType: "video",
+ *     paginatedStreams: paginatedStreams,
+ *     itemPageLimit: 10,
+ *     doPaginate: true,
+ *     prevDoPaginate: false,
+ *     currentUserPage: 1,
+ *     breakoutRooms: breakoutRooms,
+ *     hostNewRoom: 0,
+ *     breakOutRoomStarted: false,
+ *     breakOutRoomEnded: false,
+ *     virtualStream: virtualStream,
+ *     mainRoomsLength: 2,
+ *     memberRoom: 0,
+ *     updateP_activeNames: (names) => updateActiveNames(names),
+ *     updateActiveNames: (names) => updateActiveNames(names),
+ *     updateDispActiveNames: (names) => updateDispActiveNames(names),
+ *     updateNewLimitedStreams: (streams) => updateNewLimitedStreams(streams),
+ *     updateNon_alVideoStreams: (participants) => updateNon_alVideoStreams(participants),
+ *     updateRef_participants: (participants) => updateRef_participants(participants),
+ *     updateSortAudioLoudness: (sort) => updateSortAudioLoudness(sort),
+ *     updateMixed_alVideoStreams: (streams) => updateMixed_alVideoStreams(streams),
+ *     updateNon_alVideoStreams_muted: (participants) => updateNon_alVideoStreams_muted(participants),
+ *     updatePaginatedStreams: (streams) => updatePaginatedStreams(streams),
+ *     updateDoPaginate: (paginate) => updateDoPaginate(paginate),
+ *     updatePrevDoPaginate: (paginate) => updatePrevDoPaginate(paginate),
+ *     updateCurrentUserPage: (page) => updateCurrentUserPage(page),
+ *     updateNumberPages: (pages) => updateNumberPages(pages),
+ *     updateMainRoomsLength: (length) => updateMainRoomsLength(length),
+ *     updateMemberRoom: (room) => updateMemberRoom(room),
+ *     mixStreams: mixStreams,
+ *     dispStreams: dispStreams,
+ *   },
+ * };
+ * 
+ * changeVids(options)
+ *   .then(() => {
+ *     console.log('Video streams changed successfully');
+ *   });
  */
 export const changeVids = async ({ screenChanged = false, parameters }: ChangeVidsOptions): Promise<void> => {
   const { getUpdatedAllParams } = parameters;

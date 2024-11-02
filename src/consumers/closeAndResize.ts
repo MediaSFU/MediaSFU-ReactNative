@@ -109,8 +109,61 @@ export type CloseAndResizeType = (options: CloseAndResizeOptions) => Promise<voi
  * @param {function} options.parameters.rePort - Function to report.
  *
  * @returns {Promise<void>} A promise that resolves when the operation is complete.
+ * 
+ * @example
+ * const options = {
+ *   producerId: 'producerId',
+ *   kind: 'video',
+ *   parameters: {
+ *     getUpdatedAllParams: getUpdatedAllParamsFunction,
+ *     allAudioStreams: [],
+ *     allVideoStreams: [],
+ *     activeNames: [],
+ *     participants: [],
+ *     streamNames: [],
+ *     recordingDisplayType: 'video',
+ *     recordingVideoOptimized: true,
+ *     adminIDStream: 'adminId',
+ *     newLimitedStreams: [],
+ *     newLimitedStreamsIDs: [],
+ *     oldAllStreams: [],
+ *     shareScreenStarted: false,
+ *     shared: false,
+ *     meetingDisplayType: 'video',
+ *     defer_receive: false,
+ *     lock_screen: false,
+ *     firstAll: false,
+ *     first_round: false,
+ *     gotAllVids: false,
+ *     eventType: 'conference',
+ *     hostLabel: 'host',
+ *     shareEnded: false,
+ *     updateMainWindow: true,
+ *     updateActiveNames: updateActiveNamesFunction,
+ *     updateAllAudioStreams: updateAllAudioStreamsFunction,
+ *     updateAllVideoStreams: updateAllVideoStreamsFunction,
+ *     updateShareScreenStarted: updateShareScreenStartedFunction,
+ *     updateUpdateMainWindow: updateUpdateMainWindowFunction,
+ *     updateNewLimitedStreams: updateNewLimitedStreamsFunction,
+ *     updateOldAllStreams: updateOldAllStreamsFunction,
+ *     updateDefer_receive: updateDefer_receiveFunction,
+ *     updateMainHeightWidth: updateMainHeightWidthFunction,
+ *     updateShareEnded: updateShareEndedFunction,
+ *     updateLock_screen: updateLock_screenFunction,
+ *     updateFirstAll: updateFirstAllFunction,
+ *     updateFirst_round: updateFirst_roundFunction,
+ *     reorderStreams: reorderStreamsFunction,
+ *     prepopulateUserMedia: prepopulateUserMediaFunction,
+ *     getVideos: getVideosFunction,
+ *     rePort: rePortFunction,
+ *   },
+ * };
+ * 
+ * closeAndResize(options)
+ *   .then(() => {
+ *     console.log('Closed and resized successfully');
+ *   });
  */
-
 export const closeAndResize = async ({ producerId, kind, parameters }: CloseAndResizeOptions): Promise<void> => {
   const { getUpdatedAllParams } = parameters;
   parameters = getUpdatedAllParams();

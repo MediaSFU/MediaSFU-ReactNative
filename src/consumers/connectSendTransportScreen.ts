@@ -25,24 +25,43 @@ export interface ConnectSendTransportScreenOptions {
 export type ConnectSendTransportScreenType = (options: ConnectSendTransportScreenOptions) => Promise<void>;
 
 /**
- * Connects and sets up the screen sharing transport for sending video streams.
+ * Sets up and connects a screen sharing transport for sending video streams.
  *
- * @param {Object} options - The options for connecting the screen transport.
- * @param {MediaStream} options.stream - The media stream containing the screen video track.
- * @param {ConnectSendTransportScreenOptions} options.parameters - The parameters required for setting up the transport.
- * @param {Producer} options.parameters.screenProducer - The screen producer object.
- * @param {Device} options.parameters.device - The device object containing RTP capabilities.
- * @param {Promise<ScreenParams>} options.parameters.screenParams - A promise resolving to screen share parameters.
- * @param {Transport} options.parameters.producerTransport - The transport object used for producing the screen share.
- * @param {Params} options.parameters.params - The parameters for producing the screen share.
- * @param {Function} options.parameters.updateScreenProducer - Function to update the screen producer object.
- * @param {Function} options.parameters.updateProducerTransport - Function to update the producer transport object.
- * @param {Function} options.parameters.getUpdatedAllParams - Function to fetch updated device information.
+ * @param {Object} options - The configuration options for setting up the screen transport.
+ * @param {MediaStream} options.stream - The media stream with the screen video track to share.
+ * @param {ConnectSendTransportScreenParameters} options.parameters - The transport setup parameters.
+ * @param {Producer | null} options.parameters.screenProducer - The current screen producer instance.
+ * @param {Device | null} options.parameters.device - The device object containing RTP capabilities.
+ * @param {ProducerOptions} options.parameters.screenParams - The parameters for screen sharing production.
+ * @param {Transport | null} options.parameters.producerTransport - The transport for screen sharing.
+ * @param {ProducerOptions} options.parameters.params - Additional parameters for producing the screen share.
+ * @param {Function} options.parameters.updateScreenProducer - Callback to update the screen producer instance.
+ * @param {Function} options.parameters.updateProducerTransport - Callback to update the producer transport instance.
+ * @param {Function} options.parameters.getUpdatedAllParams - Callback to retrieve updated device parameters.
  *
- * @returns {Promise<void>} A promise that resolves when the screen transport is successfully connected and set up.
+ * @returns {Promise<void>} - A promise that resolves once the screen transport is successfully connected and set up.
  *
- * @throws Will throw an error if the connection or setup process fails.
+ * @throws Will throw an error if there is an issue with the connection or setup process.
+ *
+ * @example
+ * ```typescript
+ * await connectSendTransportScreen({
+ *   stream: screenStream,
+ *   parameters: {
+ *     screenProducer: null,
+ *     device: mediaDevice,
+ *     screenParams: { encodings: [{ maxBitrate: 1500000 }] },
+ *     producerTransport: sendTransport,
+ *     params: { track: screenStream.getVideoTracks()[0] },
+ *     updateScreenProducer: setScreenProducer,
+ *     updateProducerTransport: setProducerTransport,
+ *     getUpdatedAllParams: getParams,
+ *   },
+ * });
+ * ```
  */
+
+
 export const connectSendTransportScreen = async ({
   stream,
   parameters,

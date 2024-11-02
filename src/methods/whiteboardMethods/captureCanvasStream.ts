@@ -32,11 +32,6 @@ export interface CaptureCanvasStreamOptions {
 export type CaptureCanvasStreamType = (options: CaptureCanvasStreamOptions) => Promise<void>;
 
 /**
- * Capture the canvas stream.
- * @param {CaptureCanvasStreamOptions} options - The options object.
- * @returns {Promise<void>} - A promise that resolves when the canvas stream is captured.
- */
-/**
  * Captures the canvas stream and handles the transport connection for screen sharing.
  *
  * @param {CaptureCanvasStreamOptions} options - The options for capturing the canvas stream.
@@ -44,7 +39,7 @@ export type CaptureCanvasStreamType = (options: CaptureCanvasStreamOptions) => P
  * @param {HTMLCanvasElement} options.parameters.canvasWhiteboard - The canvas element to capture the stream from.
  * @param {MediaStream} [options.parameters.canvasStream] - The current canvas stream, if any.
  * @param {Function} options.parameters.updateCanvasStream - Function to update the canvas stream state.
- * @param {Object} [options.parameters.screenProducer] - The current screen producer, if any.
+ * @param {Producer | null} [options.parameters.screenProducer] - The current screen producer, if any.
  * @param {boolean} [options.parameters.transportCreated] - Flag indicating if the transport has been created.
  * @param {Function} options.parameters.updateScreenProducer - Function to update the screen producer state.
  * @param {Function} options.parameters.sleep - Function to pause execution for a specified duration.
@@ -53,7 +48,26 @@ export type CaptureCanvasStreamType = (options: CaptureCanvasStreamOptions) => P
  * @param {Function} options.parameters.disconnectSendTransportScreen - Function to disconnect the send transport for the screen.
  * @param {boolean} [start=true] - Flag indicating whether to start or stop the canvas stream.
  * @returns {Promise<void>} A promise that resolves when the operation is complete.
+ * 
+ * @example
+ * ```typescript
+ * const canvasElement = document.querySelector('#canvas') as HTMLCanvasElement;
+ * const options = {
+ *   parameters: {
+ *     canvasWhiteboard: canvasElement,
+ *     updateCanvasStream: (stream) => console.log("Canvas Stream Updated:", stream),
+ *     updateScreenProducer: (producer) => console.log("Screen Producer Updated:", producer),
+ *     createSendTransport: async (params) => console.log("Transport created with", params),
+ *     connectSendTransportScreen: async (options) => console.log("Transport connected with", options),
+ *     disconnectSendTransportScreen: async (params) => console.log("Transport disconnected with", params),
+ *     sleep: ({ ms }) => new Promise(resolve => setTimeout(resolve, ms)),
+ *   },
+ *   start: true,
+ * };
+ * await captureCanvasStream(options);
+ * ```
  */
+
 export const captureCanvasStream = async ({
   parameters,
   start = true,

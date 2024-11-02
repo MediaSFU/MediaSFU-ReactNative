@@ -64,12 +64,58 @@ export interface FlexibleVideoOptions {
 export type FlexibleVideoType = (options: FlexibleVideoOptions) => JSX.Element
 
 /**
- * FlexibleVideo is a React Native component for rendering a flexible grid layout
- * with optional screenboard overlay and annotation capabilities.
+ * FlexibleVideo is a React Native component that renders a flexible video grid with optional screenboard overlay
+ * and annotation capabilities.
  *
- * @param {FlexibleVideoOptions} props - The properties passed to the FlexibleVideo.
- * @returns {JSX.Element} The rendered grid layout with optional screenboard.
+ * This component arranges components in a grid layout with specified rows and columns. It supports custom item
+ * dimensions, optional screenboard overlay, and video stream annotation.
+ *
+ * @component
+ * @param {FlexibleVideoOptions} props - Options to configure the FlexibleVideo component.
+ * @param {number} props.customWidth - Width of each grid item.
+ * @param {number} props.customHeight - Height of each grid item.
+ * @param {number} props.rows - Number of rows in the grid.
+ * @param {number} props.columns - Number of columns in the grid.
+ * @param {React.ReactNode[]} props.componentsToRender - Components or elements to display in the grid.
+ * @param {boolean} [props.showAspect=false] - Controls whether the aspect ratio is enforced.
+ * @param {string} [props.backgroundColor='transparent'] - Background color for each grid item.
+ * @param {React.ReactNode} [props.Screenboard] - Overlay component for the video grid.
+ * @param {boolean} [props.annotateScreenStream=false] - Enables screen stream annotation.
+ * @param {MediaStream} [props.localStreamScreen] - Media stream for local screen annotation.
+ *
+ * @returns {JSX.Element} The rendered FlexibleVideo component.
+ *
+ * @example
+ * ```tsx
+ * import React from 'react';
+ * import { FlexibleVideo } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   const videoComponents = [
+ *     <RTCView streamURL="stream1" />,
+ *     <RTCView streamURL="stream2" />,
+ *   ];
+ *
+ *   return (
+ *     <FlexibleVideo
+ *       customWidth={200}
+ *       customHeight={150}
+ *       rows={2}
+ *       columns={2}
+ *       componentsToRender={videoComponents}
+ *       showAspect={true}
+ *       backgroundColor="black"
+ *       Screenboard={<Text>Overlay Component</Text>}
+ *       annotateScreenStream={true}
+ *       localStreamScreen={myLocalStream}
+ *     />
+ *   );
+ * }
+ *
+ * export default App;
+ * ```
  */
+
 const FlexibleVideo: React.FC<FlexibleVideoOptions> = ({
   customWidth,
   customHeight,

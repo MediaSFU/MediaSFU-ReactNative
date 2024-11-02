@@ -25,7 +25,20 @@ export type RespondToRequestsType = (options: RespondToRequestsOptions) => Promi
  * @param {string} options.roomName - The name of the room to which the response should be emitted.
  *
  * @returns {Promise<void>} A promise that resolves when the response has been emitted.
+ * 
+ * @example
+ * ```typescript
+ * respondToRequests({
+ *   socket,
+ *   request: { id: "123", name: "John", icon: "fa-microphone" },
+ *   updateRequestList: setRequestList,
+ *   requestList: currentRequests,
+ *   action: "accept",
+ *   roomName: "mainRoom"
+ * });
+ * ```
  */
+
 export const respondToRequests = async ({
   socket,
   request,

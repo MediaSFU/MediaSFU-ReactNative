@@ -25,7 +25,7 @@ export type OnScreenChangesType = (options: OnScreenChangesOptions) => Promise<v
 
 /**
  * Handles changes in screen events such as broadcast, chat, and conference.
- *
+ * 
  * @param {OnScreenChangesOptions} options - The options for handling screen changes.
  * @param {boolean} options.changed - Indicates if the screen has changed.
  * @param {object} options.parameters - The parameters for handling screen changes.
@@ -38,11 +38,29 @@ export type OnScreenChangesType = (options: OnScreenChangesOptions) => Promise<v
  * @param {number} options.parameters.itemPageLimit - The limit for item pages.
  * @param {function} options.parameters.updateItemPageLimit - Function to update the item page limit.
  * @param {function} options.parameters.reorderStreams - Function to reorder streams.
- *
+ * 
  * @returns {Promise<void>} A promise that resolves when the screen changes have been handled.
- *
+ * 
  * @throws {Error} Throws an error if there is an issue handling screen changes.
- */
+ * 
+ * @example
+ * ```typescript
+ * await onScreenChanges({
+ *   changed: true,
+ *   parameters: {
+ *     eventType: 'conference',
+ *     shareScreenStarted: false,
+ *     shared: false,
+ *     addForBasic: false,
+ *     updateMainHeightWidth: (height) => console.log('Updated height:', height),
+ *     updateAddForBasic: (value) => console.log('Updated addForBasic:', value),
+ *     itemPageLimit: 2,
+ *     updateItemPageLimit: (limit) => console.log('Updated item page limit:', limit),
+ *     reorderStreams: async (options) => console.log('Reordered streams with options:', options),
+ *   },
+ * });
+ * ```
+ */ 
 export async function onScreenChanges({ changed, parameters }: OnScreenChangesOptions): Promise<void> {
   try {
     // Destructure parameters

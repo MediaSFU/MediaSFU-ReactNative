@@ -28,13 +28,27 @@ export type ResumePauseStreamsType = (options: ResumePauseStreamsOptions) => Pro
  * @param {Array} options.parameters.participants - The list of participants.
  * @param {Array} options.parameters.dispActiveNames - The list of active display names.
  * @param {Array} options.parameters.consumerTransports - The list of consumer transports.
- * @param {string} options.parameters.screenId - The screen producer ID.
+ * @param {string} [options.parameters.screenId] - The screen producer ID.
  * @param {string} options.parameters.islevel - The level of the user.
  *
  * @returns {Promise<void>} A promise that resolves when the streams have been resumed or paused.
  *
  * @throws Will throw an error if there is an issue during the process of resuming or pausing streams.
+ *
+ * @example
+ * ```typescript
+ * await resumePauseStreams({
+ *   parameters: {
+ *     participants: participantArray,
+ *     dispActiveNames: ['user1', 'user2'],
+ *     consumerTransports: transportArray,
+ *     screenId: 'screen-123',
+ *     islevel: '1',
+ *   },
+ * });
+ * ```
  */
+
 export async function resumePauseStreams({
   parameters,
 }: ResumePauseStreamsOptions): Promise<void> {

@@ -38,7 +38,7 @@ export type ConnectIpsType = (options: ConnectIpsOptions) => Promise<[Record<str
 /**
  * Connects to remote IPs and manages socket connections.
  *
- * @param {Object} options - The options for connecting IPs.
+ * @param {ConnectIpsOptions} options - The options for connecting IPs.
  * @param {Record<string, any>[]} options.consume_sockets - The array of current socket connections.
  * @param {string[]} options.remIP - The list of remote IPs to connect to.
  * @param {string} options.apiUserName - The API username for authentication.
@@ -47,7 +47,7 @@ export type ConnectIpsType = (options: ConnectIpsOptions) => Promise<[Record<str
  * @param {Function} [options.newProducerMethod=newPipeProducer] - The method to handle new pipe producer events.
  * @param {Function} [options.closedProducerMethod=producerClosed] - The method to handle producer closed events.
  * @param {Function} [options.joinConsumeRoomMethod=joinConsumeRoom] - The method to handle joining a consuming room.
- * @param {Object} options.parameters - Additional parameters.
+ * @param {ConnectIpsParameters} options.parameters - Additional parameters.
  * @param {string[]} options.parameters.roomRecvIPs - The list of IPs that have been received in the room.
  * @param {Function} options.parameters.updateRoomRecvIPs - The function to update the room received IPs.
  * @param {Function} options.parameters.updateConsume_sockets - The function to update the consume sockets.
@@ -55,7 +55,28 @@ export type ConnectIpsType = (options: ConnectIpsOptions) => Promise<[Record<str
  * @returns {Promise<[Record<string, any>[], string[]]>} A promise that resolves to an array containing the updated consume sockets and room received IPs.
  *
  * @throws Will throw an error if required parameters are missing or if there is an issue connecting to a remote IP.
+ * 
+ * @example
+ * const options = {
+ *   consume_sockets: [],
+ *   remIP: ['ip1', 'ip2'],
+ *   apiUserName: 'username',
+ *   apiKey: 'apikey',
+ *   apiToken: 'token',
+ *   parameters: {
+ *     roomRecvIPs: [],
+ *     updateRoomRecvIPs: updateRoomRecvIPsFunction,
+ *     updateConsume_sockets: updateConsumeSocketsFunction,
+ *   },
+ * };
+ * 
+ * connectIps(options)
+ *   .then(([consume_sockets, roomRecvIPs]) => {
+ *     console.log('Connected IPs:', consume_sockets);
+ *     console.log('Room received IPs:', roomRecvIPs);
+ *   });
  */
+
 export const connectIps = async ({
   consume_sockets,
   remIP,

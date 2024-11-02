@@ -14,17 +14,41 @@ export type ParticipantListOthersType = (
 ) => JSX.Element;
 
 /**
- * Component that renders a list of participants with optional co-host and member status.
- * Each participant is rendered using the `ParticipantListOthersItem` component.
- * A separator line is added between each participant except the last one.
+ * ParticipantListOthers is a React Native component that renders a list of participants, with options
+ * for displaying co-host and member status. Each participant is rendered using the `ParticipantListOthersItem` component.
+ * A separator line appears between each participant except the last one.
  *
  * @component
- * @param {ParticipantListOthersOptions} props - The properties for the component.
- * @param {Array<Participant>} props.participants - The list of participants to display.
- * @param {boolean} props.coHost - Indicates if the co-host status should be displayed.
- * @param {boolean} props.member - Indicates if the member status should be displayed.
- * @returns {JSX.Element} The rendered component.
+ * @param {ParticipantListOthersOptions} props - The properties for the ParticipantListOthers component.
+ * @param {Array<Participant>} props.participants - An array of participant objects to display.
+ * @param {string} props.coHost - Indicates the co-host status for displaying participants.
+ * @param {string} props.member - Indicates the member status for displaying participants.
+ * @returns {JSX.Element} The rendered ParticipantListOthers component.
+ *
+ * @example
+ * ```tsx
+ * import React from 'react';
+ * import { ParticipantListOthers } from 'mediasfu-reactnative';
+ * 
+ * function App() {
+ *   const participants = [
+ *     { id: '1', name: 'Alice' },
+ *     { id: '2', name: 'Bob' },
+ *   ];
+ *   
+ *   return (
+ *     <ParticipantListOthers
+ *       participants={participants}
+ *       coHost="JohnDoe"
+ *       member="JaneDoe"
+ *     />
+ *   );
+ * }
+ * 
+ * export default App;
+ * ```
  */
+
 const ParticipantListOthers: React.FC<ParticipantListOthersOptions> = ({
   participants,
   coHost,

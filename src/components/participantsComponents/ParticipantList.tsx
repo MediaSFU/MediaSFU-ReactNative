@@ -39,31 +39,51 @@ export interface ParticipantListOptions {
  * Each participant is displayed using the ParticipantListItem component.
  *
  * @component
- * @param {ParticipantListOptions} props - The properties object.
+ * @param {ParticipantListOptions} props - The properties object for the component.
  * @returns {JSX.Element} The rendered ParticipantList component.
  *
  * @example
  * ```tsx
- * <ParticipantList
- *   participants={participantArray}
- *   isBroadcast={false}
- *   onMuteParticipants={handleMute}
- *   onMessageParticipants={handleMessage}
- *   onRemoveParticipants={handleRemove}
- *   socket={socketInstance}
- *   coHostResponsibility={coHostResponsibilities}
- *   member="JohnDoe"
- *   islevel="2"
- *   showAlert={showAlertFunction}
- *   coHost="JaneDoe"
- *   roomName="MainRoom"
- *   updateIsMessagesModalVisible={updateModalVisibility}
- *   updateDirectMessageDetails={updateDMDetails}
- *   updateStartDirectMessage={startDM}
- *   updateParticipants={updateParticipantList}
- * />
+ * import React from 'react';
+ * import { ParticipantList } from 'mediasfu-reactnative';
+ * 
+ * function App() {
+ *   const participants = [
+ *     { id: '1', name: 'Alice', muted: false, ... },
+ *     { id: '2', name: 'Bob', muted: true, ... },
+ *     // more participants
+ *   ];
+ *   
+ *   const handleMute = (participantId) => { ... };
+ *   const handleMessage = (participantId) => { ... };
+ *   const handleRemove = (participantId) => { ... };
+ *   
+ *   return (
+ *     <ParticipantList
+ *       participants={participants}
+ *       isBroadcast={false}
+ *       onMuteParticipants={handleMute}
+ *       onMessageParticipants={handleMessage}
+ *       onRemoveParticipants={handleRemove}
+ *       socket={socketInstance}
+ *       coHostResponsibility={coHostResponsibilities}
+ *       member="JohnDoe"
+ *       islevel="2"
+ *       showAlert={showAlertFunction}
+ *       coHost="JaneDoe"
+ *       roomName="MainRoom"
+ *       updateIsMessagesModalVisible={updateModalVisibility}
+ *       updateDirectMessageDetails={updateDMDetails}
+ *       updateStartDirectMessage={startDM}
+ *       updateParticipants={updateParticipantList}
+ *     />
+ *   );
+ * }
+ * 
+ * export default App;
  * ```
  */
+
 const ParticipantList: React.FC<ParticipantListOptions> = ({
   participants,
   isBroadcast,

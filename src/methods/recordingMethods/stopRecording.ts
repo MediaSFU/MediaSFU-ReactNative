@@ -35,7 +35,7 @@ export type StopRecordingType = (options: StopRecordingOptions) => Promise<void>
 
 /**
  * Stops the recording process if it has been started and not yet stopped.
- *
+ * 
  * @param {StopRecordingOptions} parameters - The parameters required to stop the recording.
  * @param {string} parameters.roomName - The name of the room where the recording is taking place.
  * @param {Socket} parameters.socket - The socket instance used for communication.
@@ -54,9 +54,35 @@ export type StopRecordingType = (options: StopRecordingOptions) => Promise<void>
  * @param {boolean} parameters.whiteboardEnded - Indicates if the whiteboard session has ended.
  * @param {string} parameters.recordingMediaOptions - The media options for recording (e.g., "video").
  * @param {Function} parameters.captureCanvasStream - Function to capture the canvas stream.
- *
+ * 
  * @returns {Promise<void>} A promise that resolves when the recording stop process is complete.
+ * 
+ * @example
+ * ```typescript
+ * stopRecording({
+ *   parameters: {
+ *     roomName: 'Room101',
+ *     socket: mySocket,
+ *     showAlert: myShowAlert,
+ *     startReport: true,
+ *     endReport: false,
+ *     recordStarted: true,
+ *     recordPaused: false,
+ *     recordStopped: false,
+ *     updateRecordPaused: setRecordPaused,
+ *     updateRecordStopped: setRecordStopped,
+ *     updateStartReport: setStartReport,
+ *     updateEndReport: setEndReport,
+ *     updateShowRecordButtons: setShowRecordButtons,
+ *     whiteboardStarted: true,
+ *     whiteboardEnded: false,
+ *     recordingMediaOptions: 'video',
+ *     captureCanvasStream: myCaptureCanvasStream,
+ *   },
+ * });
+ * ```
  */
+
 export const stopRecording = async ({
   parameters,
 }: StopRecordingOptions): Promise<void> => {

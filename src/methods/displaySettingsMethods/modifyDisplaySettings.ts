@@ -72,8 +72,43 @@ export type ModifyDisplaySettingsType = (options: ModifyDisplaySettingsOptions) 
  * @param {boolean} options.parameters.breakOutRoomEnded - Flag indicating if a breakout room has ended.
  * @param {Function} options.parameters.onScreenChanges - Function to handle screen changes.
  *
- * @returns {Promise<void>} A promise that resolves when the display settings have been modified.
+ * @example
+ * ```typescript
+ * const options: ModifyDisplaySettingsOptions = {
+ *   parameters: {
+ *     showAlert: showAlertFunction,
+ *     meetingDisplayType: "video",
+ *     autoWave: true,
+ *     forceFullDisplay: false,
+ *     meetingVideoOptimized: true,
+ *     islevel: "2",
+ *     recordStarted: true,
+ *     recordResumed: false,
+ *     recordStopped: false,
+ *     recordPaused: false,
+ *     recordingDisplayType: "video",
+ *     recordingVideoOptimized: true,
+ *     prevForceFullDisplay: false,
+ *     prevMeetingDisplayType: "media",
+ *     updateMeetingDisplayType: updateDisplayTypeFunction,
+ *     updateAutoWave: updateAutoWaveFunction,
+ *     updateForceFullDisplay: updateForceFullDisplayFunction,
+ *     updateMeetingVideoOptimized: updateVideoOptimizedFunction,
+ *     updatePrevForceFullDisplay: updatePrevForceFullFunction,
+ *     updatePrevMeetingDisplayType: updatePrevDisplayTypeFunction,
+ *     updateIsDisplaySettingsModalVisible: setModalVisibilityFunction,
+ *     updateFirstAll: setFirstAllFunction,
+ *     updateUpdateMainWindow: setMainWindowUpdateFunction,
+ *     breakOutRoomStarted: false,
+ *     breakOutRoomEnded: true,
+ *     onScreenChanges: onScreenChangesFunction
+ *   }
+ * };
+ *
+ * await modifyDisplaySettings(options);
+ * ```
  */
+
 export const modifyDisplaySettings = async ({ parameters }: ModifyDisplaySettingsOptions): Promise<void> => {
   // Destructure the parameters
   let {

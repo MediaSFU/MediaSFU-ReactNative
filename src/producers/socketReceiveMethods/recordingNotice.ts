@@ -63,9 +63,9 @@ export type RecordingNoticeType = (options: RecordingNoticeOptions) => Promise<v
 /**
  * Handles the recording notice state and updates various recording parameters accordingly.
  *
- * @param {Object} options - The options object.
+ * @param {RecordingNoticeOptions} options - The options object.
  * @param {string} options.state - The current state of the recording (e.g., "pause", "stop").
- * @param {Object} options.userRecordingParam - The user recording parameters.
+ * @param {UserRecordingParams | null} options.userRecordingParam - The user recording parameters.
  * @param {number} options.pauseCount - The count of pauses during the recording.
  * @param {number} options.timeDone - The elapsed time of the recording.
  * @param {Object} options.parameters - The parameters object containing various update functions and state variables.
@@ -114,8 +114,29 @@ export type RecordingNoticeType = (options: RecordingNoticeOptions) => Promise<v
  *
  * @returns {Promise<void>} A promise that resolves when the recording notice handling is complete.
  *
- * @throws {Error} Throws an error if handling the recording state and status fails.
+ * @example
+ * ```typescript
+ * const options = {
+ *   state: "pause",
+ *   userRecordingParam: {
+ *     mainSpecs: { mediaOptions: "option1", audioOptions: "option2", videoOptions: "option3", videoType: "HD" },
+ *     dispSpecs: { nameTags: true, backgroundColor: "blue", orientationVideo: "landscape" },
+ *     textSpecs: { addText: true, customText: "Sample", customTextPosition: "top-right", customTextColor: "white" },
+ *   },
+ *   pauseCount: 2,
+ *   timeDone: 3600,
+ *   parameters: { 
+ *     islevel: "2",
+ *     userRecordingParams: { },
+ *     recordElapsedTime: 0,
+ *     recordStartTime: 0,
+ *     // various other parameters and update functions here...
+ *   },
+ * };
+ * await recordingNotice(options);
+ * ```
  */
+
 export const recordingNotice = async ({
   state,
   userRecordingParam,

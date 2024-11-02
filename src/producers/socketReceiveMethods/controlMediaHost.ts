@@ -50,8 +50,8 @@ export type ControlMediaHostType = (options: ControlMediaHostOptions) => Promise
  * @param {Function} options.parameters.updateAudioAlreadyOn - Function to update the audio state.
  * @param {MediaStream} options.parameters.localStreamScreen - The local screen share stream.
  * @param {Function} options.parameters.updateLocalStreamScreen - Function to update the local screen share stream.
-    * @param {MediaStream} options.parameters.localStreamVideo - The local video stream.
-   * @param {function} options.parameters.updateLocalStreamVideo - Function to update the local video stream.
+ * @param {MediaStream} options.parameters.localStreamVideo - The local video stream.
+ * @param {Function} options.parameters.updateLocalStreamVideo - Function to update the local video stream.
  * @param {Function} options.parameters.updateScreenAlreadyOn - Function to update the screen share state.
  * @param {Function} options.parameters.updateVideoAlreadyOn - Function to update the video state.
  * @param {Function} options.parameters.updateChatAlreadyOn - Function to update the chat state.
@@ -60,9 +60,35 @@ export type ControlMediaHostType = (options: ControlMediaHostOptions) => Promise
  * @param {Function} options.parameters.disconnectSendTransportVideo - Function to disconnect the video transport.
  * @param {Function} options.parameters.disconnectSendTransportAudio - Function to disconnect the audio transport.
  * @param {Function} options.parameters.disconnectSendTransportScreen - Function to disconnect the screen share transport.
+ *
  * @returns {Promise<void>} A promise that resolves when the media control actions are completed.
- * @throws Will throw an error if any of the media control actions fail.
+ *
+ * @example
+ * ```typescript
+ * await controlMediaHost({
+ *   type: "video",
+ *   parameters: {
+ *     updateAdminRestrictSetting: setAdminRestrict,
+ *     localStream: userMediaStream,
+ *     updateLocalStream: setUserMediaStream,
+ *     updateAudioAlreadyOn: setAudioState,
+ *     localStreamScreen: screenMediaStream,
+ *     updateLocalStreamScreen: setScreenMediaStream,
+ *     localStreamVideo: videoMediaStream,
+ *     updateLocalStreamVideo: setVideoMediaStream,
+ *     updateScreenAlreadyOn: setScreenState,
+ *     updateVideoAlreadyOn: setVideoState,
+ *     updateChatAlreadyOn: setChatState,
+ *     onScreenChanges: handleScreenChanges,
+ *     stopShareScreen: stopScreenSharing,
+ *     disconnectSendTransportVideo: disconnectVideoTransport,
+ *     disconnectSendTransportAudio: disconnectAudioTransport,
+ *     disconnectSendTransportScreen: disconnectScreenTransport,
+ *   }
+ * });
+ * ```
  */
+
 export const controlMediaHost = async ({ type, parameters }: ControlMediaHostOptions): Promise<void> => {
   const {
     updateAdminRestrictSetting,

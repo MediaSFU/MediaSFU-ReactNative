@@ -93,7 +93,7 @@ export type PrepopulateUserMediaType = (options: PrepopulateUserMediaOptions) =>
  * @param {boolean} options.parameters.whiteboardEnded - Indicates if whiteboard has ended.
  * @param {Stream} options.parameters.virtualStream - The virtual stream.
  * @param {boolean} options.parameters.keepBackground - Indicates if background should be kept.
- * @param {Stream} options.parameters.annotateScreenStream - The annotate screen stream.
+ * @param {boolean} options.parameters.annotateScreenStream - The annotate screen stream.
  * @param {Function} options.parameters.updateMainScreenPerson - Function to update the main screen person.
  * @param {Function} options.parameters.updateMainScreenFilled - Function to update if the main screen is filled.
  * @param {Function} options.parameters.updateAdminOnMainScreen - Function to update if admin is on the main screen.
@@ -103,7 +103,53 @@ export type PrepopulateUserMediaType = (options: PrepopulateUserMediaOptions) =>
  * @param {Function} options.parameters.updateMainGridStream - Function to update the main grid stream.
  *
  * @returns {Promise<JSX.Element[] | void>} A promise that resolves to an array of JSX elements or void.
+ * 
+ * @example
+ * ```typescript
+ * const elements = await prepopulateUserMedia({
+ *   name: "John Doe",
+ *   parameters: {
+ *     participants: [],
+ *     allVideoStreams: [],
+ *     islevel: "1",
+ *     member: "John",
+ *     shared: false,
+ *     shareScreenStarted: false,
+ *     eventType: "conference",
+ *     screenId: "screen1",
+ *     forceFullDisplay: true,
+ *     updateMainWindow: true,
+ *     mainScreenFilled: false,
+ *     adminOnMainScreen: false,
+ *     mainScreenPerson: "Jane",
+ *     videoAlreadyOn: false,
+ *     audioAlreadyOn: false,
+ *     oldAllStreams: [],
+ *     checkOrientation: () => "portrait",
+ *     screenForceFullDisplay: false,
+ *     localStreamScreen: null,
+ *     remoteScreenStream: [],
+ *     localStreamVideo: null,
+ *     mainHeightWidth: 800,
+ *     isWideScreen: true,
+ *     localUIMode: false,
+ *     whiteboardStarted: false,
+ *     whiteboardEnded: false,
+ *     virtualStream: null,
+ *     keepBackground: false,
+ *     annotateScreenStream: false,
+ *     updateMainScreenPerson: (person) => console.log(person),
+ *     updateMainScreenFilled: (filled) => console.log(filled),
+ *     updateAdminOnMainScreen: (admin) => console.log(admin),
+ *     updateMainHeightWidth: (heightWidth) => console.log(heightWidth),
+ *     updateScreenForceFullDisplay: (force) => console.log(force),
+ *     updateUpdateMainWindow: (update) => console.log(update),
+ *     updateMainGridStream: (components) => console.log(components),
+ *   },
+ * });
+ * ```
  */
+
 export async function prepopulateUserMedia({
   name,
   parameters,

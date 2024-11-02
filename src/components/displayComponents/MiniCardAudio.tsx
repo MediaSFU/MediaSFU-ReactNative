@@ -73,11 +73,49 @@ export interface MiniCardAudioOptions {
 export type MiniCardAudioType = (options: MiniCardAudioOptions) => JSX.Element;
 
 /**
- * MiniCardAudio component displays an audio card with optional waveform animation.
+ * MiniCardAudio displays an audio card with optional waveform animation and custom styling options.
  *
- * @param {MiniCardAudioOptions} props - The properties for the MiniCardAudio component.
- * @returns {JSX.Element} The rendered MiniCardAudio component.
+ * This component supports showing an animated waveform, an image, and custom positioning for the overlay. It is designed
+ * for displaying audio-related information in a visually appealing, customizable way.
+ *
+ * @component
+ * @param {MiniCardAudioOptions} props - Configuration options for the MiniCardAudio component.
+ * @param {StyleProp<ViewStyle>} [props.customStyle] - Custom styles for the card container.
+ * @param {string} props.name - The name displayed on the audio card.
+ * @param {boolean} props.showWaveform - Toggles the waveform animation display.
+ * @param {OverlayPosition} [props.overlayPosition='topLeft'] - Position of the overlay on the card.
+ * @param {string} [props.barColor='white'] - Color of the waveform bars.
+ * @param {string} [props.textColor='white'] - Color of the displayed name text.
+ * @param {string} [props.imageSource] - URI for the background image.
+ * @param {boolean} [props.roundedImage=false] - Determines if the image should have rounded corners.
+ * @param {StyleProp<ImageStyle>} [props.imageStyle] - Custom styles for the background image.
+ *
+ * @returns {JSX.Element} The MiniCardAudio component.
+ *
+ * @example
+ * ```tsx
+ * import React from 'react';
+ * import { MiniCardAudio } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   return (
+ *     <MiniCardAudio
+ *       name="Alice Johnson"
+ *       showWaveform={true}
+ *       overlayPosition="bottomRight"
+ *       barColor="blue"
+ *       textColor="white"
+ *       imageSource="https://example.com/profile.jpg"
+ *       roundedImage={true}
+ *       customStyle={{ width: 100, height: 100 }}
+ *     />
+ *   );
+ * }
+ *
+ * export default App;
+ * ```
  */
+
 const MiniCardAudio: React.FC<MiniCardAudioOptions> = ({
   customStyle,
   name,

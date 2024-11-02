@@ -1,40 +1,3 @@
-/**
- * MediasfuConference component options type.
- *
- * @typedef {Object} MediasfuConferenceOptions
- * @property {function} [PrejoinPage=WelcomePage] - Function to render the prejoin page.
- * @property {Object} [credentials={ apiUserName: "", apiKey: "" }] - API credentials.
- * @property {boolean} [useLocalUIMode=false] - Flag to use local UI mode.
- * @property {SeedData} [seedData={}] - Seed data for initial state.
- * @property {boolean} [useSeed=false] - Flag to use seed data.
- * @property {string} [imgSrc="https://mediasfu.com/images/logo192.png"] - Image source URL.
- */
-
-/**
- * MediasfuConference component.
- *
- * @component
- * @param {MediasfuConferenceOptions} props - Component properties.
- * @returns {React.FC<MediasfuConferenceOptions>} - React functional component.
- *
- * @example
- * <MediasfuConference
- *   PrejoinPage={CustomPrejoinPage}
- *   credentials={{ apiUserName: "user", apiKey: "key" }}
- *   useLocalUIMode={true}
- *   seedData={customSeedData}
- *   useSeed={true}
- *   imgSrc="https://example.com/logo.png"
- * />
- *
- * @description
- * This component handles the generic functionalities for MediaSFU, including joining rooms,
- * managing participants, and handling media streams. It uses various hooks and methods to
- * manage state and perform actions such as joining a room, updating initial values, and
- * handling media streams.
- *
- */
-
 import React, { useEffect, useState, useRef } from 'react';
 import { Text, View, Platform, Dimensions, StatusBar } from 'react-native';
 import Orientation from 'react-native-orientation-locker';
@@ -284,6 +247,45 @@ export type MediasfuConferenceOptions = {
   useSeed?: boolean;
   imgSrc?: string;
 };
+
+/**
+ * MediasfuConference component optimizes the media experience for conferences.
+ * Participants can share media (audio, video, screen share) with each other.
+ * Participants can chat with each other and engage in polls and breakout rooms, share screens, and more during the conference.
+ * 
+ * @typedef {Object} MediasfuConferenceOptions
+ * @property {(options: PreJoinPageOptions | WelcomePageOptions) => React.ReactNode} [PrejoinPage] - Component to render for the pre-join page.
+ * @property {{ apiUserName: string; apiKey: string }} [credentials] - API credentials for the user.
+ * @property {boolean} [useLocalUIMode] - Flag to determine if local UI mode should be used.
+ * @property {SeedData} [seedData] - Seed data for initializing the conference.
+ * @property {boolean} [useSeed] - Flag to determine if seed data should be used.
+ * @property {string} [imgSrc] - Source URL for the image.
+ *
+ * @component
+ * @param {MediasfuConferenceOptions} props - Component properties.
+ * @returns {React.FC<MediasfuConferenceOptions>} The MediasfuConference component.
+ * 
+ * @example
+ * ```tsx
+ * <MediasfuConference
+ *   PrejoinPage={CustomPrejoinPage}
+ *   credentials={{ apiUserName: "user", apiKey: "key" }}
+ *   useLocalUIMode={true}
+ *   seedData={seedData}
+ *   useSeed={true}
+ *   imgSrc="https://example.com/logo.png"
+ * />
+ * ```
+ * 
+ * @description
+ * This component handles the main logic for joining a media conference room using WebRTC and Mediasoup.
+ * It manages the state and references for various parameters required for the conference, including
+ * user credentials, room details, media settings, and recording options.
+ * 
+ * The component also provides methods for updating state to initial values, joining a room using a socket,
+ * and handling various media and room-related functionalities.
+ */
+
 
 const MediasfuConference: React.FC<MediasfuConferenceOptions> = ({
   PrejoinPage = WelcomePage,

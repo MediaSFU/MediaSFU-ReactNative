@@ -10,15 +10,29 @@ export interface StartRecordsOptions {
 export type StartRecordsType = (options: StartRecordsOptions) => Promise<void>;
 
 /**
- * Starts recording the room.
+ * Starts recording for a specified room.
  *
- * @param {Object} options - The options for starting the recording.
- * @param {string} options.roomName - The name of the room to start recording.
- * @param {string} options.member - The member starting the recording.
- * @param {Socket} options.socket - The socket instance for communication.
+ * @param {StartRecordsOptions} options - Configuration options to start the recording.
+ * @param {string} options.roomName - The name of the room to record.
+ * @param {string} options.member - The name of the member initiating the recording.
+ * @param {Socket} options.socket - The socket instance to communicate with the server.
  *
- * @returns {Promise<void>} A promise that resolves when the recording is started.
+ * @returns {Promise<void>} A promise that resolves when the attempt to start recording completes.
+ *
+ * @example
+ * ```typescript
+ * const options = {
+ *   roomName: "RoomA",
+ *   member: "AdminUser",
+ *   socket: socketInstance,
+ * };
+ *
+ * startRecords(options)
+ *   .then(() => console.log("Recording started successfully"))
+ *   .catch((error) => console.error("Failed to start recording", error));
+ * ```
  */
+
 export const startRecords = async ({
   roomName, member, socket,
 }: StartRecordsOptions): Promise<void> => {

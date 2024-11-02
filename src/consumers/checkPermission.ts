@@ -20,7 +20,25 @@ export type CheckPermissionType = (options: CheckPermissionOptions) => Promise<n
  * @param {string} options.chatSetting - The setting for chat permission. Can be "allow", "approval", or other.
  * @returns {Promise<number>} - Returns 0 if the setting is "allow", 1 if the setting is "approval", and 2 for other settings or invalid permission types.
  * @throws Will throw an error if an unexpected error occurs during the permission check.
+ *
+ * @example
+ * const options = {
+ *   permissionType: 'audioSetting',
+ *   audioSetting: 'allow',
+ *   videoSetting: 'approval',
+ *   screenshareSetting: 'approval',
+ *   chatSetting: 'allow',
+ * };
+ * 
+ * checkPermission(options)
+ *   .then(result => {
+ *     console.log('Permission result:', result);
+ *   })
+ *   .catch(error => {
+ *     console.error('Error checking permission:', error);
+ *   });
  */
+
 export async function checkPermission({
   permissionType, audioSetting, videoSetting, screenshareSetting, chatSetting,
 }: CheckPermissionOptions) {

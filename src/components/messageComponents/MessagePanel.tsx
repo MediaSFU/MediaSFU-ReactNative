@@ -133,28 +133,46 @@ export interface MessagePanelOptions {
  *
  * @example
  * ```tsx
- * <MessagePanel
- *   messages={messages}
- *   messagesLength={messages.length}
- *   type="direct"
- *   username="john_doe"
- *   onSendMessagePress={handleSendMessage}
- *   backgroundColor="#f5f5f5"
- *   focusedInput={true}
- *   showAlert={showAlertFunction}
- *   eventType="conference"
- *   member="john_doe"
- *   islevel="1"
- *   startDirectMessage={false}
- *   updateStartDirectMessage={(start) => setStartDirectMessage(start)}
- *   directMessageDetails={null}
- *   updateDirectMessageDetails={(participant) => setDirectMessageDetails(participant)}
- *   coHostResponsibility={[{ name: 'chat', value: true }]}
- *   coHost="jane_doe"
- *   roomName="MainRoom"
- *   socket={socketInstance}
- *   chatSetting="default"
- * />
+ * import React from 'react';
+ * import { MessagePanel } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   const messages = [
+ *     { sender: 'Alice', message: 'Hello!', timestamp: '10:00', receivers: [], group: true },
+ *     { sender: 'Bob', message: 'Hi Alice!', timestamp: '10:01', receivers: [], group: true },
+ *   ];
+ *
+ *   const handleSendMessage = async (options) => {
+ *     // Logic to handle message sending
+ *     console.log('Message sent:', options);
+ *   };
+ *
+ *   return (
+ *     <MessagePanel
+ *       messages={messages}
+ *       messagesLength={messages.length}
+ *       type="group"
+ *       username="john_doe"
+ *       onSendMessagePress={handleSendMessage}
+ *       backgroundColor="#f5f5f5"
+ *       focusedInput={true}
+ *       eventType="conference"
+ *       member="john_doe"
+ *       islevel="1"
+ *       startDirectMessage={false}
+ *       updateStartDirectMessage={(start) => console.log('Start Direct Message:', start)}
+ *       directMessageDetails={null}
+ *       updateDirectMessageDetails={(participant) => console.log('Direct Message Participant:', participant)}
+ *       coHostResponsibility={[{ name: 'chat', value: true }]}
+ *       coHost="jane_doe"
+ *       roomName="MainRoom"
+ *       socket={socketInstance}
+ *       chatSetting="default"
+ *     />
+ *   );
+ * }
+ *
+ * export default App;
  * ```
  */
 const MessagePanel: React.FC<MessagePanelOptions> = ({

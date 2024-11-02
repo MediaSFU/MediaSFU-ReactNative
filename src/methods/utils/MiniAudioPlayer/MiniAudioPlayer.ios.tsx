@@ -46,28 +46,52 @@ export type MiniAudioPlayerType = (
  *
  * @component
  * @param {MiniAudioPlayerOptions} props - The properties for the MiniAudioPlayer component.
- * @param {MediaStream} props.stream - The media stream to be played by the audio player.
+ * @param {MediaStream | null} props.stream - The media stream to be played by the audio player.
  * @param {string} props.remoteProducerId - The ID of the remote producer.
- * @param {Object} props.parameters - The parameters object containing various settings and methods.
+ * @param {MiniAudioPlayerParameters} props.parameters - The parameters object containing various settings and methods.
  * @param {Function} props.parameters.getUpdatedAllParams - Function to get updated parameters.
  * @param {Function} props.parameters.reUpdateInter - Function to re-update interaction parameters.
  * @param {Function} props.parameters.updateParticipantAudioDecibels - Function to update participant audio decibels.
  * @param {boolean} props.parameters.breakOutRoomStarted - Flag indicating if the breakout room has started.
  * @param {boolean} props.parameters.breakOutRoomEnded - Flag indicating if the breakout room has ended.
- * @param {Array} props.parameters.limitedBreakRoom - Array of limited breakout room participants.
- * @param {React.ComponentType} props.MiniAudioComponent - The component to render for audio visualization.
- * @param {Object} props.miniAudioProps - Additional properties to pass to the MiniAudioComponent.
+ * @param {Array<BreakoutParticipant>} props.parameters.limitedBreakRoom - Array of limited breakout room participants.
+ * @param {React.ComponentType} [props.MiniAudioComponent] - An optional component to render for audio visualization.
+ * @param {Object} [props.miniAudioProps] - Additional properties to pass to the MiniAudioComponent.
  *
  * @returns {JSX.Element} The rendered MiniAudioPlayer component.
  *
  * @example
- * <MiniAudioPlayer
- *   stream={mediaStream}
- *   remoteProducerId="producer123"
- *   parameters={parameters}
- *   MiniAudioComponent={WaveformComponent}
- *   miniAudioProps={{ color: 'blue' }}
- * />
+ * ```tsx
+ * // Import and use MiniAudioPlayer in a React component
+ * import { MiniAudioPlayer } from 'mediasfu-reactnative';
+ *
+ * const WaveformVisualizer = ({ stream }: { stream: MediaStream }) => (
+ *   <canvas width="300" height="50" />
+ * );
+ *
+ * const App = () => {
+ *   const stream = useMediaStream(); // Custom hook to get MediaStream
+ *   const parameters = {
+ *     // Mocked parameters with required functions
+ *     getUpdatedAllParams: () => updatedParameters,
+ *     reUpdateInter: () => {},
+ *     updateParticipantAudioDecibels: () => {},
+ *     breakOutRoomStarted: false,
+ *     breakOutRoomEnded: false,
+ *     limitedBreakRoom: [],
+ *   };
+ *
+ *   return (
+ *     <MiniAudioPlayer
+ *       stream={stream}
+ *       remoteProducerId="producer123"
+ *       parameters={parameters}
+ *       MiniAudioComponent={WaveformVisualizer}
+ *       miniAudioProps={{ color: 'blue' }}
+ *     />
+ *   );
+ * };
+ * ```
  */
 
 const MiniAudioPlayer: React.FC<MiniAudioPlayerOptions> = ({

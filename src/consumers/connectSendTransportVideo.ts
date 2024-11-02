@@ -26,8 +26,8 @@ export type ConnectSendTransportVideoType = (options: ConnectSendTransportVideoO
  * Connects the send transport for video by producing video data and updates the relevant states.
  *
  * @param {ConnectSendTransportVideoOptions} options - The options for connecting the send transport for video.
- * @param {Object} options.videoParams - The parameters for producing video data.
- * @param {Object} options.parameters - The parameters for updating the state.
+ * @param {ProducerOptions} options.videoParams - The parameters for producing video data.
+ * @param {ConnectSendTransportVideoParameters} options.parameters - The parameters for updating the state.
  * @param {Producer} options.parameters.videoProducer - The video producer instance.
  * @param {Transport} options.parameters.producerTransport - The transport instance used for producing video.
  * @param {string} options.parameters.islevel - The connection level.
@@ -39,7 +39,32 @@ export type ConnectSendTransportVideoType = (options: ConnectSendTransportVideoO
  * @returns {Promise<void>} A promise that resolves when the send transport for video is connected.
  *
  * @throws Will throw an error if the connection fails.
+ *
+ * @example
+ * const options = {
+ *   videoParams: {
+ *     // video producer options (e.g., codec, bitrate)
+ *   },
+ *   parameters: {
+ *     videoProducer: null,
+ *     producerTransport: transport,
+ *     islevel: '2',
+ *     updateMainWindow: false,
+ *     updateVideoProducer: (producer) => { console.log('updated') },
+ *     updateProducerTransport: (transport) => { console.log('updated')  },
+ *     updateUpdateMainWindow: (state) => { console.log('updated') },
+ *   },
+ * };
+ * 
+ * connectSendTransportVideo(options)
+ *   .then(() => {
+ *     console.log('Video transport connected successfully');
+ *   })
+ *   .catch((error) => {
+ *     console.error('Error connecting video transport:', error);
+ *   });
  */
+
 export const connectSendTransportVideo = async ({
   videoParams,
   parameters,

@@ -45,18 +45,48 @@ export type ControlButtonsComponentTouchType = (
 ) => JSX.Element;
 
 /**
- * ControlButtonsComponentTouch is a React Native functional component that renders a set of control buttons.
+ * ControlButtonsComponentTouch renders a set of interactive control buttons with customizable layout, alignment, and display options.
  *
- * @param {ControlButtonsComponentTouchOptions} props - The properties for the component.
- * @param {Array<ButtonTouch>} props.buttons - An array of button objects to be rendered.
- * @param {string} [props.position='left'] - The horizontal alignment of the button container ('left', 'right', 'middle').
- * @param {string} [props.location='top'] - The vertical alignment of the button container ('top', 'bottom', 'center').
- * @param {string} [props.direction='horizontal'] - The direction in which buttons are arranged ('horizontal', 'vertical').
- * @param {StyleProp<ViewStyle>} [props.buttonsContainerStyle] - Additional styles for the container of buttons.
- * @param {boolean} [props.showAspect=false] - Flag to determine if the button container should be displayed.
+ * This component allows for horizontal or vertical arrangement of buttons, each with optional icons, custom components, and
+ * configurable background colors and active states.
  *
- * @returns {JSX.Element} The rendered component.
+ * @component
+ * @param {ControlButtonsComponentTouchOptions} props - Options for the ControlButtonsComponentTouch component.
+ * @param {ButtonTouch[]} props.buttons - Array of button configurations, including icon, background color, and onPress functionality.
+ * @param {'left' | 'right' | 'middle'} [props.position='left'] - Horizontal alignment of the button container.
+ * @param {'top' | 'bottom' | 'center'} [props.location='top'] - Vertical alignment of the button container.
+ * @param {'horizontal' | 'vertical'} [props.direction='horizontal'] - Arrangement direction of buttons in the container.
+ * @param {StyleProp<ViewStyle>} [props.buttonsContainerStyle] - Additional custom styles for the button container.
+ * @param {boolean} [props.showAspect=false] - Controls the visibility of the button container.
+ *
+ * @returns {JSX.Element} The rendered ControlButtonsComponentTouch component.
+ *
+ * @example
+ * ```tsx
+ * import React from 'react';
+ * import { ControlButtonsComponentTouch } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   const buttons = [
+ *     { name: 'Start', icon: 'play', onPress: () => console.log('Start'), active: true },
+ *     { name: 'Stop', icon: 'stop', onPress: () => console.log('Stop') },
+ *   ];
+ *
+ *   return (
+ *     <ControlButtonsComponentTouch
+ *       buttons={buttons}
+ *       position="middle"
+ *       location="bottom"
+ *       direction="horizontal"
+ *       showAspect={true}
+ *     />
+ *   );
+ * }
+ *
+ * export default App;
+ * ```
  */
+
 const ControlButtonsComponentTouch: React.FC<
   ControlButtonsComponentTouchOptions
 > = ({

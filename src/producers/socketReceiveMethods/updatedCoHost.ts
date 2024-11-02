@@ -17,21 +17,44 @@ export interface UpdatedCoHostOptions {
 export type UpdatedCoHostType = (options: UpdatedCoHostOptions) => Promise<void>;
 
 /**
- * Updates the co-host information based on the provided options.
+ * Updates co-host information and responsibilities based on provided options.
  *
- * @param {Object} options - The options for updating the co-host.
- * @param {string} options.coHost - The co-host identifier.
- * @param {string} options.coHostResponsibility - The responsibility of the co-host.
- * @param {Function} options.showAlert - Function to show an alert message.
- * @param {string} options.eventType - The type of event (e.g., "broadcast", "chat").
- * @param {string} options.islevel - The level of the event.
- * @param {string} options.member - The member identifier.
- * @param {boolean} options.youAreCoHost - Indicates if the current user is a co-host.
- * @param {Function} options.updateCoHost - Function to update the co-host.
- * @param {Function} options.updateCoHostResponsibility - Function to update the co-host responsibility.
- * @param {Function} options.updateYouAreCoHost - Function to update the co-host status of the current user.
- * @returns {Promise<void>} A promise that resolves when the co-host information has been updated.
+ * @param {UpdatedCoHostOptions} options - Options for updating co-host status and responsibilities.
+ * @param {string} options.coHost - The identifier of the new co-host.
+ * @param {CoHostResponsibility[]} options.coHostResponsibility - Array of co-host responsibilities.
+ * @param {ShowAlert} [options.showAlert] - Optional function to display alert messages.
+ * @param {EventType} options.eventType - The event type (e.g., "broadcast", "chat").
+ * @param {string} options.islevel - The event level.
+ * @param {string} options.member - Identifier for the member.
+ * @param {boolean} options.youAreCoHost - Boolean indicating if the current user is a co-host.
+ * @param {Function} options.updateCoHost - Function to update the co-host identifier.
+ * @param {Function} options.updateCoHostResponsibility - Function to update co-host responsibilities.
+ * @param {Function} options.updateYouAreCoHost - Function to update the current user's co-host status.
+ *
+ * @returns {Promise<void>} Resolves when co-host information is updated.
+ *
+ * @example
+ * const options = {
+ *   coHost: "user123",
+ *   coHostResponsibility: [{ task: "moderate", canEdit: true }],
+ *   showAlert: (alert) => console.log(alert.message),
+ *   eventType: "conference",
+ *   islevel: "1",
+ *   member: "user123",
+ *   youAreCoHost: false,
+ *   updateCoHost: (host) => console.log("Updated co-host:", host),
+ *   updateCoHostResponsibility: (resps) => console.log("Responsibilities:", resps),
+ *   updateYouAreCoHost: (status) => console.log("You are now co-host:", status),
+ * };
+ *
+ * await updatedCoHost(options);
+ * // Logs:
+ * // "Updated co-host: user123"
+ * // "Responsibilities: [{ task: 'moderate', canEdit: true }]"
+ * // "You are now co-host: true"
+ * // "You are now a co-host." (alert)
  */
+
 export const updatedCoHost = async ({
   coHost,
   coHostResponsibility,

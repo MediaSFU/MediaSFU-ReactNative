@@ -42,6 +42,21 @@ export type ProcessConsumerTransportsType = (options: ProcessConsumerTransportsO
  * 5. Pauses consumer transports after a short delay.
  * 6. Emits `consumer-pause` event for each filtered transport (not audio).
  * 7. Emits `consumer-resume` event for each filtered transport (not audio).
+ *
+ * @example
+ * ```typescript
+ * await processConsumerTransports({
+ *   consumerTransports: [transport1, transport2],
+ *   lStreams_: [stream1, stream2],
+ *   parameters: {
+ *     remoteScreenStream: [],
+ *     oldAllStreams: [],
+ *     newLimitedStreams: [],
+ *     sleep: sleepFunction,
+ *     getUpdatedAllParams: () => parameters,
+ *   },
+ * });
+ * ```
  */
 
 export async function processConsumerTransports({

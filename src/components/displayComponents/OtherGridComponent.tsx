@@ -56,24 +56,49 @@ export interface OtherGridComponentOptions {
 export type OtherGridComponentType = React.FC<OtherGridComponentOptions>;
 
 /**
- * OtherGridComponent is a React Native functional component that displays a grid with optional timer and children components.
+ * OtherGridComponent displays a container grid with optional child components and a meeting progress timer.
  *
- * @param {OtherGridComponentOptions} props - The properties for the OtherGridComponent.
- * @returns {JSX.Element} The rendered grid component.
+ * This component allows customization of dimensions, background color, and an optional timer display. It is useful
+ * for displaying grouped content within a bordered grid layout.
+ *
+ * @component
+ * @param {OtherGridComponentOptions} props - Configuration options for the OtherGridComponent.
+ * @param {string} props.backgroundColor - Background color of the grid.
+ * @param {React.ReactNode} props.children - Components to be rendered within the grid.
+ * @param {number | string} props.width - Width of the grid.
+ * @param {number | string} props.height - Height of the grid.
+ * @param {boolean} [props.showAspect=true] - Flag to toggle the grid's display.
+ * @param {string} [props.timeBackgroundColor='rgba(0,0,0,0.5)'] - Background color of the meeting progress timer.
+ * @param {boolean} props.showTimer - Flag to display the meeting progress timer.
+ * @param {string} props.meetingProgressTime - Time to show in the meeting progress timer.
+ *
+ * @returns {JSX.Element} The rendered OtherGridComponent.
  *
  * @example
- * <OtherGridComponent
- *   backgroundColor="#ffffff"
- *   width={200}
- *   height={200}
- *   showAspect={true}
- *   timeBackgroundColor="rgba(0,0,0,0.5)"
- *   showTimer={true}
- *   meetingProgressTime="12:34"
- * >
- *   <ChildComponent />
- * </OtherGridComponent>
+ * ```tsx
+ * import React from 'react';
+ * import { OtherGridComponent } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   return (
+ *     <OtherGridComponent
+ *       backgroundColor="#f9f9f9"
+ *       width={250}
+ *       height={250}
+ *       showAspect={true}
+ *       timeBackgroundColor="rgba(0, 0, 0, 0.6)"
+ *       showTimer={true}
+ *       meetingProgressTime="10:45"
+ *     >
+ *       <Text>Child Component</Text>
+ *     </OtherGridComponent>
+ *   );
+ * }
+ *
+ * export default App;
+ * ```
  */
+
 const OtherGridComponent: React.FC<OtherGridComponentOptions> = ({
   backgroundColor,
   children,

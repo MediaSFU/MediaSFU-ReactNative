@@ -28,9 +28,9 @@ export type GeneratePageContentType = (options: GeneratePageContentOptions) => P
 /**
  * Generates the content for a specific page.
  *
- * @param {Object} options - The options for generating page content.
+ * @param {GeneratePageContentOptions} options - The options for generating page content.
  * @param {number | string} options.page - The page number to generate content for.
- * @param {Object} options.parameters - The parameters required for generating content.
+ * @param {GeneratePageContentParameters} options.parameters - The parameters required for generating content.
  * @param {Array} options.parameters.paginatedStreams - The streams to be paginated.
  * @param {number} options.parameters.currentUserPage - The current page of the user.
  * @param {Function} options.parameters.updateMainWindow - Function to update the main window flag.
@@ -39,9 +39,37 @@ export type GeneratePageContentType = (options: GeneratePageContentOptions) => P
  * @param {Function} options.parameters.dispStreams - Function to display streams for the specified page.
  * @param {number} [options.breakRoom=-1] - The break room identifier.
  * @param {boolean} [options.inBreakRoom=false] - Flag indicating if the user is in a break room.
+ * 
  * @returns {Promise<void>} A promise that resolves when the content generation is complete.
+ * 
  * @throws {Error} Throws an error if content generation fails.
+ * 
+ * @example
+ * const options = {
+ *   page: 1,
+ *   parameters: {
+ *     paginatedStreams: [[stream1, stream2], [stream3, stream4]], // Example paginated streams
+ *     currentUserPage: 0,
+ *     updateMainWindow: true,
+ *     updateCurrentUserPage: (page) => console.log('Current user page updated to:', page),
+ *     updateUpdateMainWindow: (flag) => console.log('Main window update flag:', flag),
+ *     dispStreams: async ({ lStreams, ind }) => {
+ *       console.log(`Displaying streams for page ${ind}:`, lStreams);
+ *     },
+ *   },
+ *   breakRoom: 1,
+ *   inBreakRoom: false,
+ * };
+ * 
+ * generatePageContent(options)
+ *   .then(() => {
+ *     console.log('Page content generated successfully');
+ *   })
+ *   .catch((error) => {
+ *     console.error('Error generating page content:', error);
+ *   });
  */
+
 export async function generatePageContent({
   page,
   parameters,

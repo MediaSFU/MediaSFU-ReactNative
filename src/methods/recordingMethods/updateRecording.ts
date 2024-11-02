@@ -52,10 +52,10 @@ export type UpdateRecordingType = (options: UpdateRecordingOptions) => Promise<v
 
 /**
  * Updates the recording state based on the provided parameters.
- *
+ * 
  * @param {UpdateRecordingOptions} parameters - The parameters for updating the recording state.
  * @returns {Promise<void>} A promise that resolves when the recording state has been updated.
- *
+ * 
  * @property {string} roomName - The name of the room where the recording is taking place.
  * @property {any} userRecordingParams - Parameters related to the user's recording settings.
  * @property {any} socket - The socket connection used for communication.
@@ -84,7 +84,43 @@ export type UpdateRecordingType = (options: UpdateRecordingOptions) => Promise<v
  * @property {Function} updateEndReport - Function to update the end report state.
  * @property {Function} updateCanRecord - Function to update the can record state.
  * @property {Function} rePort - Function to handle reporting.
+ * 
+ * @example
+ * ```typescript
+ * updateRecording({
+ *   parameters: {
+ *     roomName: 'Room101',
+ *     socket: mySocket,
+ *     updateIsRecordingModalVisible: setIsRecordingModalVisible,
+ *     confirmedToRecord: true,
+ *     showAlert: myShowAlert,
+ *     recordingMediaOptions: 'video',
+ *     videoAlreadyOn: true,
+ *     audioAlreadyOn: true,
+ *     recordStarted: false,
+ *     recordPaused: false,
+ *     recordResumed: false,
+ *     recordStopped: false,
+ *     recordChangeSeconds: 3,
+ *     pauseRecordCount: 0,
+ *     startReport: false,
+ *     endReport: false,
+ *     canRecord: true,
+ *     canPauseResume: true,
+ *     updateCanPauseResume: setCanPauseResume,
+ *     updatePauseRecordCount: setPauseRecordCount,
+ *     updateClearedToRecord: setClearedToRecord,
+ *     updateRecordPaused: setRecordPaused,
+ *     updateRecordResumed: setRecordResumed,
+ *     updateStartReport: setStartReport,
+ *     updateEndReport: setEndReport,
+ *     updateCanRecord: setCanRecord,
+ *     rePort: myRePortFunction,
+ *   },
+ * });
+ * ```
  */
+
 export const updateRecording = async ({
   parameters,
 }: UpdateRecordingOptions): Promise<void> => {

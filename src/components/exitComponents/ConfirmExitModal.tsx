@@ -73,27 +73,42 @@ export interface ConfirmExitModalOptions {
 export type ConfirmExitModalType = (options: ConfirmExitModalOptions) => JSX.Element;
 
 /**
- * ConfirmExitModal - A React Native modal component for confirming user exit from an event or ending an event.
- *
- * @component
- * @param {ConfirmExitModalOptions} props - The properties of the ConfirmExitModal component.
- * @returns {JSX.Element} - JSX element representing the ConfirmExitModal component.
+ * ConfirmExitModal provides a modal interface to confirm user exit or end an event, with the option for admin-level users to end the event for all participants.
  *
  * @example
- * // Example usage of ConfirmExitModal
- * <ConfirmExitModal
- *   isConfirmExitModalVisible={true}
- *   onConfirmExitClose={() => setConfirmExitModalVisible(false)}
- *   position="bottomLeft"
- *   backgroundColor="#ffcccc"
- *   exitEventOnConfirm={customExitEventLogic}
- *   member="John Doe"
- *   ban={false}
- *   roomName="MainRoom"
- *   socket={socket}
- *   islevel="2"
- * />
+ * ```tsx
+ * import React, { useState } from 'react';
+ * import { ConfirmExitModal } from 'mediasfu-reactnative';
+ * import { io } from 'socket.io-client';
+ *
+ * const socket = io('https://your-server-url.com');
+ *
+ * function App() {
+ *   const [isModalVisible, setModalVisible] = useState(true);
+ *
+ *   return (
+ *     <View>
+ *       <Button title="Confirm Exit" onPress={() => setModalVisible(true)} />
+ *       <ConfirmExitModal
+ *         isConfirmExitModalVisible={isModalVisible}
+ *         onConfirmExitClose={() => setModalVisible(false)}
+ *         position="bottomLeft"
+ *         backgroundColor="#ffcccc"
+ *         exitEventOnConfirm={() => console.log("Exit confirmed")}
+ *         member="John Doe"
+ *         ban={false}
+ *         roomName="MainRoom"
+ *         socket={socket}
+ *         islevel="2"
+ *       />
+ *     </View>
+ *   );
+ * }
+ *
+ * export default App;
+ * ```
  */
+
 const ConfirmExitModal: React.FC<ConfirmExitModalOptions> = ({
   isConfirmExitModalVisible,
   onConfirmExitClose,

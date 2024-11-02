@@ -66,12 +66,63 @@ export type PaginationType = (options: PaginationOptions) => JSX.Element;
 /**
  * Pagination Component
  *
- * A React Native component for navigating through pages with optional waveform and breakout room functionality.
+ * The `Pagination` component enables page navigation with support for breakout room logic. It shows page numbers, controls access to breakout rooms based on the user level, and provides customizable layout and styling options.
  *
  * @component
- * @param {PaginationOptions} props - The properties for the Pagination component.
- * @returns {JSX.Element} The rendered Pagination component.
+ * @param {PaginationOptions} props - Properties to configure the `Pagination` component.
+ * @param {number} props.totalPages - Total number of pages.
+ * @param {number} props.currentUserPage - Current page number for the user.
+ * @param {(options: GeneratePageContentOptions) => Promise<void>} [props.handlePageChange] - Function to handle page changes.
+ * @param {'left' | 'middle' | 'right'} [props.position='middle'] - Horizontal alignment of pagination.
+ * @param {'top' | 'middle' | 'bottom'} [props.location='middle'] - Vertical alignment of pagination.
+ * @param {'horizontal' | 'vertical'} [props.direction='horizontal'] - Direction of pagination (horizontal or vertical).
+ * @param {StyleProp<ViewStyle>} [props.buttonsContainerStyle] - Custom styles for the pagination container.
+ * @param {StyleProp<ViewStyle>} [props.activePageStyle] - Custom styles for the active page.
+ * @param {StyleProp<ViewStyle>} [props.inactivePageStyle] - Custom styles for inactive pages.
+ * @param {string} [props.backgroundColor='#ffffff'] - Background color for the pagination container.
+ * @param {number} [props.paginationHeight=40] - Height of the pagination container.
+ * @param {boolean} [props.showAspect=true] - Flag to display the pagination aspect.
+ * @param {PaginationParameters} props.parameters - Parameters necessary for pagination and breakout room logic.
+ *
+ * @example
+ * ```tsx
+ * import React from 'react';
+ * import { Pagination } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   const parameters = {
+ *     mainRoomsLength: 3,
+ *     memberRoom: 1,
+ *     breakOutRoomStarted: true,
+ *     breakOutRoomEnded: false,
+ *     member: 'John Doe',
+ *     breakoutRooms: [/* array of breakout room participants * /],
+ *     hostNewRoom: 2,
+ *     roomName: 'Room A',
+ *     islevel: '2',
+ *     showAlert: (alert) => console.log(alert.message),
+ *     socket: /* Socket connection * /,
+ *     getUpdatedAllParams: () => parameters,
+ *   };
+
+ *   return (
+ *     <Pagination
+ *       totalPages={10}
+ *       currentUserPage={1}
+ *       parameters={parameters}
+ *       backgroundColor="lightgray"
+ *       paginationHeight={50}
+ *       direction="horizontal"
+ *       position="middle"
+ *       location="bottom"
+ *     />
+ *   );
+ * }
+ *
+ * export default App;
+ * ```
  */
+
 const Pagination: React.FC<PaginationOptions> = ({
   totalPages,
   currentUserPage,

@@ -112,12 +112,59 @@ export type MainScreenComponentType = (
 ) => JSX.Element;
 
 /**
- * MainScreenComponent is a React Native functional component that dynamically adjusts the layout
- * and dimensions of its child components based on the provided props and the window size.
+ * MainScreenComponent dynamically adjusts the layout and dimensions of its child components based on window size,
+ * stacking mode, and specified width/height fractions, supporting flexible and responsive screen layouts.
  *
- * @param {MainScreenComponentOptions} props - The properties for the MainScreenComponent.
- * @returns {JSX.Element} The rendered main screen component with its children.
+ * This component determines the appropriate dimensions for main and secondary components based on stacking mode, screen width,
+ * and main component size, and can conditionally arrange child components in a column or row based on screen width.
+ *
+ * @component
+ * @param {MainScreenComponentOptions} props - Configuration options for MainScreenComponent.
+ * @param {React.ReactNode} props.children - Child components to render inside the screen container.
+ * @param {number} props.mainSize - Percentage size of the main component when stacking.
+ * @param {boolean} props.doStack - Flag indicating if components should be stacked vertically or horizontally.
+ * @param {number} [props.containerWidthFraction=1] - Fraction of window width for container width.
+ * @param {number} [props.containerHeightFraction=1] - Fraction of window height for container height.
+ * @param {Function} props.updateComponentSizes - Callback to update sizes of main and secondary components.
+ * @param {number} [props.defaultFraction=0.94] - Adjustment fraction for height when controls are visible.
+ * @param {boolean} props.showControls - Flag indicating if controls are shown, affecting height calculation.
+ * @param {ComponentSizes} props.componentSizes - Current sizes of the components (main and secondary).
+ *
+ * @returns {JSX.Element} The MainScreenComponent with dynamically calculated dimensions and layout.
+ *
+ * @example
+ * ```tsx
+ * import React, { useState } from 'react';
+ * import { MainScreenComponent } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   const [componentSizes, setComponentSizes] = useState<ComponentSizes>({
+ *     mainHeight: 0,
+ *     otherHeight: 0,
+ *     mainWidth: 0,
+ *     otherWidth: 0,
+ *   });
+ *
+ *   return (
+ *     <MainScreenComponent
+ *       mainSize={70}
+ *       doStack={true}
+ *       containerWidthFraction={1}
+ *       containerHeightFraction={1}
+ *       updateComponentSizes={setComponentSizes}
+ *       showControls={true}
+ *       componentSizes={componentSizes}
+ *     >
+ *       <MainContent />
+ *       <SecondaryContent />
+ *     </MainScreenComponent>
+ *   );
+ * }
+ *
+ * export default App;
+ * ```
  */
+
 const MainScreenComponent: React.FC<MainScreenComponentOptions> = ({
   children,
   mainSize,

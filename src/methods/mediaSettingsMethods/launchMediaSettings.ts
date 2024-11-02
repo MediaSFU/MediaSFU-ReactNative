@@ -25,7 +25,21 @@ export type LaunchMediaSettingsType = (options: LaunchMediaSettingsOptions) => P
  * @param {Function} options.updateAudioInputs - Function to update the available audio input devices.
  * @param {Function} options.updateVideoInputs - Function to update the available video input devices.
  * @returns {Promise<void>} A promise that resolves when the media settings have been updated.
+ *
+ * @example
+ * ```typescript
+ * launchMediaSettings({
+ *   updateIsMediaSettingsModalVisible: (isVisible) => console.log("Modal visible:", isVisible),
+ *   isMediaSettingsModalVisible: false,
+ *   mediaDevices: navigator.mediaDevices,
+ *   audioInputs: [],
+ *   videoInputs: [],
+ *   updateAudioInputs: (inputs) => console.log("Audio Inputs:", inputs),
+ *   updateVideoInputs: (inputs) => console.log("Video Inputs:", inputs),
+ * });
+ * ```
  */
+
 export const launchMediaSettings = async ({
   updateIsMediaSettingsModalVisible,
   isMediaSettingsModalVisible,

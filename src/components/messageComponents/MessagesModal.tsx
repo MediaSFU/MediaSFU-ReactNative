@@ -141,26 +141,51 @@ export type MessagesModalType = (options: MessagesModalOptions) => JSX.Element;
  *
  * @example
  * ```tsx
- * <MessagesModal
- *   isMessagesModalVisible={isVisible}
- *   onMessagesClose={() => setIsVisible(false)}
- *   messages={messages}
- *   eventType="conference"
- *   member="john_doe"
- *   islevel="1"
- *   coHostResponsibility={[{ name: 'chat', value: true }]}
- *   coHost="jane_doe"
- *   startDirectMessage={false}
- *   directMessageDetails={null}
- *   updateStartDirectMessage={(start) => setStartDirectMessage(start)}
- *   updateDirectMessageDetails={(participant) => setDirectMessageDetails(participant)}
- *   showAlert={showAlertFunction}
- *   roomName="MainRoom"
- *   socket={socketInstance}
- *   chatSetting="default"
- * />
+ * import React, { useState } from 'react';
+ * import { MessagesModal } from 'mediasfu-reactnative';
+ * 
+ * function App() {
+ *   const [isVisible, setIsVisible] = useState(true);
+ *   const messages = [
+ *     { sender: 'Alice', message: 'Hello everyone!', timestamp: '10:01', group: true },
+ *     { sender: 'Bob', message: 'Hey Alice!', timestamp: '10:02', receivers: ['Alice'], group: false },
+ *   ];
+
+ *   const handleSendMessage = async (options) => {
+ *     // Logic for sending a message
+ *     console.log('Message sent:', options);
+ *   };
+
+ *   return (
+ *     <MessagesModal
+ *       isMessagesModalVisible={isVisible}
+ *       onMessagesClose={() => setIsVisible(false)}
+ *       messages={messages}
+ *       onSendMessagePress={handleSendMessage}
+ *       eventType="conference"
+ *       member="john_doe"
+ *       islevel="1"
+ *       coHostResponsibility={[{ name: 'chat', value: true }]}
+ *       coHost="jane_doe"
+ *       startDirectMessage={false}
+ *       directMessageDetails={null}
+ *       updateStartDirectMessage={(start) => console.log('Start Direct Message:', start)}
+ *       updateDirectMessageDetails={(participant) => console.log('Direct Message Participant:', participant)}
+ *       showAlert={(alert) => console.log('Alert:', alert)}
+ *       roomName="MainRoom"
+ *       socket={socketInstance}
+ *       chatSetting="default"
+ *       position="bottomRight"
+ *       backgroundColor="#f5f5f5"
+ *       activeTabBackgroundColor="#7AD2DCFF"
+ *     />
+ *   );
+ * }
+
+ * export default App;
  * ```
  */
+
 const MessagesModal: React.FC<MessagesModalOptions> = ({
   isMessagesModalVisible,
   onMessagesClose,

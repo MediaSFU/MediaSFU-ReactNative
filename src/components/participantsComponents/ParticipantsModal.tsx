@@ -69,8 +69,7 @@ export type ParticipantsModalType = (
 ) => JSX.Element;
 
 /**
- * ParticipantsModal is a React Native functional component that displays a modal with a list of participants.
- * Users can filter, mute, message, or remove participants from the waiting list.
+ * ParticipantsModal displays a list of participants in a modal, with options for filtering, muting, messaging, or removing participants based on user permissions and event type.
  *
  * @component
  * @param {ParticipantsModalOptions} props - The properties for the ParticipantsModal component.
@@ -78,15 +77,49 @@ export type ParticipantsModalType = (
  *
  * @example
  * ```tsx
- * <ParticipantsModal
- *   isParticipantsModalVisible={isModalVisible}
- *   onParticipantsClose={() => setModalVisible(false)}
- *   onParticipantsFilterChange={(filter) => handleFilterChange(filter)}
- *   participantsCounter={participants.length}
- *   parameters={participantsParameters}
- * />
+ * import React, { useState } from 'react';
+ * import { ParticipantsModal } from 'mediasfu-reactnative';
+ * 
+ * function App() {
+ *   const [isModalVisible, setIsModalVisible] = useState(false);
+ *   const participantsParameters = {
+ *     position: 'topRight',
+ *     backgroundColor: '#83c0e9',
+ *     coHostResponsibility: [{ name: 'participants', value: true }],
+ *     coHost: 'JaneDoe',
+ *     member: 'JohnDoe',
+ *     islevel: '2',
+ *     participants: [
+ *       { name: 'Alice', id: '1', islevel: '1', muted: false },
+ *       { name: 'Bob', id: '2', islevel: '1', muted: true },
+ *     ],
+ *     eventType: 'webinar',
+ *     filteredParticipants: [],
+ *     socket: socketInstance,
+ *     showAlert: showAlertFunction,
+ *     roomName: 'MainRoom',
+ *     updateIsMessagesModalVisible: setIsMessagesModalVisible,
+ *     updateDirectMessageDetails: setDirectMessageDetails,
+ *     updateStartDirectMessage: setStartDirectMessage,
+ *     updateParticipants: setParticipants,
+ *     getUpdatedAllParams: () => participantsParameters,
+ *   };
+ * 
+ *   return (
+ *     <ParticipantsModal
+ *       isParticipantsModalVisible={isModalVisible}
+ *       onParticipantsClose={() => setIsModalVisible(false)}
+ *       onParticipantsFilterChange={(filter) => handleFilterChange(filter)}
+ *       participantsCounter={participantsParameters.participants.length}
+ *       parameters={participantsParameters}
+ *     />
+ *   );
+ * }
+ * 
+ * export default App;
  * ```
  */
+
 const ParticipantsModal: React.FC<ParticipantsModalOptions> = ({
   isParticipantsModalVisible,
   onParticipantsClose,

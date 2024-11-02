@@ -12,7 +12,19 @@ export type LaunchMessagesType = (options: LaunchMessagesOptions) => void;
  *
  * @param updateIsMessagesModalVisible - Function to update the visibility state of the messages modal.
  * @param isMessagesModalVisible - Current visibility state of the messages modal.
+ * 
+ * @example
+ * ```typescript
+ * const options: LaunchMessagesOptions = {
+ *  updateIsMessagesModalVisible: setModalVisibilityFunction,
+ * isMessagesModalVisible: false,
+ * };
+ * 
+ * launchMessages(options);
+ * // This will open the messages modal if it's currently closed, or close it if it's open.
+ * ```
  */
+
 export const launchMessages = ({
   updateIsMessagesModalVisible,
   isMessagesModalVisible,

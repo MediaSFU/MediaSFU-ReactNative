@@ -37,7 +37,26 @@ export type BanParticipantType = (options: BanParticipantOptions) => Promise<voi
  * @param {Function} options.parameters.reorderStreams - The function to reorder the streams.
  *
  * @returns {Promise<void>} A promise that resolves when the participant has been banned and streams reordered.
+ *
+ * @example
+ * ```typescript
+ * await banParticipant({
+ *   name: "John Doe",
+ *   parameters: {
+ *     activeNames: ["Alice", "Bob", "John Doe"],
+ *     dispActiveNames: ["Alice", "John Doe"],
+ *     participants: [
+ *       { name: "Alice", isActive: true },
+ *       { name: "Bob", isActive: true },
+ *       { name: "John Doe", isActive: true }
+ *     ],
+ *     updateParticipants: (updated) => setParticipants(updated),
+ *     reorderStreams: reorderStreamFunction,
+ *   },
+ * });
+ * ```
  */
+
 export const banParticipant = async ({
   name,
   parameters,

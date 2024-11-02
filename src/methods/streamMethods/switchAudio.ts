@@ -25,9 +25,26 @@ export type SwitchAudioType = (options: SwitchAudioOptions) => Promise<void>;
 /**
  * Switches the audio input device based on user preference.
  *
- * @param {SwitchAudioParams} options - The function parameters.
+ * @param {SwitchAudioOptions} options - The function parameters.
  * @returns {Promise<void>}
+ *
+ * @example
+ * ```typescript
+ * switchAudio({
+ *   audioPreference: "newAudioDeviceID",
+ *   parameters: {
+ *     defAudioID: "defaultAudioDeviceID",
+ *     userDefaultAudioInputDevice: "currentAudioDeviceID",
+ *     prevAudioInputDevice: "previousAudioDeviceID",
+ *     updateUserDefaultAudioInputDevice: (deviceId) => setUserDefaultAudio(deviceId),
+ *     updatePrevAudioInputDevice: (deviceId) => setPrevAudioDevice(deviceId),
+ *     switchUserAudio: switchUserAudioFunction,
+ *     getUpdatedAllParams: getUpdatedParamsFunction
+ *   }
+ * });
+ * ```
  */
+
 export const switchAudio = async ({ audioPreference, parameters }: SwitchAudioOptions): Promise<void> => {
   let {
     defAudioID,

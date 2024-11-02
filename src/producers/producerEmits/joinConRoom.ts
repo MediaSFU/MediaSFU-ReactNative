@@ -34,11 +34,29 @@ export type JoinConRoomType = (options: JoinConRoomOptions) => Promise<JoinConRo
  * @param {string} options.member - The member identifier.
  * @param {string} options.sec - The security token.
  * @param {string} options.apiUserName - The API username.
+ * 
  * @returns {Promise<JoinConRoomResponse>} A promise that resolves with the response of the join operation.
  *
- * @throws {Error} If any of the required parameters are missing or invalid.
- * @throws {Error} If the user is banned, suspended, or if the host has not joined the room yet.
+ * @example
+ * ```typescript
+ * const options = {
+ *   socket: socketInstance,
+ *   roomName: "s12345678",
+ *   islevel: "1",
+ *   member: "user123",
+ *   sec: "64CharacterLongSecretHere",
+ *   apiUserName: "user123",
+ * };
+ *
+ * try {
+ *   const response = await joinConRoom(options);
+ *   console.log("Room joined:", response);
+ * } catch (error) {
+ *   console.error("Failed to join room:", error);
+ * }
+ * ```
  */
+
 export async function joinConRoom(
   {
     socket, roomName, islevel, member, sec, apiUserName,

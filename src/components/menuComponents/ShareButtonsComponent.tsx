@@ -67,6 +67,34 @@ export type ShareButtonsComponentType = (
  * @component
  * @param {ShareButtonsComponentOptions} props - The properties for the component.
  * @returns {JSX.Element} The rendered ShareButtonsComponent.
+ * @example
+ * ```tsx
+ * import React from 'react';
+ * import { ShareButtonsComponent } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   return (
+ *     <ShareButtonsComponent
+ *       meetingID="123456"
+ *       eventType="meeting"
+ *       shareButtons={[
+ *         {
+ *           icon: 'copy',
+ *           action: () => console.log('Copied to clipboard'),
+ *           show: true,
+ *         },
+ *         {
+ *           icon: 'envelope',
+ *           action: () => console.log('Shared via email'),
+ *           show: true,
+ *         },
+ *       ]}
+ *     />
+ *   );
+ * }
+ *
+ * export default App;
+ * ```
  */
 const ShareButtonsComponent: React.FC<ShareButtonsComponentOptions> = ({
   meetingID,

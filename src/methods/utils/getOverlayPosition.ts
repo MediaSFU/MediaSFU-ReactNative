@@ -9,10 +9,22 @@ export type GetOverlayPositionType = (options: GetOverlayPositionOptions) => Ove
 
 /**
  * Gets the style for positioning an overlay based on the specified position.
- * @function
- * @param {string} position - The desired position for the overlay ('topLeft', 'topRight', 'bottomLeft', 'bottomRight').
+ * 
+ * @param {GetOverlayPositionOptions} options - Configuration specifying the overlay position.
  * @returns {OverlayPositionStyle} - The style object for positioning the overlay.
+ *
+ * @example
+ * ```typescript
+ * const topLeftStyle = getOverlayPosition({ position: "topLeft" });
+ * console.log(topLeftStyle);
+ * // Output: { top: 0, left: 0 }
+ *
+ * const bottomRightStyle = getOverlayPosition({ position: "bottomRight" });
+ * console.log(bottomRightStyle);
+ * // Output: { bottom: 0, right: 0 }
+ * ```
  */
+
 export const getOverlayPosition = ({ position }: GetOverlayPositionOptions): OverlayPositionStyle => {
   switch (position) {
     case 'topLeft':

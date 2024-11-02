@@ -63,10 +63,37 @@ export type BreakoutRoomUpdatedType = (options: BreakoutRoomUpdatedOptions) => P
  * @param {Function} options.parameters.onScreenChanges - Function to handle screen changes.
  * @param {Function} options.parameters.rePort - Function to handle reporting.
  *
- * @returns {Promise<void>} A promise that resolves when the breakout room state has been updated.
+ * @example
+ * ```typescript
+ * const breakoutOptions: BreakoutRoomUpdatedOptions = {
+ *   data: breakoutData,
+ *   parameters: {
+ *     breakOutRoomStarted: false,
+ *     breakOutRoomEnded: false,
+ *     breakoutRooms: [[]],
+ *     hostNewRoom: 1,
+ *     islevel: "2",
+ *     participantsAll: allParticipants,
+ *     participants: activeParticipants,
+ *     meetingDisplayType: "all",
+ *     prevMeetingDisplayType: "video",
+ *     updateBreakoutRooms: setBreakoutRooms,
+ *     updateBreakOutRoomStarted: setBreakOutRoomStarted,
+ *     updateBreakOutRoomEnded: setBreakOutRoomEnded,
+ *     updateHostNewRoom: setHostNewRoom,
+ *     updateMeetingDisplayType: setMeetingDisplayType,
+ *     updateParticipantsAll: setAllParticipants,
+ *     updateParticipants: setActiveParticipants,
+ *     onScreenChanges: handleScreenChanges,
+ *     rePort: reportFunction,
+ *     getUpdatedAllParams: () => breakoutOptions.parameters,
+ *   },
+ * };
  *
- * @throws Will throw an error if the update process fails.
+ * await breakoutRoomUpdated(breakoutOptions);
+ * ```
  */
+
 export const breakoutRoomUpdated = async ({
   data,
   parameters,
