@@ -1,6 +1,6 @@
-import { ShowAlert, SwitchUserVideoAltType, SwitchUserVideoParameters } from '../../@types/types';
+import { ShowAlert, SwitchUserVideoAltType, SwitchUserVideoAltParameters } from '../../@types/types';
 
-export interface SwitchVideoAltParameters extends SwitchUserVideoParameters {
+export interface SwitchVideoAltParameters extends SwitchUserVideoAltParameters {
 
     recordStarted: boolean;
     recordResumed: boolean;
