@@ -51,13 +51,18 @@ export interface ShareButtonsComponentOptions {
   shareButtons?: ShareButton[];
 
   /**
-   * The type of event, which can be "chat", "broadcast", or "meeting". This determines the URL structure for sharing.
+   * The type of event, which can be 'chat', 'broadcast', or 'meeting'. This determines the URL structure for sharing.
    */
   eventType: EventType;
+
+  /**
+   * The link to the Commnity Edition server.
+   */
+  localLink?: string;
 }
 
 export type ShareButtonsComponentType = (
-  options: ShareButtonsComponentOptions,
+  options: ShareButtonsComponentOptions
 ) => JSX.Element;
 
 /**
@@ -75,8 +80,9 @@ export type ShareButtonsComponentType = (
  * function App() {
  *   return (
  *     <ShareButtonsComponent
- *       meetingID="123456"
- *       eventType="meeting"
+ *       meetingID='123456'
+ *       eventType='meeting'
+ *       localLink='https://example.com'
  *       shareButtons={[
  *         {
  *           icon: 'copy',
@@ -96,32 +102,40 @@ export type ShareButtonsComponentType = (
  * export default App;
  * ```
  */
+
 const ShareButtonsComponent: React.FC<ShareButtonsComponentOptions> = ({
   meetingID,
   shareButtons = [],
   eventType,
+  localLink,
 }) => {
-  const shareName =
-    eventType === 'chat'
-      ? 'chat'
-      : eventType === 'broadcast'
+  const shareName = eventType === 'chat'
+    ? 'chat'
+    : eventType === 'broadcast'
       ? 'broadcast'
       : 'meeting';
+
+  const getShareUrl = () => {
+    if (localLink && !localLink.includes('mediasfu.com')) {
+      return `${localLink}/meeting/${meetingID}`;
+    }
+    return `https://${shareName}.mediasfu.com/${shareName}/${meetingID}`;
+  };
 
   const defaultShareButtons: ShareButton[] = [
     {
       icon: 'copy',
       action: () => {
-        Clipboard.setString(
-          `https://${shareName}.mediasfu.com/${shareName}/${meetingID}`,
-        );
+        // Action for the copy button
+       Clipboard.setString(getShareUrl());
       },
       show: true,
     },
     {
       icon: 'envelope',
       action: () => {
-        const emailUrl = `mailto:?subject=Join my meeting&body=Here's the link to the meeting: https://${shareName}.mediasfu.com/${shareName}/${meetingID}`;
+        // Action for the email button
+        const emailUrl = `mailto:?subject=Join my meeting&body=Here's the link to the meeting: ${getShareUrl()}`;
         Linking.openURL(emailUrl);
       },
       show: true,
@@ -129,8 +143,9 @@ const ShareButtonsComponent: React.FC<ShareButtonsComponentOptions> = ({
     {
       icon: 'facebook',
       action: () => {
+        // Action for the Facebook button
         const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-          `https://${shareName}.mediasfu.com/${shareName}/${meetingID}`,
+          getShareUrl(),
         )}`;
         Linking.openURL(facebookUrl);
       },
@@ -139,9 +154,8 @@ const ShareButtonsComponent: React.FC<ShareButtonsComponentOptions> = ({
     {
       icon: 'whatsapp',
       action: () => {
-        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(
-          `https://${shareName}.mediasfu.com/${shareName}/${meetingID}`,
-        )}`;
+        // Action for the WhatsApp button
+        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(getShareUrl())}`;
         Linking.openURL(whatsappUrl);
       },
       show: true,
@@ -149,19 +163,16 @@ const ShareButtonsComponent: React.FC<ShareButtonsComponentOptions> = ({
     {
       icon: 'telegram',
       action: () => {
-        const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(
-          `https://${shareName}.mediasfu.com/${shareName}/${meetingID}`,
-        )}`;
+        const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(getShareUrl())}`;
         Linking.openURL(telegramUrl);
       },
       show: true,
     },
   ];
 
-  const finalShareButtons =
-    shareButtons.length > 0
-      ? shareButtons.filter(button => button.show)
-      : defaultShareButtons.filter(button => button.show);
+  const finalShareButtons = shareButtons.length > 0
+    ? shareButtons.filter((button) => button.show)
+    : defaultShareButtons.filter((button) => button.show);
 
   return (
     <View style={styles.shareButtonsContainer}>
@@ -171,13 +182,14 @@ const ShareButtonsComponent: React.FC<ShareButtonsComponentOptions> = ({
           onPress={button.action}
           style={[
             styles.shareButton,
-            {backgroundColor: button.color || 'black'},
+            { backgroundColor: button.color || 'black' },
           ]}
           accessibilityRole="button"
-          accessibilityLabel={`Share via ${button.icon}`}>
+          accessibilityLabel={`Share via ${button.icon}`}
+        >
           <FontAwesome5
             name={button.icon}
-            style={[styles.shareIcon, {color: button.iconColor || '#ffffff'}]}
+            style={[styles.shareIcon, { color: button.iconColor || '#ffffff' }]}
           />
         </Pressable>
       ))}
@@ -206,7 +218,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
     // Optional: Add shadow for better visibility
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5, // For Android shadow

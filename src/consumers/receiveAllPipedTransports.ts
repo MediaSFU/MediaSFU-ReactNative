@@ -1,3 +1,4 @@
+
 import { Socket } from 'socket.io-client';
 import { GetPipedProducersAltType, GetPipedProducersAltParameters } from '../@types/types';
 
@@ -12,6 +13,7 @@ export interface ReceiveAllPipedTransportsParameters extends GetPipedProducersAl
 
 export interface ReceiveAllPipedTransportsOptions {
   nsock: Socket;
+  community?: boolean;
   parameters: ReceiveAllPipedTransportsParameters;
 }
 
@@ -23,6 +25,7 @@ export type ReceiveAllPipedTransportsType = (options: ReceiveAllPipedTransportsO
  *
  * @param {ReceiveAllPipedTransportsOptions} options - The options for receiving all piped transports.
  * @param {Socket} options.nsock - The socket instance used for communication.
+ * @param {boolean} options.community - Whether the room is a community edition room.
  * @param {ReceiveAllPipedTransportsParameters} options.parameters - The parameters for the operation.
  * @param {string} options.parameters.roomName - The name of the room.
  * @param {string} options.parameters.member - The member identifier.
@@ -36,6 +39,7 @@ export type ReceiveAllPipedTransportsType = (options: ReceiveAllPipedTransportsO
  * ```typescript
  * await receiveAllPipedTransports({
  *   nsock: socketInstance,
+ *   community: false,
  *   parameters: {
  *     roomName: 'Room1',
  *     member: 'Member1',
@@ -45,15 +49,16 @@ export type ReceiveAllPipedTransportsType = (options: ReceiveAllPipedTransportsO
  * ```
  */
 
-export const receiveAllPipedTransports = async ({ nsock, parameters }: ReceiveAllPipedTransportsOptions): Promise<void> => {
+export const receiveAllPipedTransports = async ({ nsock, community=false, parameters }: ReceiveAllPipedTransportsOptions): Promise<void> => {
   try {
     // Destructure parameters
     const { roomName, member, getPipedProducersAlt } = parameters;
-
+    const emitName = community ? 'createReceiveAllTransports' : 'createReceiveAllTransportsPiped';
+    const emitData = community ? { islevel:'0' } : { roomName, member };
     // Emit createReceiveAllTransportsPiped event to the server
     await nsock.emit(
-      'createReceiveAllTransportsPiped',
-      { roomName, member },
+      emitName,
+      emitData,
       async ({ producersExist }: { producersExist: boolean }) => {
         // Array of options representing different levels
         const options = ['0', '1', '2'];
@@ -61,10 +66,10 @@ export const receiveAllPipedTransports = async ({ nsock, parameters }: ReceiveAl
         // If producers exist, loop through each level and get producers
         if (producersExist) {
           for (const islevel of options) {
-            await getPipedProducersAlt({ nsock, islevel, parameters });
+            await getPipedProducersAlt({ nsock, community, islevel, parameters });
           }
         }
-      },
+      }
     );
   } catch (error) {
     console.log('receiveAllPipedTransports error', error);

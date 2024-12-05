@@ -1,7 +1,5 @@
 import { Socket } from 'socket.io-client';
-import {
-  RePortParameters, RePortType, ShowAlert, UserRecordingParams,
-} from '../../@types/types';
+import { RePortParameters, RePortType, ShowAlert, UserRecordingParams } from '../../@types/types';
 import { checkPauseState } from './checkPauseState';
 import { checkResumeState } from './checkResumeState';
 import { recordPauseTimer } from './recordPauseTimer';
@@ -11,6 +9,7 @@ export interface UpdateRecordingParameters extends RecordResumeTimerParameters, 
   roomName: string;
   userRecordingParams: UserRecordingParams;
   socket: Socket;
+  localSocket?: Socket;
   updateIsRecordingModalVisible: (visible: boolean) => void;
   confirmedToRecord: boolean;
   showAlert?: ShowAlert;
@@ -36,6 +35,7 @@ export interface UpdateRecordingParameters extends RecordResumeTimerParameters, 
   updateEndReport: (end: boolean) => void;
   updateCanRecord: (canRecord: boolean) => void;
 
+
   // Mediasfu functions
   rePort: RePortType;
 
@@ -52,17 +52,18 @@ export type UpdateRecordingType = (options: UpdateRecordingOptions) => Promise<v
 
 /**
  * Updates the recording state based on the provided parameters.
- * 
+ *
  * @param {UpdateRecordingOptions} parameters - The parameters for updating the recording state.
  * @returns {Promise<void>} A promise that resolves when the recording state has been updated.
- * 
+ *
  * @property {string} roomName - The name of the room where the recording is taking place.
  * @property {any} userRecordingParams - Parameters related to the user's recording settings.
  * @property {any} socket - The socket connection used for communication.
+ * @property {any} localSocket - The local socket connection used for communication.
  * @property {Function} updateIsRecordingModalVisible - Function to update the visibility of the recording modal.
  * @property {boolean} confirmedToRecord - Indicates if the user has confirmed to start recording.
  * @property {Function} showAlert - Function to show alert messages.
- * @property {string} recordingMediaOptions - The media options for recording (e.g., "video", "audio").
+ * @property {string} recordingMediaOptions - The media options for recording (e.g., 'video', 'audio').
  * @property {boolean} videoAlreadyOn - Indicates if the video is already turned on.
  * @property {boolean} audioAlreadyOn - Indicates if the audio is already turned on.
  * @property {boolean} recordStarted - Indicates if the recording has started.
@@ -84,13 +85,14 @@ export type UpdateRecordingType = (options: UpdateRecordingOptions) => Promise<v
  * @property {Function} updateEndReport - Function to update the end report state.
  * @property {Function} updateCanRecord - Function to update the can record state.
  * @property {Function} rePort - Function to handle reporting.
- * 
+ *
  * @example
  * ```typescript
  * updateRecording({
  *   parameters: {
  *     roomName: 'Room101',
  *     socket: mySocket,
+ *     localSocket: myLocalSocket,
  *     updateIsRecordingModalVisible: setIsRecordingModalVisible,
  *     confirmedToRecord: true,
  *     showAlert: myShowAlert,
@@ -128,6 +130,7 @@ export const updateRecording = async ({
     roomName,
     userRecordingParams,
     socket,
+    localSocket,
     updateIsRecordingModalVisible,
     confirmedToRecord,
     showAlert,
@@ -153,7 +156,7 @@ export const updateRecording = async ({
     updateEndReport,
     updateCanRecord,
 
-    // mediasfu functions
+    //mediasfu functions
     rePort,
 
   } = parameters;
@@ -188,6 +191,8 @@ export const updateRecording = async ({
     return;
   }
 
+  let socketRef = localSocket && localSocket.connected ? localSocket : socket;
+
   // Handle pause action
   if (recordStarted && !recordPaused && !recordStopped) {
     const proceed = await checkPauseState({
@@ -210,12 +215,10 @@ export const updateRecording = async ({
     if (record) {
       const action = 'pauseRecord';
       await new Promise<void>((resolve) => {
-        socket.emit(
+        socketRef.emit(
           action,
           { roomName },
-          async ({
-            success, reason, recordState, pauseCount,
-          }: { success: boolean; reason: string; recordState: string; pauseCount: number }) => {
+          async ({ success, reason, recordState, pauseCount }: { success: boolean; reason: string; recordState: string; pauseCount: number }) => {
             pauseRecordCount = pauseCount;
             updatePauseRecordCount(pauseRecordCount);
 
@@ -281,7 +284,7 @@ export const updateRecording = async ({
 
       const action = 'resumeRecord';
       await new Promise<void>((resolve) => {
-        socket.emit(
+        socketRef.emit(
           action,
           { roomName, userRecordingParams },
           async ({ success, reason }: { success: boolean; reason: string }) => {

@@ -26,7 +26,6 @@ import WelcomePage, {
   WelcomePageOptions,
 } from '../../components/miscComponents/WelcomePage';
 
-
 // pagination and display of media (samples)
 import FlexibleGrid from '../../components/displayComponents/FlexibleGrid';
 import AudioGrid from '../../components/displayComponents/AudioGrid';
@@ -34,7 +33,6 @@ import AudioGrid from '../../components/displayComponents/AudioGrid';
 // import methods for control (samples)
 import { launchMessages } from '../../methods/messageMethods/launchMessages';
 import { launchConfirmExit } from '../../methods/exitMethods/launchConfirmExit';
-
 
 // Import the platform-specific WebRTC module (options are for ios, android, web)
 import {
@@ -45,8 +43,9 @@ import {
 } from '../../methods/utils/webrtc/webrtc';
 
 // mediasfu functions -- examples
-import { connectSocket } from '../../sockets/SocketManager';
+import { connectSocket, connectLocalSocket } from '../../sockets/SocketManager';
 import { joinRoomClient } from '../../ProducerClient/producerClientEmits/joinRoomClient';
+import { joinLocalRoom } from '../../producers/producerEmits/joinLocalRoom';
 import { updateRoomParametersClient } from '../../ProducerClient/producerClientEmits/updateRoomParametersClient';
 import { createDeviceClient } from '../../ProducerClient/producerClientEmits/createDeviceClient';
 
@@ -109,8 +108,7 @@ import { switchUserAudio } from '../../consumers/switchUserAudio';
 import { receiveRoomMessages } from '../../consumers/receiveRoomMessages';
 import { formatNumber } from '../../methods/utils/formatNumber';
 import { connectIps } from '../../consumers/connectIps';
-
-
+import { connectLocalIps } from '../../consumers/connectLocalIps';
 
 import { startMeetingProgressTimer } from '../../methods/utils/meetingTimer/startMeetingProgressTimer';
 
@@ -146,6 +144,7 @@ import {
   Participant,
   Poll,
   ResponseJoinRoom,
+  ResponseJoinLocalRoom,
   ScreenParamsType,
   ScreenState,
   Stream,
@@ -174,11 +173,14 @@ import {
   RtpCapabilities,
   Transport,
 } from 'mediasoup-client/lib/types';
+import { createResponseJoinRoom } from '../../methods/utils/createResponseJoinRoom';
 
 export type MediasfuChatOptions = {
   PrejoinPage?: (
     options: PreJoinPageOptions | WelcomePageOptions
   ) => React.ReactNode;
+  localLink?: string;
+  connectMediaSFU?: boolean;
   credentials?: { apiUserName: string; apiKey: string };
   useLocalUIMode?: boolean;
   seedData?: SeedData;
@@ -195,6 +197,8 @@ export type MediasfuChatOptions = {
  *
  * @param {Object} props - The properties object.
  * @param {React.ComponentType<any>} [props.PrejoinPage=WelcomePage] - The component to render before joining the chat.
+ * @param {string} [props.localLink=""] - The local link for the media server.
+ * @param {boolean} [props.connectMediaSFU=true] - Flag to determine if the media server should be connected.
  * @param {Object} [props.credentials={ apiUserName: "", apiKey: "" }] - The credentials for API access.
  * @param {string} props.credentials.apiUserName - The API username.
  * @param {string} props.credentials.apiKey - The API key.
@@ -203,8 +207,10 @@ export type MediasfuChatOptions = {
  * @param {boolean} [props.useSeed=false] - Flag to determine if seed data should be used.
  * @param {string} [props.imgSrc="https://mediasfu.com/images/logo192.png"] - The image source for the logo.
  *
+ * MediasfuChat Component.
+ *
  * @returns {JSX.Element} The MediasfuChat component.
- * 
+ *
  * @example
  * ```tsx
  * const PrejoinPage = WelcomePage;
@@ -216,7 +222,7 @@ export type MediasfuChatOptions = {
  * const seedData = {};
  * const useSeed = false;
  * const imgSrc = "https://mediasfu.com/images/logo192.png";
- * 
+ *
  * return (
  * <MediasfuChat
  * PrejoinPage={PrejoinPage}
@@ -228,11 +234,13 @@ export type MediasfuChatOptions = {
  * />
  * );
  * ```
- * 
+ *
  */
 
 const MediasfuChat: React.FC<MediasfuChatOptions> = ({
   PrejoinPage = WelcomePage,
+  localLink = '',
+  connectMediaSFU = true,
   credentials = { apiUserName: '', apiKey: '' },
   useLocalUIMode = false,
   seedData = {},
@@ -303,6 +311,7 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
   // UseRef hooks with type annotations
   const localUIMode = useRef<boolean>(useLocalUIMode); // Local UI mode (desktop or touch) as boolean
   const socket = useRef<Socket>({} as Socket); // Socket for the media server, type Socket or null
+  const localSocket = useRef<Socket | null>(null); // Local socket for the media server, type Socket or null
   const roomData = useRef<ResponseJoinRoom | null>(null); // Room data, type ResponseJoinRoom or null
   const device = useRef<Device | null>(null); // Mediasoup Device, type Device or null
 
@@ -556,6 +565,7 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
   const remoteScreenStream = useRef<Stream[]>([]); // Array of remote screen streams
 
   const screenProducer = useRef<Producer | null>(null); // Screen producer as Producer or null
+  const localScreenProducer = useRef<Producer | null>(null); // Local screen producer as Producer or null
   const gotAllVids = useRef<boolean>(false); // True if all videos have been received
   const paginationHeightWidth = useRef<number>(40); // Pagination height/width as number
   const paginationDirection = useRef<'horizontal' | 'vertical'>('horizontal'); // Pagination direction as string
@@ -595,6 +605,10 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
     socket.current = value;
   };
 
+  const updateLocalSocket = (value: Socket | null) => {
+    localSocket.current = value;
+  };
+
   const updateDevice = (value: Device | null) => {
     device.current = value;
   };
@@ -616,6 +630,10 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
   };
 
   const updateMember = (value: string) => {
+    if (value.length > 0 && value.includes('_')) {
+      updateIslevel(value.split('_')[1]);
+      value = value.split('_')[0];
+    }
     member.current = value;
   };
 
@@ -1324,6 +1342,10 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
     screenProducer.current = value;
   };
 
+  const updateLocalScreenProducer = (value: Producer | null) => {
+    localScreenProducer.current = value;
+  };
+
   const updateGotAllVids = (value: boolean) => {
     gotAllVids.current = value;
   };
@@ -1522,15 +1544,19 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
 
   // Transports-related variables
   const transportCreated = useRef<boolean>(false); // True if the transport has been created
+  const localTransportCreated = useRef<boolean>(false); // True if the local transport has been created
   const transportCreatedVideo = useRef<boolean>(false); // True if the transport has been created for video
   const transportCreatedAudio = useRef<boolean>(false); // True if the transport has been created for audio
   const transportCreatedScreen = useRef<boolean>(false); // True if the transport has been created for screen share
   const producerTransport = useRef<Transport | null>(null); // Producer transport as Transport or null
+  const localProducerTransport = useRef<Transport | null>(null); // Local producer transport as Transport or null
   const videoProducer = useRef<Producer | null>(null); // Video producer as Producer or null
+  const localVideoProducer = useRef<Producer | null>(null); // Local video producer as Producer or null
   const params = useRef<ProducerOptions>({} as ProducerOptions); // Parameters for the producer as ProducerOptions
   const videoParams = useRef<ProducerOptions>({} as ProducerOptions); // Parameters for the video producer as ProducerOptions
   const audioParams = useRef<ProducerOptions>({} as ProducerOptions); // Parameters for the audio producer as ProducerOptions
   const audioProducer = useRef<Producer | null>(null); // Audio producer as Producer or null
+  const localAudioProducer = useRef<Producer | null>(null); // Local audio producer as Producer or null
   const consumerTransports = useRef<TransportType[]>([]); // Array of consumer transports
   const consumingTransports = useRef<string[]>([]); // Array of consuming transport IDs
 
@@ -1917,6 +1943,10 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
     transportCreated.current = value;
   };
 
+  const updateLocalTransportCreated = (value: boolean) => {
+    localTransportCreated.current = value;
+  };
+
   const updateTransportCreatedVideo = (value: boolean) => {
     transportCreatedVideo.current = value;
   };
@@ -1933,8 +1963,16 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
     producerTransport.current = value;
   };
 
+  const updateLocalProducerTransport = (value: Transport | null) => {
+    localProducerTransport.current = value;
+  };
+
   const updateVideoProducer = (value: Producer | null) => {
     videoProducer.current = value;
+  };
+
+  const updateLocalVideoProducer = (value: Producer | null) => {
+    localVideoProducer.current = value;
   };
 
   const updateParams = (value: ProducerOptions) => {
@@ -1951,6 +1989,10 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
 
   const updateAudioProducer = (value: Producer | null) => {
     audioProducer.current = value;
+  };
+
+  const updateLocalAudioProducer = (value: Producer | null) => {
+    localAudioProducer.current = value;
   };
 
   const updateConsumerTransports = (value: TransportType[]) => {
@@ -2214,6 +2256,7 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
       getDomains,
       formatNumber,
       connectIps,
+      connectLocalIps,
       createDeviceClient,
 
       captureCanvasStream,
@@ -2540,15 +2583,19 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
 
       //transports
       transportCreated: transportCreated.current,
+      localTransportCreated: localTransportCreated.current,
       transportCreatedVideo: transportCreatedVideo.current,
       transportCreatedAudio: transportCreatedAudio.current,
       transportCreatedScreen: transportCreatedScreen.current,
       producerTransport: producerTransport.current,
+      localProducerTransport: localProducerTransport.current,
       videoProducer: videoProducer.current,
+      localVideoProducer: localVideoProducer.current,
       params: params.current,
       videoParams: videoParams.current,
       audioParams: audioParams.current,
       audioProducer: audioProducer.current,
+      localAudioProducer: localAudioProducer.current,
       consumerTransports: consumerTransports.current,
       consumingTransports: consumingTransports.current,
 
@@ -2612,6 +2659,7 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
 
       device: device.current,
       socket: socket.current,
+      localSocket: localSocket.current!,
       checkMediaPermission: false,
       onWeb: Platform.OS === 'web',
 
@@ -2805,6 +2853,7 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
       updateAllAudioStreams,
       updateRemoteScreenStream,
       updateScreenProducer,
+      updateLocalScreenProducer,
       updateGotAllVids,
       updatePaginationHeightWidth,
       updatePaginationDirection,
@@ -2901,15 +2950,19 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
 
       //transports
       updateTransportCreated,
+      updateLocalTransportCreated,
       updateTransportCreatedVideo,
       updateTransportCreatedAudio,
       updateTransportCreatedScreen,
       updateProducerTransport,
+      updateLocalProducerTransport,
       updateVideoProducer,
+      updateLocalVideoProducer,
       updateParams,
       updateVideoParams,
       updateAudioParams,
       updateAudioProducer,
+      updateLocalAudioProducer,
       updateConsumerTransports,
       updateConsumingTransports,
 
@@ -2973,6 +3026,7 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
 
       updateDevice,
       updateSocket,
+      updateLocalSocket,
       updateValidated,
 
       showAlert,
@@ -3004,7 +3058,6 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
     videoAlreadyOn.current ? videoAlreadyOn.current : false,
   ); // True if the video is active
   const [endCallActive] = useState(false); // True if the end call button is active
-
 
   const controlChatButtons = [
     // control buttons for chat
@@ -3297,6 +3350,7 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
     member,
     sec,
     apiUserName,
+    isLocal = false,
   }: {
     socket: Socket;
     roomName: string;
@@ -3304,24 +3358,75 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
     member: string;
     sec: string;
     apiUserName: string;
+    isLocal?: boolean;
   }): Promise<void> {
     //join room and get data from server
 
-    let data: ResponseJoinRoom | null = await joinRoom({
-      socket,
-      roomName,
-      islevel,
-      member,
-      sec,
-      apiUserName,
-    });
+    let data: ResponseJoinRoom | null;
 
-    if (data && data.success) {
-      //update roomData
-      roomData.current = data;
+    if (!isLocal) {
+      data = await joinRoom({
+        socket,
+        roomName,
+        islevel,
+        member,
+        sec,
+        apiUserName,
+      });
+    } else {
+      const localData: ResponseJoinLocalRoom = await joinLocalRoom({
+        socket,
+        roomName,
+        islevel,
+        member,
+        sec,
+        apiUserName,
+        parameters: {
+          imgSrc,
+          showAlert,
+          updateIsLoadingModalVisible,
+          connectSocket,
+          connectLocalSocket,
+          updateSocket,
+          updateLocalSocket,
+          updateValidated,
+          updateApiUserName,
+          updateApiToken,
+          updateLink,
+          updateRoomName,
+          updateMember,
+        },
+        checkConnect:
+          localLink.length > 0 &&
+          connectMediaSFU === true &&
+          !link.current.includes('mediasfu.com'),
+      });
 
+      data = await createResponseJoinRoom({ localRoom: localData });
+    }
+
+    async function updateAndComplete(data: ResponseJoinRoom) {
       //update room parameters
       try {
+        // check if roomRecvIPs is not empty
+        if (
+          !data.roomRecvIPs ||
+          (data.roomRecvIPs && data.roomRecvIPs.length === 0)
+        ) {
+          data.roomRecvIPs = ['none'];
+          if (
+            link.current !== '' &&
+            link.current.includes('mediasfu.com') &&
+            !isLocal
+          ) {
+            // Community Edition Only
+            await receiveAllPipedTransports({
+              community: true,
+              nsock: getUpdatedAllParams().socket,
+              parameters: { ...getAllParams(), ...mediaSFUFunctions() },
+            });
+          }
+        }
         try {
           updateRoomParametersClient({
             parameters: {
@@ -3337,10 +3442,13 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
         if (data.isHost) {
           updateIslevel('2');
         } else {
-          updateIslevel('1');
+          // issue with isHost for local room
+          if (islevel !== '2') {
+            updateIslevel('1');
+          }
         }
 
-        if (data.secureCode && data.secureCode !== '') {
+        if (data.secureCode && data.secureCode != '') {
           updateAdminPasscode(data.secureCode);
         }
 
@@ -3360,9 +3468,51 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
       } catch (error) {
         console.log('error updateRoomParametersClient', error);
       }
+    }
+
+    if (data && data.success) {
+      if (
+        link.current !== '' &&
+        link.current!.includes('mediasfu.com') &&
+        isLocal
+      ) {
+        roomData.current = data;
+        return;
+      } else if (
+        link.current !== '' &&
+        link.current!.includes('mediasfu.com') &&
+        !isLocal
+      ) {
+        //update roomData
+        if (roomData.current) {
+          // updating only the recording and meeting room parameters
+          roomData.current!.recordingParams = data.recordingParams;
+          roomData.current!.meetingRoomParams = data.meetingRoomParams;
+        } else {
+          roomData.current = data;
+        }
+      } else {
+        //update roomData
+        roomData.current = data;
+        if (!link.current!.includes('mediasfu.com')) {
+          roomData.current!.meetingRoomParams = data.meetingRoomParams;
+        }
+      }
+
+      await updateAndComplete(data);
     } else {
+      if (
+        link.current !== '' &&
+        link.current!.includes('mediasfu.com') &&
+        !isLocal
+      ) {
+        // join local room only
+        await updateAndComplete(roomData.current!);
+        return;
+      }
+
       //might be a wrong room name or room is full or other error; check reason in data object if available
-      updateValidated(false);
+      // updateValidated(false);
       try {
         if (showAlert) {
           showAlert({ message: data!.reason!, type: 'danger', duration: 3000 });
@@ -3432,69 +3582,56 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
 
   async function connect_Socket(
     apiUserName: string,
-    apiToken: string,
+    token: string,
+    skipSockets: boolean = false,
   ): Promise<Socket | null> {
     //connect socket and attach events listeners to socket
     //Refer to https://www.mediasfu.com/documentation for full documentation of each event and its parameters as well uasage
+    const socketDefault = socket.current;
+    const socketAlt =
+      connectMediaSFU && localSocket.current && localSocket.current.id
+        ? localSocket.current
+        : socketDefault;
 
-    if (socket.current.id) {
-      socket.current.on('disconnect', async () => {
-        await disconnect({
-          showAlert,
-          redirectURL: redirectURL.current,
-          onWeb: true,
-          updateValidated,
+    if (socketDefault.id) {
+      if (!skipSockets) {
+        socketDefault.on('disconnect', async () => {
+          await disconnect({
+            showAlert,
+            redirectURL: redirectURL.current,
+            onWeb: true,
+            updateValidated,
+          });
+          if (videoAlreadyOn.current) {
+            await clickVideo({
+              parameters: {
+                ...getAllParams(),
+                ...mediaSFUFunctions(),
+              },
+            });
+          }
+          if (audioAlreadyOn.current) {
+            await clickAudio({
+              parameters: {
+                ...getAllParams(),
+                ...mediaSFUFunctions(),
+              },
+            });
+          }
+
+          await closeAndReset();
         });
-        if (videoAlreadyOn.current) {
-          await clickVideo({
-            parameters: {
-              ...getAllParams(),
-              ...mediaSFUFunctions(),
-            },
-          });
-        }
-        if (audioAlreadyOn.current) {
-          await clickAudio({
-            parameters: {
-              ...getAllParams(),
-              ...mediaSFUFunctions(),
-            },
-          });
-        }
 
-        await closeAndReset();
-      });
-
-      socket.current.on('allMembers', async (membersData: AllMembersData) => {
-        if (membersData) {
-          await allMembers({
-            apiUserName: apiUserName,
-            apiKey: '', //not recommended - use apiToken instead. Use for testing/development only
-            apiToken: apiToken,
-            members: membersData.members,
-            requestss: membersData.requests
-              ? membersData.requests
-              : requestList.current, //attend
-            coHoste: membersData.coHost ? membersData.coHost : coHost.current, //attend
-            coHostRes: membersData.coHostResponsibilities
-              ? membersData.coHostResponsibilities
-              : coHostResponsibility.current, //attend
-            parameters: { ...getAllParams(), ...mediaSFUFunctions() },
-            consume_sockets: consume_sockets.current,
-          });
-        }
-      });
-
-      socket.current.on(
-        'allMembersRest',
-        async (membersData: AllMembersRestData) => {
+        socketDefault.on('allMembers', async (membersData: AllMembersData) => {
           if (membersData) {
-            await allMembersRest({
+            await allMembers({
               apiUserName: apiUserName,
-              apiKey: '', //not recommended - use apiToken instead. Use for testing/development only
+              apiKey: '', //not recommended - use token instead. Use for testing/development only
+              apiToken: token,
               members: membersData.members,
-              apiToken: apiToken,
-              settings: membersData.settings,
+              requestss: membersData.requests
+                ? membersData.requests
+                : requestList.current, //attend
               coHoste: membersData.coHost ? membersData.coHost : coHost.current, //attend
               coHostRes: membersData.coHostResponsibilities
                 ? membersData.coHostResponsibilities
@@ -3503,168 +3640,224 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
               consume_sockets: consume_sockets.current,
             });
           }
-        },
-      );
+        });
 
+        socketDefault.on(
+          'allMembersRest',
+          async (membersData: AllMembersRestData) => {
+            if (membersData) {
+              await allMembersRest({
+                apiUserName: apiUserName,
+                apiKey: '', //not recommended - use token instead. Use for testing/development only
+                members: membersData.members,
+                apiToken: token,
+                settings: membersData.settings,
+                coHoste: membersData.coHost
+                  ? membersData.coHost
+                  : coHost.current, //attend
+                coHostRes: membersData.coHostResponsibilities
+                  ? membersData.coHostResponsibilities
+                  : coHostResponsibility.current, //attend
+                parameters: { ...getAllParams(), ...mediaSFUFunctions() },
+                consume_sockets: consume_sockets.current,
+              });
+            }
+          },
+        );
 
-
-      socket.current.on(
-        'producer-media-paused',
-        async ({
-          producerId,
-          kind,
-          name,
-        }: {
-          producerId: string;
-          kind: 'audio';
-          name: string;
-        }) => {
-          await producerMediaPaused({
+        socketDefault.on(
+          'producer-media-paused',
+          async ({
             producerId,
             kind,
             name,
-            parameters: { ...getAllParams(), ...mediaSFUFunctions() },
-          });
-        },
-      );
-
-      socket.current.on(
-        'producer-media-resumed',
-        async ({ kind, name }: { kind: 'audio'; name: string }) => {
-          await producerMediaResumed({
-            kind,
-            name,
-            parameters: { ...getAllParams(), ...mediaSFUFunctions() },
-          });
-        },
-      );
-
-      socket.current.on(
-        'producer-media-closed',
-        async ({
-          producerId,
-          kind,
-        }: {
-          producerId: string;
-          kind: 'video' | 'audio' | 'screenshare' | 'screen';
-        }) => {
-          if (producerId && kind) {
-            await producerMediaClosed({
+          }: {
+            producerId: string;
+            kind: 'audio';
+            name: string;
+          }) => {
+            await producerMediaPaused({
               producerId,
               kind,
+              name,
               parameters: { ...getAllParams(), ...mediaSFUFunctions() },
             });
-          }
-        },
-      );
+          },
+        );
 
-      socket.current.on('meetingEnded', async function () {
-        await meetingEnded({
-          showAlert,
-          redirectURL: redirectURL.current,
-          onWeb: true,
-          eventType: eventType.current,
-          updateValidated,
-        });
+        socketDefault.on(
+          'producer-media-resumed',
+          async ({ kind, name }: { kind: 'audio'; name: string }) => {
+            await producerMediaResumed({
+              kind,
+              name,
+              parameters: { ...getAllParams(), ...mediaSFUFunctions() },
+            });
+          },
+        );
 
-        if (videoAlreadyOn.current) {
-          await clickVideo({
-            parameters: {
-              ...getAllParams(),
-              ...mediaSFUFunctions(),
-            },
-          });
-        }
-        if (audioAlreadyOn.current) {
-          await clickAudio({
-            parameters: {
-              ...getAllParams(),
-              ...mediaSFUFunctions(),
-            },
-          });
-        }
+        socketDefault.on(
+          'producer-media-closed',
+          async ({
+            producerId,
+            kind,
+          }: {
+            producerId: string;
+            kind: 'video' | 'audio' | 'screenshare' | 'screen';
+          }) => {
+            if (producerId && kind) {
+              await producerMediaClosed({
+                producerId,
+                kind,
+                parameters: { ...getAllParams(), ...mediaSFUFunctions() },
+              });
+            }
+          },
+        );
 
-        await closeAndReset();
-      });
-
-      socket.current.on('disconnectUserSelf', async function () {
-        await disconnectUserSelf({
-          socket: socket.current,
-          member: member.current,
-          roomName: roomName.current,
-        });
-      });
-
-      socket.current.on(
-        'receiveMessage',
-        async ({ message }: { message: Message }) => {
-          await receiveMessage({
-            message,
-            messages: messages.current,
-            participantsAll: participants.current,
-            member: member.current,
-            eventType: eventType.current,
-            islevel: islevel.current,
-            coHost: coHost.current,
-            updateMessages,
-            updateShowMessagesBadge,
-          });
-        },
-      );
-
-      socket.current.on(
-        'meetingTimeRemaining',
-        async ({ timeRemaining }: { timeRemaining: number }) => {
-          await meetingTimeRemaining({
-            timeRemaining,
+        socketDefault.on('meetingEnded', async function () {
+          await meetingEnded({
             showAlert,
+            redirectURL: redirectURL.current,
+            onWeb: true,
             eventType: eventType.current,
+            updateValidated,
           });
-        },
-      );
 
-      socket.current.on('meetingStillThere', async () => {
-        await meetingStillThere({
-          updateIsConfirmHereModalVisible,
+          if (videoAlreadyOn.current) {
+            await clickVideo({
+              parameters: {
+                ...getAllParams(),
+                ...mediaSFUFunctions(),
+              },
+            });
+          }
+          if (audioAlreadyOn.current) {
+            await clickAudio({
+              parameters: {
+                ...getAllParams(),
+                ...mediaSFUFunctions(),
+              },
+            });
+          }
+
+          await closeAndReset();
         });
-      });
 
-      socket.current.on(
-        'updateConsumingDomains',
-        async ({ domains, alt_domains }: UpdateConsumingDomainsData) => {
-          await updateConsumingDomains({
-            domains,
-            alt_domains,
-            apiUserName,
-            apiKey: '', //not recommended - use apiToken instead. Use for testing/development only
-            apiToken,
+        socketDefault.on('disconnectUserSelf', async function () {
+          await disconnectUserSelf({
+            socket: socketDefault,
+            member: member.current,
+            roomName: roomName.current,
+          });
+        });
+
+        socketDefault.on(
+          'receiveMessage',
+          async ({ message }: { message: Message }) => {
+            await receiveMessage({
+              message,
+              messages: messages.current,
+              participantsAll: participants.current,
+              member: member.current,
+              eventType: eventType.current,
+              islevel: islevel.current,
+              coHost: coHost.current,
+              updateMessages,
+              updateShowMessagesBadge,
+            });
+          },
+        );
+
+        socketDefault.on(
+          'meetingTimeRemaining',
+          async ({ timeRemaining }: { timeRemaining: number }) => {
+            await meetingTimeRemaining({
+              timeRemaining,
+              showAlert,
+              eventType: eventType.current,
+            });
+          },
+        );
+
+        socketDefault.on('meetingStillThere', async () => {
+          await meetingStillThere({
+            updateIsConfirmHereModalVisible,
+          });
+        });
+
+        socketDefault.on(
+          'updateConsumingDomains',
+          async ({ domains, alt_domains }: UpdateConsumingDomainsData) => {
+            await updateConsumingDomains({
+              domains,
+              alt_domains,
+              apiUserName,
+              apiKey: '', //not recommended - use token instead. Use for testing/development only
+              apiToken: token,
+              parameters: { ...getAllParams(), ...mediaSFUFunctions() },
+            });
+          },
+        );
+      }
+
+      if (localLink !== '' && socketDefault && !skipSockets) {
+        await join_Room({
+          socket: socketDefault,
+          roomName: roomName.current,
+          islevel: islevel.current,
+          member: member.current,
+          sec: token,
+          apiUserName: apiUserName,
+          isLocal: true,
+        });
+      }
+
+      // there might be change in localSoscket for Community Edition
+      let localChanged = false;
+      localChanged =
+        localSocket.current && localSocket.current.id != socketAlt.id
+          ? true
+          : false;
+
+      if (!skipSockets && localChanged) {
+        // call the connect socket method again
+        await connect_Socket(apiUserName, token, true); // skipSocket = true
+        await sleep({ ms: 1000 });
+        updateIsLoadingModalVisible(false);
+        return socketDefault;
+      } else {
+        if (link.current !== '' && link.current!.includes('mediasfu.com')) {
+          // token might be different for local room
+          const token = apiToken.current;
+          await join_Room({
+            socket:
+              connectMediaSFU && socketAlt && socketAlt.id
+                ? socketAlt
+                : socketDefault,
+            roomName: roomName.current,
+            islevel: islevel.current,
+            member: member.current,
+            sec: token,
+            apiUserName: apiUserName,
+          });
+        }
+
+        await receiveRoomMessages({
+          socket: socketDefault,
+          roomName: roomName.current,
+          updateMessages,
+        });
+
+        if (!skipSockets) {
+          await prepopulateUserMedia({
+            name: hostLabel.current,
             parameters: { ...getAllParams(), ...mediaSFUFunctions() },
           });
-        },
-      );
+        }
 
-
-      await join_Room({
-        socket: socket.current,
-        roomName: roomName.current,
-        islevel: islevel.current,
-        member: member.current,
-        sec: apiToken,
-        apiUserName: apiUserName,
-      });
-
-      await receiveRoomMessages({
-        socket: socket.current,
-        roomName: roomName.current,
-        updateMessages,
-      });
-
-      await prepopulateUserMedia({
-        name: hostLabel.current,
-        parameters: { ...getAllParams(), ...mediaSFUFunctions() },
-      });
-
-      return socket.current;
+        return socketDefault;
+      }
     } else {
       return null;
     }
@@ -3732,7 +3925,9 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
             showAlert,
             updateIsLoadingModalVisible,
             connectSocket,
+            connectLocalSocket,
             updateSocket,
+            updateLocalSocket,
             updateValidated,
             updateApiUserName,
             updateApiToken,
@@ -3741,6 +3936,8 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
             updateMember,
           }}
           credentials={credentials}
+          localLink={localLink}
+          connectMediaSFU={connectMediaSFU}
         />
       ) : (
         <MainContainerComponent>
@@ -3768,7 +3965,6 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
                 eventType.current === 'conference'
               }
             >
-
               {/* OthergridComponent shows the minor grid view - not used at all in broadcast event type */}
               {/* OthergridComponent becomes the dominant grid view in conference (the main grid only gets re-introduced during screenshare) and chat event types */}
               <OthergridComponent
@@ -3780,7 +3976,6 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
                 showTimer={mainHeightWidth === 0 ? true : false}
                 meetingProgressTime={meetingProgressTime}
               >
-
                 {/* AudioGrid contains all the audio only streams */}
                 {/* If broadcasting and there are audio only streams (just one), the audio only streams are displayed in the main grid view */}
                 {/* If webinar and you are the host, the audio only streams (just one), are displayed in the main grid view */}
@@ -3806,15 +4001,11 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
                   componentsToRender={otherGridStreams[0]}
                   backgroundColor={'rgba(217, 227, 234, 0.99)'}
                 />
-
-
               </OthergridComponent>
             </MainScreenComponent>
           </MainAspectComponent>
-
         </MainContainerComponent>
       )}
-
 
       <MessagesModal
         backgroundColor={
@@ -3866,8 +4057,8 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
         islevel={islevel.current}
         adminPasscode={adminPasscode.current}
         eventType={eventType.current}
+        localLink={localLink}
       />
-
 
       <AlertComponent
         visible={alertVisible}

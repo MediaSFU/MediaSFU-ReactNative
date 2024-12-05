@@ -22,7 +22,7 @@ import { EventType } from '../../@types/types';
 export interface MenuModalOptions {
   /**
    * The background color of the modal content.
-   * @default "#83c0e9"
+   * @default '#83c0e9'
    */
   backgroundColor?: string;
 
@@ -49,8 +49,8 @@ export interface MenuModalOptions {
 
   /**
    * Position of the modal on the screen.
-   * Possible values: "topRight", "topLeft", "bottomRight", "bottomLeft"
-   * @default "bottomRight"
+   * Possible values: 'topRight', 'topLeft', 'bottomRight', 'bottomLeft'
+   * @default 'bottomRight'
    */
   position?: 'topRight' | 'topLeft' | 'bottomRight' | 'bottomLeft';
 
@@ -73,6 +73,11 @@ export interface MenuModalOptions {
    * The type of event.
    */
   eventType: EventType;
+
+  /**
+   * The link to the Commnity Edition server.
+   */
+  localLink?: string;
 }
 
 export type MenuModalType = (options: MenuModalOptions) => JSX.Element;
@@ -91,7 +96,7 @@ export type MenuModalType = (options: MenuModalOptions) => JSX.Element;
  * function App() {
  *   return (
  *     <MenuModal
- *       backgroundColor="#83c0e9"
+ *       backgroundColor='#83c0e9'
  *       isVisible={true}
  *       onClose={() => console.log('Modal closed')}
  *       customButtons={[
@@ -104,11 +109,12 @@ export type MenuModalType = (options: MenuModalOptions) => JSX.Element;
  *         },
  *       ]}
  *       shareButtons={true}
- *       position="bottomRight"
- *       roomName="MeetingRoom123"
- *       adminPasscode="123456"
- *       islevel="2"
- *       eventType="video"
+ *       position='bottomRight'
+ *       roomName='MeetingRoom123'
+ *       adminPasscode='123456'
+ *       islevel='2'
+ *       eventType='video'
+ *       localLink='http://localhost:3000'
  *     />
  *   );
  * }
@@ -128,6 +134,7 @@ const MenuModal: React.FC<MenuModalOptions> = ({
   adminPasscode,
   islevel,
   eventType,
+  localLink,
 }) => {
   const [modalWidth, setModalWidth] = useState<number>(
     0.7 * Dimensions.get('window').width,
@@ -201,6 +208,7 @@ const MenuModal: React.FC<MenuModalOptions> = ({
                   <ShareButtonsComponent
                     meetingID={roomName}
                     eventType={eventType}
+                    localLink={localLink}
                   />
                 )}
               </View>

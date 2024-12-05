@@ -14,7 +14,7 @@ export interface ConnectSendTransportParameters extends ConnectSendTransportAudi
   shared: boolean;
   islevel: string;
 
-  // mediasfu functions
+  //mediasfu functions
   connectSendTransportAudio: ConnectSendTransportAudioType;
   connectSendTransportVideo: ConnectSendTransportVideoType;
   connectSendTransportScreen: ConnectSendTransportScreenType;
@@ -23,6 +23,7 @@ export interface ConnectSendTransportParameters extends ConnectSendTransportAudi
 
 export interface ConnectSendTransportOptions {
   option: 'audio' | 'video' | 'screen' | 'all';
+  targetOption?: 'local' | 'remote' | 'all';
   parameters: ConnectSendTransportParameters;
 }
 
@@ -33,7 +34,8 @@ export type ConnectSendTransportType = (options: ConnectSendTransportOptions) =>
  * Connects the send transport based on the specified option.
  *
  * @param {ConnectSendTransportOptions} options - The options for connecting the send transport.
- * @param {string} options.option - The type of transport to connect ("audio", "video", "screen", or "all").
+ * @param {string} options.option - The type of transport to connect ('audio', 'video', 'screen', or 'all').
+ * @param {boolean} options.targetOption - The target option to connect ('local', 'remote', or 'all').
  * @param {ConnectSendTransportParameters} options.parameters - The parameters required for connecting the transport.
  * @param {ProducerOptions} options.parameters.audioParams - The audio parameters.
  * @param {ProducerOptions} options.parameters.videoParams - The video parameters.
@@ -54,6 +56,7 @@ export type ConnectSendTransportType = (options: ConnectSendTransportOptions) =>
  * @example
  * const options = {
  *   option: 'audio',
+ *   targetOption: 'local',
  *   parameters: {
  *     audioParams: audioProducerOptions,
  *     videoParams: videoProducerOptions,
@@ -68,7 +71,7 @@ export type ConnectSendTransportType = (options: ConnectSendTransportOptions) =>
  *     connectSendTransportScreen: connectScreenFunction,
  *   },
  * };
- * 
+ *
  * connectSendTransport(options)
  *   .then(() => {
  *     console.log('Transport connected successfully');
@@ -78,9 +81,9 @@ export type ConnectSendTransportType = (options: ConnectSendTransportOptions) =>
  *   });
  */
 
-export const connectSendTransport = async ({ option, parameters }: ConnectSendTransportOptions): Promise<void> => {
+export const connectSendTransport = async ({ option, targetOption = 'all', parameters }: ConnectSendTransportOptions): Promise<void> => {
   try {
-    const {
+    let {
       audioParams,
       videoParams,
       localStreamScreen,
@@ -90,7 +93,7 @@ export const connectSendTransport = async ({ option, parameters }: ConnectSendTr
       shared,
       islevel,
 
-      // media functions
+      //media functions
       connectSendTransportAudio,
       connectSendTransportVideo,
       connectSendTransportScreen,
@@ -99,28 +102,32 @@ export const connectSendTransport = async ({ option, parameters }: ConnectSendTr
     // Connect send transport based on the specified option
     if (option === 'audio') {
       await connectSendTransportAudio({
+        targetOption,
         audioParams,
         parameters,
       });
     } else if (option === 'video') {
       await connectSendTransportVideo({
+        targetOption,
         videoParams,
         parameters,
       });
     } else if (option === 'screen') {
       if (
-        whiteboardStarted
-        && !whiteboardEnded
-        && canvasStream
-        && islevel === '2'
-        && !shared
+        whiteboardStarted &&
+        !whiteboardEnded &&
+        canvasStream &&
+        islevel === '2' &&
+        !shared
       ) {
         await connectSendTransportScreen({
+          targetOption,
           stream: canvasStream,
           parameters,
         });
       } else {
         await connectSendTransportScreen({
+          targetOption,
           stream: localStreamScreen!,
           parameters,
         });
@@ -128,10 +135,12 @@ export const connectSendTransport = async ({ option, parameters }: ConnectSendTr
     } else {
       // Connect both audio and video send transports
       await connectSendTransportAudio({
+        targetOption,
         audioParams,
         parameters,
       });
       await connectSendTransportVideo({
+        targetOption,
         videoParams,
         parameters,
       });

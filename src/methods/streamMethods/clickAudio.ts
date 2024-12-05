@@ -24,6 +24,7 @@ export interface ClickAudioParameters extends DisconnectSendTransportAudioParame
   audioRequestTime: number;
   member: string;
   socket: Socket;
+  localSocket?: Socket;
   roomName: string;
   userDefaultAudioInputDevice: string;
   micAction: boolean;
@@ -69,16 +70,16 @@ export type ClickAudioType = (options: ClickAudioOptions) => Promise<void>;
 
 /**
  * Handles the click event for toggling audio in a media session.
- * 
+ *
  * @param {ClickAudioOptions} parameters - The parameters required for handling the audio click event.
  * @returns {Promise<void>} A promise that resolves when the audio click event has been handled.
- * 
+ *
  * The function performs the following actions:
  * - If the event is audio-only, it shows an alert and exits.
  * - If the audio is already on, it handles the logic for turning it off, including checking recording states and permissions.
  * - If the audio is off, it checks for admin restrictions, user permissions, and handles the logic for turning the audio on.
  * - It updates various states and emits socket events as necessary.
- * 
+ *
  * @example
  * ```typescript
  * clickAudio({ parameters });
@@ -104,6 +105,7 @@ export const clickAudio = async ({ parameters }: ClickAudioOptions): Promise<voi
     audioRequestTime,
     member,
     socket,
+    localSocket,
     roomName,
     userDefaultAudioInputDevice,
     micAction,
@@ -160,7 +162,7 @@ export const clickAudio = async ({ parameters }: ClickAudioOptions): Promise<voi
 
     audioAlreadyOn = false;
     updateAudioAlreadyOn(audioAlreadyOn);
-    if (localStream){
+    if (localStream) {
       localStream!.getAudioTracks()[0].enabled = false;
       updateLocalStream(localStream);
     }
@@ -181,10 +183,7 @@ export const clickAudio = async ({ parameters }: ClickAudioOptions): Promise<voi
     if (!micAction && islevel !== '2' && !youAreCoHost) {
       response = await checkPermission({
         permissionType: 'audioSetting',
-        audioSetting,
-        videoSetting,
-        screenshareSetting,
-        chatSetting,
+        audioSetting, videoSetting, screenshareSetting, chatSetting,
       });
     } else {
       response = 0;
@@ -192,60 +191,71 @@ export const clickAudio = async ({ parameters }: ClickAudioOptions): Promise<voi
 
     switch (response) {
       case 1:
-      { if (audioRequestState === 'pending') {
-        showAlert?.({
-          message: 'A request is pending. Please wait for the host to respond.',
-          type: 'danger',
-          duration: 3000,
-        });
-        return;
-      }
+        {
+          if (audioRequestState === 'pending') {
+            showAlert?.({
+              message: 'A request is pending. Please wait for the host to respond.',
+              type: 'danger',
+              duration: 3000,
+            });
+            return;
+          }
 
-      if (audioRequestState === 'rejected' && Date.now() - audioRequestTime < updateRequestIntervalSeconds * 1000) {
-        showAlert?.({
-          message: `A request was rejected. Please wait for ${updateRequestIntervalSeconds} seconds before sending another request.`,
-          type: 'danger',
-          duration: 3000,
-        });
-        return;
-      }
+          if (audioRequestState === 'rejected' && Date.now() - audioRequestTime < updateRequestIntervalSeconds * 1000) {
+            showAlert?.({
+              message: `A request was rejected. Please wait for ${updateRequestIntervalSeconds} seconds before sending another request.`,
+              type: 'danger',
+              duration: 3000,
+            });
+            return;
+          }
 
-      showAlert?.({
-        message: 'Request sent to host.',
-        type: 'success',
-        duration: 3000,
-      });
+          showAlert?.({
+            message: 'Request sent to host.',
+            type: 'success',
+            duration: 3000,
+          });
 
-      audioRequestState = 'pending';
-      updateAudioRequestState(audioRequestState);
-      // create a request and add to the request list and send to host
+          audioRequestState = 'pending';
+          updateAudioRequestState(audioRequestState);
+          //create a request and add to the request list and send to host
 
-      const userRequest = {
-        id: socket.id,
-        name: member,
-        icon: 'fa-microphone',
-      };
-      socket.emit('participantRequest', { userRequest, roomName });
-      break; }
+          const userRequest = {
+            id: socket.id,
+            name: member,
+            icon: 'fa-microphone',
+          };
+          socket.emit('participantRequest', { userRequest, roomName });
+          break;
+        }
 
       case 2:
+
         showAlert?.({
           message: 'You cannot turn on your microphone. Access denied by host.',
           type: 'danger',
           duration: 3000,
         });
+
         break;
 
       case 0:
-        // allow
+        //allow
 
         if (audioPaused) {
-          if (localStream){
-            localStream!.getAudioTracks()[0].enabled = true;
-            updateAudioAlreadyOn(true);
-          }
+          localStream!.getAudioTracks()[0].enabled = true;
+          updateAudioAlreadyOn(true);
           await resumeSendTransportAudio({ parameters });
           socket.emit('resumeProducerAudio', { mediaTag: 'audio', roomName });
+
+          try {
+            if (localSocket && localSocket.id) {
+              localSocket.emit('resumeProducerAudio', { mediaTag: 'audio', roomName });
+            }
+          } catch (error) {
+            console.log('Error in resumeProducerAudio', error);
+
+          }
 
           updateLocalStream(localStream);
           updateAudioAlreadyOn(audioAlreadyOn);
@@ -254,6 +264,7 @@ export const clickAudio = async ({ parameters }: ClickAudioOptions): Promise<voi
             micAction = false;
             updateMicAction(micAction);
           }
+
 
           participants.forEach((participant) => {
             if (participant.socketId === socket.id && participant.name === member) {

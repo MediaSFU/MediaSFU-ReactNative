@@ -67,6 +67,11 @@ export interface ShareEventModalOptions {
    * The type of the event.
    */
   eventType: EventType;
+
+  /**
+   * The link to the local server.
+   */
+  localLink?: string;
 }
 
 export type ShareEventModalType = (options: ShareEventModalOptions) => JSX.Element;
@@ -99,6 +104,7 @@ export type ShareEventModalType = (options: ShareEventModalOptions) => JSX.Eleme
  *       backgroundColor="rgba(255, 255, 255, 0.8)"
  *       shareButtons={true}
  *       position="topRight"
+ *       localLink="https://example.com"
  *     />
  *   );
  * }
@@ -117,6 +123,7 @@ const ShareEventModal: React.FC<ShareEventModalOptions> = ({
   adminPasscode,
   islevel,
   eventType,
+  localLink,
 }) => {
   const screenWidth = Dimensions.get('window').width;
   let modalWidth = 0.8 * screenWidth;
@@ -164,6 +171,7 @@ const ShareEventModal: React.FC<ShareEventModalOptions> = ({
                   <ShareButtonsComponent
                     meetingID={roomName}
                     eventType={eventType}
+                    localLink={localLink}
                   />
                 </View>
               )}

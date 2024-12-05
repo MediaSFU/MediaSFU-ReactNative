@@ -1,5 +1,5 @@
 /* eslint-disable no-catch-shadow */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,15 +11,78 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import Orientation from 'react-native-orientation-locker';
 import { Socket } from 'socket.io-client';
-import { ConnectSocketType, ShowAlert } from '../../@types/types';
+import {
+  ConnectSocketType,
+  ShowAlert,
+  ConnectLocalSocketType,
+  ResponseLocalConnection,
+  ResponseLocalConnectionData,
+  RecordingParams,
+  MeetingRoomParams,
+} from '../../@types/types';
 import RNPickerSelect from 'react-native-picker-select';
+import { checkLimitsAndMakeRequest } from '../../methods/utils/checkLimitsAndMakeRequest';
+import { createRoomOnMediaSFU } from '../../methods/utils/createRoomOnMediaSFU';
+import { joinRoomOnMediaSFU } from '../../methods/utils/joinRoomOnMediaSFU';
 
+/**
+ * Interface defining the parameters for joining a local event room.
+ */
+export interface JoinLocalEventRoomParameters {
+  eventID: string;
+  userName: string;
+  secureCode?: string;
+  videoPreference?: string | null;
+  audioPreference?: string | null;
+  audioOutputPreference?: string | null;
+}
 
-const MAX_ATTEMPTS = 10; // Maximum number of unsuccessful attempts before rate limiting
-const RATE_LIMIT_DURATION = 3 * 60 * 60 * 1000; // 3 hours in milliseconds
+/**
+ * Interface defining the options for joining a local event room.
+ */
+export interface JoinLocalEventRoomOptions {
+  joinData: JoinLocalEventRoomParameters;
+  link?: string;
+}
+
+/**
+ * Interface defining the response structure when creating or joining a local room.
+ */
+export interface CreateLocalRoomParameters {
+  eventID: string;
+  duration: number;
+  capacity: number;
+  userName: string;
+  scheduledDate: Date;
+  secureCode: string;
+  waitRoom?: boolean;
+  recordingParams?: RecordingParams;
+  eventRoomParams?: MeetingRoomParams;
+  videoPreference?: string | null;
+  audioPreference?: string | null;
+  audioOutputPreference?: string | null;
+  mediasfuURL?: string;
+}
+
+/**
+ * Interface defining the response structure when joining a local room.
+ */
+export interface CreateLocalRoomOptions {
+  createData: CreateLocalRoomParameters;
+  link?: string;
+}
+
+/**
+ * Interface defining the response structure when creating or joining a local room.
+ */
+export interface CreateJoinLocalRoomResponse {
+  success: boolean;
+  secret: string;
+  reason?: string;
+  url?: string;
+}
 
 /**
  * Interface defining the parameters for the PreJoinPage component.
@@ -47,9 +110,19 @@ export interface PreJoinPageParameters {
   connectSocket: ConnectSocketType;
 
   /**
+   * Function to establish a socket connection to a local server.
+   */
+  connectLocalSocket?: ConnectLocalSocketType;
+
+  /**
    * Function to update the socket instance in the parent state.
    */
   updateSocket: (socket: Socket) => void;
+
+  /**
+   * Function to update the socket instance in the parent state.
+   */
+  updateLocalSocket?: (socket: Socket) => void;
 
   /**
    * Function to update the validation state in the parent.
@@ -95,6 +168,16 @@ export interface Credentials {
  */
 export interface PreJoinPageOptions {
   /**
+   * link to the local server (Community Edition)
+   */
+  localLink?: string;
+
+  /**
+   * Determines if the user is allowed to connect to the MediaSFU server.
+   */
+  connectMediaSFU?: boolean;
+
+  /**
    * Parameters required by the PreJoinPage component.
    */
   parameters: PreJoinPageParameters;
@@ -138,108 +221,6 @@ export type CreateJoinRoomType = (options: {
   success: boolean;
 }>;
 
-/**
- * Async function to join a room on MediaSFU.
- *
- * @param {object} options - The options for joining a room.
- * @param {any} options.payload - The payload for the API request.
- * @param {string} options.apiUserName - The API username.
- * @param {string} options.apiKey - The API key.
- * @returns {Promise<{ data: CreateJoinRoomResponse | CreateJoinRoomError | null; success: boolean; }>} The response from the API.
- */
-export const joinRoomOnMediaSFU: CreateJoinRoomType = async ({
-  payload,
-  apiUserName,
-  apiKey,
-}) => {
-  try {
-    // Validate credentials
-    if (
-      !apiUserName
-      || !apiKey
-      || apiUserName === 'yourAPIUSERNAME'
-      || apiKey === 'yourAPIKEY'
-      || apiKey.length !== 64
-      || apiUserName.length < 6
-    ) {
-      return { data: { error: 'Invalid credentials' }, success: false };
-    }
-
-    const response = await fetch('https://mediasfu.com/v1/rooms/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiUserName}:${apiKey}`,
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
-    const data: CreateJoinRoomResponse = await response.json();
-    return { data, success: true };
-  } catch (error) {
-    const errorMessage = (error as Error).message || 'unknown error';
-    return {
-      data: { error: `Unable to join room, ${errorMessage}` },
-      success: false,
-    };
-  }
-};
-
-/**
- * Async function to create a room on MediaSFU.
- *
- * @param {object} options - The options for creating a room.
- * @param {any} options.payload - The payload for the API request.
- * @param {string} options.apiUserName - The API username.
- * @param {string} options.apiKey - The API key.
- * @returns {Promise<{ data: CreateJoinRoomResponse | CreateJoinRoomError | null; success: boolean; }>} The response from the API.
- */
-export const createRoomOnMediaSFU: CreateJoinRoomType = async ({
-  payload,
-  apiUserName,
-  apiKey,
-}) => {
-  try {
-    // Validate credentials
-    if (
-      !apiUserName
-      || !apiKey
-      || apiUserName === 'yourAPIUSERNAME'
-      || apiKey === 'yourAPIKEY'
-      || apiKey.length !== 64
-      || apiUserName.length < 6
-    ) {
-      return { data: { error: 'Invalid credentials' }, success: false };
-    }
-
-    const response = await fetch('https://mediasfu.com/v1/rooms/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiUserName}:${apiKey}`,
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
-    const data: CreateJoinRoomResponse = await response.json();
-    return { data, success: true };
-  } catch (error) {
-    const errorMessage = (error as Error).message || 'unknown error';
-    return {
-      data: { error: `Unable to create room, ${errorMessage}` },
-      success: false,
-    };
-  }
-};
-
 export type PreJoinPageType = (options: PreJoinPageOptions) => JSX.Element;
 
 /**
@@ -247,14 +228,42 @@ export type PreJoinPageType = (options: PreJoinPageOptions) => JSX.Element;
  *
  * @component
  * @param {PreJoinPageOptions} props - The properties for the PreJoinPage component.
+ * @param {PreJoinPageParameters} props.parameters - Various parameters required for the component.
+ * @param {ShowAlert} [props.parameters.showAlert] - Function to show alert messages.
+ * @param {() => void} props.parameters.updateIsLoadingModalVisible - Function to update the loading modal visibility.
+ * @param {ConnectSocketType} props.parameters.connectSocket - Function to connect to the socket.
+ * @param {ConnectSocketType} props.parameters.connectLocalSocket - Function to connect to the local socket.
+ * @param {Socket} props.parameters.updateSocket - Function to update the socket.
+ * @param {Socket} props.parameters.updateLocalSocket - Function to update the local socket.
+ * @param {() => void} props.parameters.updateValidated - Function to update the validation status.
+ * @param {string} [props.parameters.imgSrc] - The source URL for the logo image.
+ * @param {string} props.parameters.updateApiUserName - Function to update the API username.
+ * @param {string} props.parameters.updateApiToken - Function to update the API token.
+ * @param {string} props.parameters.updateLink - Function to update the event link.
+ * @param {string} props.parameters.updateRoomName - Function to update the room name.
+ * @param {string} props.parameters.updateMember - Function to update the member name.
+ * @param {Credentials} [props.credentials=credentials] - The user credentials containing the API username and API key.
+ *
  * @returns {JSX.Element} The rendered PreJoinPage component.
  *
  * @example
  * ```tsx
  * import React from 'react';
  * import { PreJoinPage } from 'mediasfu-reactnative';
- * 
+ * import { JoinLocalRoomOptions } from 'mediasfu-reactnative';
+ *
  * function App() {
+ *  *   const showAlertFunction = (message: string) => console.log(message);
+ *   const updateLoadingFunction = (visible: boolean) => console.log(`Loading: ${visible}`);
+ *   const connectSocketFunction = () => {}; // Connect socket function
+ *   const updateSocketFunction = (socket: Socket) => {}; // Update socket function
+ *   const updateValidatedFunction = (validated: boolean) => {}; // Update validated function
+ *   const updateApiUserNameFunction = (userName: string) => {}; // Update API username function
+ *   const updateApiTokenFunction = (token: string) => {}; // Update API token function
+ *   const updateLinkFunction = (link: string) => {}; // Update link function
+ *   const updateRoomNameFunction = (roomName: string) => {}; // Update room name function
+ *   const updateMemberFunction = (member: string) => {}; // Update member function
+ *
  *   return (
  *     <PreJoinPage
  *       parameters={{
@@ -277,12 +286,14 @@ export type PreJoinPageType = (options: PreJoinPageOptions) => JSX.Element;
  *     />
  *   );
  * }
- * 
+ *
  * export default App;
  * ```
  */
 
 const PreJoinPage: React.FC<PreJoinPageOptions> = ({
+  localLink = '',
+  connectMediaSFU = true,
   parameters,
   credentials,
 }) => {
@@ -295,11 +306,14 @@ const PreJoinPage: React.FC<PreJoinPageOptions> = ({
   const [eventID, setEventID] = useState<string>('');
   const [error, setError] = useState<string>('');
 
-  // Destructure parameters
+  const localConnected = useRef(false);
+  const localData = useRef<ResponseLocalConnectionData | undefined>(undefined);
+  const initSocket = useRef<Socket | undefined>(undefined);
+
   const {
     showAlert,
     updateIsLoadingModalVisible,
-    connectSocket,
+    connectLocalSocket,
     updateSocket,
     updateValidated,
     updateApiUserName,
@@ -309,288 +323,295 @@ const PreJoinPage: React.FC<PreJoinPageOptions> = ({
     updateMember,
   } = parameters;
 
-  /**
-   * Checks rate limits and makes a socket connection request.
-   */
-  const checkLimitsAndMakeRequest = async ({
-    apiUserName,
-    apiToken,
-    link,
-    apiKey = '',
-    userName,
-  }: {
-    apiUserName: string;
-    apiToken: string;
-    link: string;
-    apiKey?: string;
-    userName: string;
-  }) => {
-    const TIMEOUT_DURATION = 10000; // 10 seconds
-
+  if (localLink.length > 0 && !localConnected.current && !initSocket.current) {
     try {
-      // Retrieve unsuccessful attempts and last request timestamp from AsyncStorage
-      let unsuccessfulAttempts = parseInt(
-        (await AsyncStorage.getItem('unsuccessfulAttempts')) || '0',
-       10);
-      const lastRequestTimestamp = parseInt(
-        (await AsyncStorage.getItem('lastRequestTimestamp')) || '0',
-       10);
-
-      // Check if user has exceeded maximum attempts
-      if (
-        unsuccessfulAttempts >= MAX_ATTEMPTS
-        && Date.now() - lastRequestTimestamp < RATE_LIMIT_DURATION
-      ) {
-        showAlert?.({
-          message: 'Too many unsuccessful attempts. Please try again later.',
-          type: 'danger',
-          duration: 3000,
+      connectLocalSocket?.({ link: localLink })
+        .then((response: ResponseLocalConnection | undefined) => {
+          localData.current = response!.data;
+          initSocket.current = response!.socket;
+          localConnected.current = true;
+        })
+        .catch((error: Error) => {
+          const errorMessage = (error as Error).message || 'unknown error';
+          showAlert?.({
+            message: `Unable to connect to ${localLink}. ${errorMessage}`,
+            type: 'danger',
+            duration: 3000,
+          });
         });
-        await AsyncStorage.setItem(
-          'lastRequestTimestamp',
-          Date.now().toString(),
-        );
-        return;
-      } if (unsuccessfulAttempts >= MAX_ATTEMPTS) {
-        // Reset unsuccessful attempts after rate limit duration
-        unsuccessfulAttempts = 0;
-        await AsyncStorage.setItem(
-          'unsuccessfulAttempts',
-          unsuccessfulAttempts.toString(),
-        );
-        await AsyncStorage.setItem(
-          'lastRequestTimestamp',
-          Date.now().toString(),
-        );
-      }
-
-      // Show loading modal
-      updateIsLoadingModalVisible(true);
-
-      // Attempt to connect to socket with a timeout
-      const socketPromise = connectSocket({
-        apiUserName,
-        apiKey,
-        apiToken,
-        link,
-      });
-      const timeoutPromise = new Promise<never>((_, reject) => setTimeout(
-        () => reject(new Error('Request timed out')),
-        TIMEOUT_DURATION,
-      ));
-
-      const socket = await Promise.race([socketPromise, timeoutPromise]);
-
-      if (socket && socket.id) {
-        // Successful connection
-        unsuccessfulAttempts = 0;
-        await AsyncStorage.setItem(
-          'unsuccessfulAttempts',
-          unsuccessfulAttempts.toString(),
-        );
-        await AsyncStorage.setItem(
-          'lastRequestTimestamp',
-          Date.now().toString(),
-        );
-
-        // Update parent state with socket and user details
-        updateSocket(socket);
-        updateApiUserName(apiUserName);
-        updateApiToken(apiToken);
-        updateLink(link);
-        updateRoomName(apiUserName);
-        updateMember(userName);
-        updateValidated(true);
-      } else {
-        // Unsuccessful connection
-        unsuccessfulAttempts += 1;
-        await AsyncStorage.setItem(
-          'unsuccessfulAttempts',
-          unsuccessfulAttempts.toString(),
-        );
-        await AsyncStorage.setItem(
-          'lastRequestTimestamp',
-          Date.now().toString(),
-        );
-        updateIsLoadingModalVisible(false);
-
-        if (unsuccessfulAttempts >= MAX_ATTEMPTS) {
-          showAlert?.({
-            message: 'Too many unsuccessful attempts. Please try again later.',
-            type: 'danger',
-            duration: 3000,
-          });
-        } else {
-          showAlert?.({
-            message: 'Invalid credentials.',
-            type: 'danger',
-            duration: 3000,
-          });
-        }
-      }
-    } catch (error) {
-      // Handle errors during connection
-      console.error('Error connecting to socket:', error);
+    } catch {
       showAlert?.({
-        message: 'Unable to connect. Check your credentials and try again.',
+        message: `Unable to connect to ${localLink}. Something went wrong.`,
         type: 'danger',
         duration: 3000,
       });
-
-      // Increment unsuccessful attempts
-      let unsuccessfulAttempts = parseInt(
-        (await AsyncStorage.getItem('unsuccessfulAttempts')) || '0',
-       10);
-      unsuccessfulAttempts += 1;
-      await AsyncStorage.setItem(
-        'unsuccessfulAttempts',
-        unsuccessfulAttempts.toString(),
-      );
-      await AsyncStorage.setItem('lastRequestTimestamp', Date.now().toString());
-      updateIsLoadingModalVisible(false);
     }
-  };
+  }
 
-  /**
-   * Handles toggling between Create Mode and Join Mode.
-   */
   const handleToggleMode = () => {
     setIsCreateMode((prevMode) => !prevMode);
     setError('');
   };
 
-  /**
-   * Handles the creation of a new room.
-   */
-  const handleCreateRoom = async () => {
-    try {
-      setError('');
+  const joinLocalRoom = async ({
+    joinData,
+    link = localLink,
+  }: JoinLocalEventRoomOptions) => {
+    initSocket.current?.emit(
+      'joinEventRoom',
+      joinData,
+      (response: CreateJoinLocalRoomResponse) => {
+        if (response.success) {
+          updateSocket(initSocket.current!);
+          updateApiUserName(localData.current?.apiUserName || '');
+          updateApiToken(response.secret);
+          updateLink(link);
+          updateRoomName(joinData.eventID);
+          updateMember(joinData.userName);
+          updateIsLoadingModalVisible(false);
+          updateValidated(true);
+        } else {
+          updateIsLoadingModalVisible(false);
+          setError(`Unable to join room. ${response.reason}`);
+        }
+      },
+    );
+  };
 
-      // Validate input fields
-      if (!name || !duration || !eventType || !capacity) {
-        setError('Please fill all the fields.');
-        return;
-      }
+  const createLocalRoom = async ({
+    createData,
+    link = localLink,
+  }: CreateLocalRoomOptions) => {
+    initSocket.current?.emit(
+      'createRoom',
+      createData,
+      (response: CreateJoinLocalRoomResponse) => {
 
-      // Validate event type
-      const validEventTypes = ['broadcast', 'chat', 'webinar', 'conference'];
-      if (!validEventTypes.includes(eventType.toLowerCase())) {
-        setError(
-          'Event type must be one of "broadcast", "chat", "webinar", or "conference".',
-        );
-        return;
-      }
+        if (response.success) {
+          updateSocket(initSocket.current!);
+          updateApiUserName(localData.current?.apiUserName || '');
+          updateApiToken(response.secret);
+          updateLink(link);
+          updateRoomName(createData.eventID);
+          // local needs islevel updated from here
+          // we update member as `userName` + '_2' and split it in the room
+          updateMember(createData.userName + '_2');
+          updateIsLoadingModalVisible(false);
+          updateValidated(true);
+        } else {
+          updateIsLoadingModalVisible(false);
+          setError(`Unable to create room. ${response.reason}`);
+        }
+      },
+    );
+  };
 
-      // Validate numeric fields
-      const durationNum = parseInt(duration, 10);
-      const capacityNum = parseInt(capacity, 10);
-      if (isNaN(durationNum) || isNaN(capacityNum)) {
-        setError('Duration and Capacity must be valid numbers.');
-        return;
-      }
-
-      // Prepare payload
-      const payload = {
-        action: 'create',
-        duration: durationNum,
-        capacity: capacityNum,
-        eventType: eventType.toLowerCase(),
+  const roomCreator = async ({
+    payload,
+    apiUserName,
+    apiKey,
+    validate = true,
+  }: {
+    payload: any;
+    apiUserName: string;
+    apiKey: string;
+    validate?: boolean;
+  }) => {
+    const response = await createRoomOnMediaSFU({
+      payload,
+      apiUserName: apiUserName,
+      apiKey: apiKey,
+    });
+    if (response.success && response.data && 'roomName' in response.data) {
+      await checkLimitsAndMakeRequest({
+        apiUserName: response.data.roomName,
+        apiToken: response.data.secret,
+        link: response!.data.link,
         userName: name,
+        parameters: parameters,
+        validate: validate,
+      });
+      return response;
+    } else {
+      updateIsLoadingModalVisible(false);
+      setError(
+        `Unable to create room. ${
+          response.data
+            ? 'error' in response.data
+              ? response.data.error
+              : ''
+            : ''
+        }`,
+      );
+    }
+  };
+
+  const handleCreateRoom = async () => {
+    if (!name || !duration || !eventType || !capacity) {
+      setError('Please fill all the fields.');
+      return;
+    }
+
+    const payload = {
+      action: 'create',
+      duration: parseInt(duration, 10),
+      capacity: parseInt(capacity, 10),
+      eventType,
+      userName: name,
+      recordOnly: false,
+    };
+
+    updateIsLoadingModalVisible(true);
+
+    if (localLink.length > 0) {
+      const secureCode =
+        Math.random().toString(30).substring(2, 14) +
+        Math.random().toString(30).substring(2, 14);
+      let eventID =
+        new Date().getTime().toString(30) +
+        new Date().getUTCMilliseconds() +
+        Math.floor(10 + Math.random() * 99).toString();
+      eventID = 'm' + eventID;
+      const eventRoomParams = localData.current?.meetingRoomParams_;
+      eventRoomParams!.type = eventType as
+        | 'chat'
+        | 'broadcast'
+        | 'webinar'
+        | 'conference';
+
+      const createData: CreateLocalRoomParameters = {
+        eventID: eventID,
+        duration: parseInt(duration, 10),
+        capacity: parseInt(capacity, 10),
+        userName: name,
+        scheduledDate: new Date(),
+        secureCode: secureCode,
+        waitRoom: false,
+        recordingParams: localData.current?.recordingParams_,
+        eventRoomParams: eventRoomParams,
+        videoPreference: null,
+        audioPreference: null,
+        audioOutputPreference: null,
+        mediasfuURL: '',
       };
 
-      // Make API call to create room
-      updateIsLoadingModalVisible(true);
+      // socket in main window is required and for no local room, no use of initSocket
+      // for local room, initSocket becomes the local socket, and localSocket is the connection to MediaSFU (if connectMediaSFU is true)
+      // else localSocket is the same as initSocket
 
-      const response = await createRoomOnMediaSFU({
+      if (
+        connectMediaSFU &&
+        initSocket.current &&
+        localData.current &&
+        localData.current.apiUserName &&
+        localData.current.apiKey
+      ) {
+        payload.recordOnly = true; // allow production to mediasfu only; no consumption
+        const response = await roomCreator({
+          payload,
+          apiUserName: localData.current.apiUserName,
+          apiKey: localData.current.apiKey,
+          validate: false,
+        });
+        if (
+          response &&
+          response.success &&
+          response.data &&
+          'roomName' in response.data
+        ) {
+          createData.eventID = response.data.roomName;
+          createData.secureCode = response.data.secureCode;
+          createData.mediasfuURL = response.data.publicURL;
+          await createLocalRoom({
+            createData: createData,
+            link: response.data.link,
+          });
+        } else {
+          updateIsLoadingModalVisible(false);
+          setError('Unable to create room on MediaSFU.');
+          try {
+            updateSocket(initSocket.current);
+            await createLocalRoom({ createData: createData });
+          } catch (error) {
+            updateIsLoadingModalVisible(false);
+            setError(`Unable to create room. ${error}`);
+          }
+        }
+      } else {
+        try {
+          updateSocket(initSocket.current!);
+          await createLocalRoom({ createData: createData });
+        } catch (error) {
+          updateIsLoadingModalVisible(false);
+          setError(`Unable to create room. ${error}`);
+        }
+      }
+    } else {
+      await roomCreator({
         payload,
         apiUserName: credentials.apiUserName,
         apiKey: credentials.apiKey,
-      });
-
-      if (response.success && response.data && 'roomName' in response.data) {
-        // Handle successful room creation
-        await checkLimitsAndMakeRequest({
-          apiUserName: response.data.roomName,
-          apiToken: response.data.secret,
-          link: response.data.link,
-          userName: name,
-        });
-        setError('');
-      } else {
-        // Handle failed room creation
-        updateIsLoadingModalVisible(false);
-        setError(
-          `Unable to create room. ${
-            response.data && 'error' in response.data ? response.data.error : ''
-          }`,
-        );
-      }
-    } catch (error) {
-      updateIsLoadingModalVisible(false);
-      setError(`Unable to connect. ${error.message}`);
-      showAlert?.({
-        message: `Unable to connect. ${error.message}`,
-        type: 'danger',
-        duration: 3000,
+        validate: true,
       });
     }
   };
 
-  /**
-   * Handles joining an existing room.
-   */
   const handleJoinRoom = async () => {
-    try {
-      setError('');
+    if (!name || !eventID) {
+      setError('Please fill all the fields.');
+      return;
+    }
 
-      // Validate input fields
-      if (!name || !eventID) {
-        setError('Please fill all the fields.');
-        return;
-      }
+    // Prepare payload
+    const payload = {
+      action: 'join',
+      meetingID: eventID,
+      userName: name,
+    };
 
-      // Prepare payload
-      const payload = {
-        action: 'join',
-        meetingID: eventID,
+    if (localLink.length > 0 && !localLink.includes('mediasfu.com')) {
+      const joinData: JoinLocalEventRoomParameters = {
+        eventID: eventID,
         userName: name,
+        secureCode: '',
+        videoPreference: null,
+        audioPreference: null,
+        audioOutputPreference: null,
       };
 
-      // Make API call to join room
-      updateIsLoadingModalVisible(true);
+      await joinLocalRoom({ joinData: joinData });
+      return;
+    }
 
-      const response = await joinRoomOnMediaSFU({
-        payload,
-        apiUserName: credentials.apiUserName,
-        apiKey: credentials.apiKey,
+    updateIsLoadingModalVisible(true);
+
+    const response = await joinRoomOnMediaSFU({
+      payload,
+      apiUserName: credentials.apiUserName,
+      apiKey: credentials.apiKey,
+    });
+
+    if (response.success && response.data && 'roomName' in response.data) {
+      // Handle successful room join
+      await checkLimitsAndMakeRequest({
+        apiUserName: response.data.roomName,
+        apiToken: response.data.secret,
+        link: response.data.link,
+        userName: name,
+        parameters: parameters,
       });
-
-      if (response.success && response.data && 'roomName' in response.data) {
-        // Handle successful room join
-        await checkLimitsAndMakeRequest({
-          apiUserName: response.data.roomName,
-          apiToken: response.data.secret,
-          link: response.data.link,
-          userName: name,
-        });
-        setError('');
-      } else {
-        // Handle failed room join
-        updateIsLoadingModalVisible(false);
-        setError(
-          `Unable to connect to room. ${
-            response.data && 'error' in response.data ? response.data.error : ''
-          }`,
-        );
-      }
-    } catch (error) {
+      setError('');
+    } else {
       updateIsLoadingModalVisible(false);
-      setError(`Unable to connect. ${error.message}`);
-      showAlert?.({
-        message: `Unable to connect. ${error.message}`,
-        type: 'danger',
-        duration: 3000,
-      });
+      setError(
+        `Unable to join room. ${
+          response.data
+            ? 'error' in response.data
+              ? response.data.error
+              : ''
+            : ''
+        }`,
+      );
     }
   };
 
@@ -611,14 +632,19 @@ const PreJoinPage: React.FC<PreJoinPageOptions> = ({
       style={styles.keyboardAvoidingContainer}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={[styles.container, Platform.OS === 'web' && { maxWidth: 600, alignSelf: 'center' }]}>
+        <View
+          style={[
+            styles.container,
+            Platform.OS === 'web' && { maxWidth: 600, alignSelf: 'center' },
+          ]}
+        >
           {/* Logo */}
           <View style={styles.logoContainer}>
             <Image
               source={{
                 uri:
-                  parameters.imgSrc
-                  || 'https://mediasfu.com/images/logo192.png',
+                  parameters.imgSrc ||
+                  'https://mediasfu.com/images/logo192.png',
               }}
               style={styles.logoImage}
             />
@@ -648,7 +674,6 @@ const PreJoinPage: React.FC<PreJoinPageOptions> = ({
                   autoCorrect={false}
                   accessibilityLabel="Duration (minutes)"
                   placeholderTextColor="gray"
-
                 />
 
                 <RNPickerSelect
@@ -889,5 +914,4 @@ const pickerSelectStyles = StyleSheet.create({
   placeholder: {
     color: 'gray',
   },
-
 });

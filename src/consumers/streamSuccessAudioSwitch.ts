@@ -1,22 +1,27 @@
+
+
 import { Producer, ProducerCodecOptions, ProducerOptions } from 'mediasoup-client/lib/types';
 import { Socket } from 'socket.io-client';
 import {
   PrepopulateUserMediaParameters, PrepopulateUserMediaType, CreateSendTransportParameters, CreateSendTransportType, ConnectSendTransportAudioParameters, ConnectSendTransportAudioType,
-   SleepType, MediaStream as MediaStreamType,
+   SleepType, MediaStream as MediaStreamType
 } from '../@types/types';
 import { MediaStream, MediaStreamTrack as MediaStreamTrackType  } from '../methods/utils/webrtc/webrtc';
 
 
 export interface StreamSuccessAudioSwitchParameters extends PrepopulateUserMediaParameters, CreateSendTransportParameters, ConnectSendTransportAudioParameters {
   audioProducer: Producer | null;
+  localAudioProducer?: Producer | null;
   socket: Socket;
+  localSocket?: Socket;
   roomName: string;
-  localStream: MediaStream| null;
-  localStreamAudio: MediaStream| null;
+  localStream: MediaStream | null;
+  localStreamAudio: MediaStream | null;
   audioParams: ProducerOptions;
   audioPaused: boolean;
   audioAlreadyOn: boolean;
   transportCreated: boolean;
+  localTransportCreated?: boolean;
   audioParamse?: ProducerCodecOptions;
   defAudioID: string;
   userDefaultAudioInputDevice: string;
@@ -28,7 +33,8 @@ export interface StreamSuccessAudioSwitchParameters extends PrepopulateUserMedia
   shared: boolean;
 
   updateAudioProducer: (audioProducer: Producer | null) => void;
-  updateLocalStream: (localStream: MediaStream| null) => void;
+  updateLocalAudioProducer?: (localAudioProducer: Producer | null) => void;
+  updateLocalStream: (localStream: MediaStream | null) => void;
   updateAudioParams: (audioParams: ProducerOptions) => void;
   updateDefAudioID: (defAudioID: string) => void;
   updateUserDefaultAudioInputDevice: (userDefaultAudioInputDevice: string) => void;
@@ -59,7 +65,9 @@ export type StreamSuccessAudioSwitchType = (options: StreamSuccessAudioSwitchOpt
  * @param {MediaStream} options.stream - The new media stream containing the audio track.
  * @param {Object} options.parameters - The parameters required for setting up the audio stream.
  * @param {Producer} options.parameters.audioProducer - The current audio producer.
+ * @param {Producer} options.parameters.localAudioProducer - The local audio producer.
  * @param {Socket} options.parameters.socket - The socket connection for communication.
+ * @param {Socket} options.parameters.localSocket - The local socket connection for communication.
  * @param {string} options.parameters.roomName - The name of the room.
  * @param {MediaStream | null} options.parameters.localStream - The local media stream.
  * @param {MediaStream | null} options.parameters.localStreamAudio - The local audio stream.
@@ -77,6 +85,7 @@ export type StreamSuccessAudioSwitchType = (options: StreamSuccessAudioSwitchOpt
  * @param {boolean} options.parameters.lock_screen - Indicates if the screen is locked.
  * @param {boolean} options.parameters.shared - Indicates if the screen is shared.
  * @param {Function} options.parameters.updateAudioProducer - Function to update the audio producer.
+ * @param {Function} options.parameters.updateLocalAudioProducer - Function to update the local audio producer.
  * @param {Function} options.parameters.updateLocalStream - Function to update the local stream.
  * @param {Function} options.parameters.updateAudioParams - Function to update the audio parameters.
  * @param {Function} options.parameters.updateDefAudioID - Function to update the default audio device ID.
@@ -94,8 +103,10 @@ export type StreamSuccessAudioSwitchType = (options: StreamSuccessAudioSwitchOpt
  *   stream: newAudioStream, // MediaStream object containing the new audio track
  *   parameters: {
  *     audioProducer: currentAudioProducer,
+ *     localAudioProducer: localAudioProducerInstance,
+ *     localSocket: localSocketInstance, 
  *     socket: socketInstance,
- *     roomName: "Room1",
+ *     roomName: 'Room1',
  *     localStream: null,
  *     localStreamAudio: null,
  *     audioParams: audioProducerOptions,
@@ -103,14 +114,15 @@ export type StreamSuccessAudioSwitchType = (options: StreamSuccessAudioSwitchOpt
  *     audioAlreadyOn: true,
  *     transportCreated: false,
  *     audioParamse: additionalAudioParams,
- *     defAudioID: "default-audio-device-id",
- *     userDefaultAudioInputDevice: "user-input-device-id",
- *     hostLabel: "Host",
- *     islevel: "1",
+ *     defAudioID: 'default-audio-device-id',
+ *     userDefaultAudioInputDevice: 'user-input-device-id',
+ *     hostLabel: 'Host',
+ *     islevel: '1',
  *     videoAlreadyOn: false,
  *     lock_screen: false,
  *     shared: false,
  *     updateAudioProducer: updateAudioProducerFunction,
+ *     updateLocalAudioProducer: updateLocalAudioProducerFunction,
  *     updateLocalStream: updateLocalStreamFunction,
  *     updateAudioParams: updateAudioParamsFunction,
  *     updateDefAudioID: updateDefAudioIDFunction,
@@ -136,9 +148,12 @@ export const streamSuccessAudioSwitch = async ({
   stream,
   parameters,
 }: StreamSuccessAudioSwitchOptions): Promise<void> => {
+
   let {
     audioProducer,
+    localAudioProducer,
     socket,
+    localSocket,
     roomName,
     localStream,
     localStreamAudio,
@@ -157,13 +172,14 @@ export const streamSuccessAudioSwitch = async ({
     shared,
 
     updateAudioProducer,
+    updateLocalAudioProducer,
     updateLocalStream,
     updateAudioParams,
     updateDefAudioID,
     updateUserDefaultAudioInputDevice,
     updateUpdateMainWindow,
 
-    // mediasfu functions
+    //mediasfu functions
     sleep,
     prepopulateUserMedia,
     createSendTransport,
@@ -171,7 +187,7 @@ export const streamSuccessAudioSwitch = async ({
   } = parameters;
 
   // Get the new default audio device ID
-  const newDefAudioID = (stream.getAudioTracks()[0].getSettings() as MediaTrackSettings).deviceId || '';
+  let newDefAudioID = stream.getAudioTracks()[0].getSettings().deviceId;
 
   // Check if the audio device has changed
   if (newDefAudioID !== defAudioID) {
@@ -184,16 +200,36 @@ export const streamSuccessAudioSwitch = async ({
     // Emit a pauseProducerMedia event to pause the audio media
     socket.emit('pauseProducerMedia', {
       mediaTag: 'audio',
-      roomName,
+      roomName: roomName,
       force: true,
     });
+
+    try {
+      if (localSocket && localSocket.id) {
+        if (localAudioProducer) {
+          localAudioProducer.close();
+          if (updateLocalAudioProducer){
+            updateLocalAudioProducer(localAudioProducer);
+          }
+        }
+        localSocket.emit('pauseProducerMedia', {
+          mediaTag: 'audio',
+          roomName: roomName,
+          force: true,
+        });
+      }
+    } catch {
+      // Do nothing
+    }
 
     // Update the localStreamAudio with the new audio tracks
     localStreamAudio = stream;
 
-    // If localStream is null, create a MediaStream with the new audio track
+    // If localStream is null, create a new MediaStream with the new audio track
     if (localStream == null) {
-      localStream = new MediaStream([localStreamAudio.getAudioTracks()[0]]);
+      localStream = new MediaStream([
+        localStreamAudio.getAudioTracks()[0],
+      ]);
     } else {
       // Remove all existing audio tracks from localStream and add the new audio track
       localStream.getAudioTracks().forEach((track: MediaStreamTrackType) => {
@@ -216,7 +252,7 @@ export const streamSuccessAudioSwitch = async ({
 
     // Update audioParams with the new audio track
     audioParams = {
-      track: localStream.getAudioTracks()[0] as any,
+      track: localStream.getAudioTracks()[0],
       ...audioParamse,
     };
     updateAudioParams(audioParams);
@@ -230,7 +266,7 @@ export const streamSuccessAudioSwitch = async ({
         await createSendTransport({
           parameters: {
             ...parameters,
-            audioParams,
+            audioParams: audioParams,
           },
           option: 'audio',
         });
@@ -250,8 +286,19 @@ export const streamSuccessAudioSwitch = async ({
       updateAudioProducer(audioProducer);
       socket.emit('pauseProducerMedia', {
         mediaTag: 'audio',
-        roomName,
+        roomName: roomName,
       });
+
+      try {
+        if (localSocket && localSocket.id) {
+          localSocket.emit('pauseProducerMedia', {
+            mediaTag: 'audio',
+            roomName: roomName,
+          });
+        }
+      } catch {
+        // Do nothing
+      }
     }
   }
 
@@ -266,3 +313,4 @@ export const streamSuccessAudioSwitch = async ({
     }
   }
 };
+

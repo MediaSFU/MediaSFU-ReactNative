@@ -1,3 +1,4 @@
+// BreakoutRoomsModal.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Modal,
@@ -40,6 +41,7 @@ export interface BreakoutRoomsModalParameters {
   participants: Participant[];
   showAlert?: ShowAlert;
   socket: Socket;
+  localSocket?: Socket;
   itemPageLimit: number;
   meetingDisplayType: string;
   prevMeetingDisplayType: string;
@@ -213,7 +215,6 @@ const EditRoomModal: React.FC<EditRoomModalOptions> = ({
  * export default App;
  * ```
  */
-
 const BreakoutRoomsModal: React.FC<BreakoutRoomsModalOptions> = ({
   isVisible,
   onBreakoutRoomsClose,
@@ -225,6 +226,7 @@ const BreakoutRoomsModal: React.FC<BreakoutRoomsModalOptions> = ({
     participants,
     showAlert,
     socket,
+    localSocket,
     itemPageLimit,
     meetingDisplayType,
     prevMeetingDisplayType,
@@ -441,6 +443,18 @@ const BreakoutRoomsModal: React.FC<BreakoutRoomsModalOptions> = ({
           }
         },
       );
+
+      if (localSocket && localSocket.id) {
+        try {
+          localSocket.emit(emitName, { breakoutRooms: filteredBreakoutRooms, newParticipantAction, roomName }, (response: { success: boolean; reason: string }) => {
+            if (response.success) {
+              // do nothing
+            }
+          });
+        } catch {
+          console.log('Error starting local breakout rooms:');
+        }
+      }
     }
   };
 
@@ -462,6 +476,18 @@ const BreakoutRoomsModal: React.FC<BreakoutRoomsModalOptions> = ({
         }
       },
     );
+
+    if (localSocket && localSocket.id) {
+      try {
+        localSocket.emit('stopBreakout', { roomName }, (response: { success: boolean; reason: string }) => {
+          if (response.success) {
+            // do nothing
+          }
+        });
+      } catch {
+        console.log('Error stopping local breakout rooms:');
+      }
+    }
   };
 
   const handleEditRoom = (roomIndex: number) => {

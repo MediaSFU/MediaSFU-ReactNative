@@ -1,11 +1,10 @@
 /* eslint-disable eqeqeq */
 import { Socket } from 'socket.io-client';
-import {
-  Participant, AutoAdjustType, ScreenState, EventType,
-} from '../@types/types';
+import { Participant, AutoAdjustType, ScreenState, EventType } from '../@types/types';
 
 export interface TriggerParameters {
   socket: Socket;
+  localSocket?: Socket;
   roomName: string;
   screenStates: ScreenState[];
   participants: Participant[];
@@ -20,6 +19,7 @@ export interface TriggerParameters {
   updateUpdateDateState: (timestamp: number | null) => void;
   updateLastUpdate: (lastUpdate: number | null) => void;
   updateNForReadjust: (nForReadjust: number) => void;
+
 
   // mediasfu functions
   autoAdjust: AutoAdjustType;
@@ -42,7 +42,7 @@ export type TriggerType = (options: TriggerOptions) => Promise<void>;
  * @param {TriggerOptions} options - The options for triggering the update.
  * @param {string[]} options.ref_ActiveNames - Reference to the active names.
  * @param {TriggerParameters} options.parameters - The parameters for the trigger.
- * 
+ *
  * @returns {Promise<void>} A promise that resolves when the trigger is complete.
  *
  * @throws Will throw an error if the updateScreenClient operation fails.
@@ -54,16 +54,17 @@ export type TriggerType = (options: TriggerOptions) => Promise<void>;
  * @example
  * ```typescript
  * await trigger({
- *   ref_ActiveNames: ["user1", "user2"],
+ *   ref_ActiveNames: ['user1', 'user2'],
  *   parameters: {
  *     socket: socketInstance,
- *     roomName: "room1",
- *     screenStates: [{ mainScreenPerson: "user1", mainScreenFilled: true, adminOnMainScreen: false }],
- *     participants: [{ name: "admin", islevel: "2" }],
+ *     localSocket: localSocketInstance,
+ *     roomName: 'room1',
+ *     screenStates: [{ mainScreenPerson: 'user1', mainScreenFilled: true, adminOnMainScreen: false }],
+ *     participants: [{ name: 'admin', islevel: '2' }],
  *     updateDateState: 0,
  *     lastUpdate: null,
  *     nForReadjust: 0,
- *     eventType: "conference",
+ *     eventType: 'conference',
  *     shared: false,
  *     shareScreenStarted: false,
  *     whiteboardStarted: false,
@@ -86,6 +87,7 @@ export async function trigger({
 
     let {
       socket,
+      localSocket,
       roomName,
       screenStates,
       participants,
@@ -101,9 +103,14 @@ export async function trigger({
       updateLastUpdate,
       updateNForReadjust,
 
-      // mediasfu functions
+      //mediasfu functions
       autoAdjust,
     } = parameters;
+
+    let socketRef = socket;
+    if (localSocket && localSocket.id) {
+      socketRef = localSocket;
+    }
 
     let personOnMainScreen = screenStates[0].mainScreenPerson;
     let adminName = '';
@@ -118,14 +125,14 @@ export async function trigger({
       personOnMainScreen = adminName;
     }
 
-    const mainfilled = screenStates[0].mainScreenFilled;
-    const adminOnMain = screenStates[0].adminOnMainScreen;
+    let mainfilled = screenStates[0].mainScreenFilled;
+    let adminOnMain = screenStates[0].adminOnMainScreen;
     let nForReadjust_: number;
     let val1: number;
 
-    const noww = new Date().getTime();
-    // get now in seconds
-    const timestamp = Math.floor(noww / 1000);
+    let noww = new Date().getTime();
+    //get now in seconds
+    let timestamp = Math.floor(noww / 1000);
 
     let eventPass = false;
 
@@ -153,7 +160,7 @@ export async function trigger({
       if (nForReadjust_ == 0 && eventType == 'webinar') {
         val1 = 0;
       } else {
-        const [val11] = await autoAdjust({
+        const [val11, _] = await autoAdjust({
           n: nForReadjust_,
           eventType,
           shared,
@@ -162,14 +169,14 @@ export async function trigger({
         val1 = val11;
       }
 
-      const calc1 = Math.floor((val1 / 12) * 100);
-      const calc2 = (100) - calc1;
+      let calc1 = Math.floor((val1 / 12) * 100);
+      let calc2 = (100) - calc1;
 
-      // check if lastUpdate is not null and at least same seconds
+      //check if lastUpdate is not null and at least same seconds
       if (lastUpdate == null || updateDateState != timestamp) {
-        const now = new Date();
+        let now = new Date();
 
-        socket.emit(
+        socketRef.emit(
           'updateScreenClient',
           {
             roomName,
@@ -190,7 +197,7 @@ export async function trigger({
         );
       }
     } else if (mainfilled && personOnMainScreen != null && !adminOnMain) {
-      // check if the person on main screen is still in the room
+      //check if the person on main screen is still in the room
       // ss = true
 
       nForReadjust_ = ref_ActiveNames.length;
@@ -199,7 +206,7 @@ export async function trigger({
         ref_ActiveNames.unshift(adminName);
       }
 
-      const [val11] = await autoAdjust({
+      const [val11, _] = await autoAdjust({
         n: nForReadjust_,
         eventType,
         shared,
@@ -211,9 +218,9 @@ export async function trigger({
       const calc2 = 100 - calc1;
 
       if (lastUpdate == null || updateDateState !== timestamp) {
-        const now = new Date();
+        let now = new Date();
 
-        socket.emit(
+        socketRef.emit(
           'updateScreenClient',
           {
             roomName,
@@ -234,10 +241,11 @@ export async function trigger({
         );
       }
     } else {
-      // stop recording
+      //stop recording
       console.log('trigger stopRecording');
     }
   } catch (error) {
     console.log('Error triggering updateScreen:', error);
   }
 }
+

@@ -1,6 +1,6 @@
-import { Socket } from 'socket.io-client';
 import { recordStartTimer, RecordStartTimerParameters } from './recordStartTimer';
 import { recordResumeTimer, RecordResumeTimerParameters } from './recordResumeTimer';
+import { Socket } from 'socket.io-client';
 import {
   RePortType, UserRecordingParams, CaptureCanvasStreamType, CaptureCanvasStreamParameters, RePortParameters, ShowAlert,
 
@@ -10,6 +10,7 @@ export interface StartRecordingParameters extends CaptureCanvasStreamParameters,
   roomName: string;
   userRecordingParams: UserRecordingParams;
   socket: Socket;
+  localSocket?: Socket;
   updateIsRecordingModalVisible: (visible: boolean) => void;
   confirmedToRecord: boolean;
   showAlert?: ShowAlert;
@@ -50,16 +51,17 @@ export type StartRecordingType = (options: StartRecordingOptions) => Promise<boo
 
 /**
  * Starts the recording process based on the provided parameters.
- * 
+ *
  * @param {StartRecordingOptions} options - The options for starting the recording.
  * @param {object} options.parameters - The parameters required for starting the recording.
  * @param {string} options.parameters.roomName - The name of the room where recording is to be started.
  * @param {object} options.parameters.userRecordingParams - User-specific recording parameters.
  * @param {object} options.parameters.socket - The socket instance for communication.
+ * @param {object} options.parameters.localSocket - The local socket instance for communication.
  * @param {function} options.parameters.updateIsRecordingModalVisible - Function to update the visibility of the recording modal.
  * @param {boolean} options.parameters.confirmedToRecord - Flag indicating if the user has confirmed to record.
  * @param {function} options.parameters.showAlert - Function to show alerts.
- * @param {string} options.parameters.recordingMediaOptions - The media options for recording (e.g., "video", "audio").
+ * @param {string} options.parameters.recordingMediaOptions - The media options for recording (e.g., 'video', 'audio').
  * @param {boolean} options.parameters.videoAlreadyOn - Flag indicating if the video is already on.
  * @param {boolean} options.parameters.audioAlreadyOn - Flag indicating if the audio is already on.
  * @param {boolean} options.parameters.recordStarted - Flag indicating if the recording has started.
@@ -80,20 +82,21 @@ export type StartRecordingType = (options: StartRecordingOptions) => Promise<boo
  * @param {boolean} options.parameters.whiteboardEnded - Flag indicating if the whiteboard has ended.
  * @param {function} options.parameters.rePort - Function to report the recording status.
  * @param {function} options.parameters.captureCanvasStream - Function to capture the canvas stream.
- * 
+ *
  * @returns {Promise<boolean | undefined>} - A promise that resolves to a boolean indicating if the recording attempt was successful, or undefined if not applicable.
  *
  * @example
  * ```typescript
  * startRecording({
  *   parameters: {
- *     roomName: "Room101",
+ *     roomName: 'Room101',
  *     userRecordingParams: myUserRecordingParams,
  *     socket: mySocket,
+ *     localSocket: myLocalSocket,
  *     updateIsRecordingModalVisible: setIsRecordingModalVisible,
  *     confirmedToRecord: true,
  *     showAlert: myShowAlert,
- *     recordingMediaOptions: "video",
+ *     recordingMediaOptions: 'video',
  *     videoAlreadyOn: true,
  *     audioAlreadyOn: true,
  *     recordStarted: false,
@@ -126,6 +129,7 @@ export const startRecording = async ({
     roomName,
     userRecordingParams,
     socket,
+    localSocket,
     updateIsRecordingModalVisible,
     confirmedToRecord,
     showAlert,
@@ -149,7 +153,7 @@ export const startRecording = async ({
     whiteboardStarted,
     whiteboardEnded,
 
-    // mediasfu functions
+    //mediasfu functions
     rePort,
     captureCanvasStream,
   } = parameters;
@@ -190,9 +194,10 @@ export const startRecording = async ({
   }
 
   let recAttempt = false;
+  let socketRef = localSocket && localSocket.connected ? localSocket : socket;
 
   await new Promise<void>((resolve) => {
-    socket.emit(
+    socketRef.emit(
       action,
       { roomName, userRecordingParams },
       async ({ success, reason }: { success: boolean; reason: string; }) => {

@@ -29,12 +29,11 @@ export * from './src/components/exitComponents/ConfirmExitModal';
 export * from './src/components/miscComponents/ConfirmHereModal';
 export * from './src/components/miscComponents/ShareEventModal';
 export * from './src/components/miscComponents/WelcomePage';
-export * from './src/components/miscComponents/PreJoinPage';
+// export * from './src/components/miscComponents/PreJoinPage';
 
 // Polls and Background
 export * from './src/components/pollsComponents/PollModal';
 export * from './src/components/breakoutComponents/BreakoutRoomsModal';
-
 // Pagination and Media Display
 export * from './src/components/displayComponents/Pagination';
 export * from './src/components/displayComponents/FlexibleGrid';
@@ -65,6 +64,7 @@ export * from './src/methods/whiteboardMethods/launchConfigureWhiteboard';
 // Socket and Media Functions
 export * from './src/sockets/SocketManager';
 export * from './src/ProducerClient/producerClientEmits/joinRoomClient';
+export * from './src/producers/producerEmits/joinLocalRoom';
 export * from './src/ProducerClient/producerClientEmits/updateRoomParametersClient';
 export * from './src/ProducerClient/producerClientEmits/createDeviceClient';
 
@@ -170,6 +170,11 @@ export * from './src/components/displayComponents/MiniCardAudio';
 export * from './src/methods/utils/MiniAudioPlayer/MiniAudioPlayer';
 export * from './src/methods/utils/SoundPlayer';
 
+// new utils
+export * from './src/methods/utils/joinRoomOnMediaSFU';
+export * from './src/methods/utils/createRoomOnMediaSFU';
+export * from './src/methods/utils/checkLimitsAndMakeRequest';
+export * from './src/methods/utils/createResponseJoinRoom';
 
 //initial values
 import { initialValuesState } from './src/methods/utils/initialValuesState';
@@ -229,10 +234,14 @@ import { launchConfirmExit } from './src/methods/exitMethods/launchConfirmExit';
 import { launchPoll } from './src/methods/pollsMethods/launchPoll';
 import { launchBreakoutRooms } from './src/methods/breakoutRoomsMethods/launchBreakoutRooms';
 
-
 // mediasfu functions -- examples
-import { connectSocket, disconnectSocket } from './src/sockets/SocketManager';
+import {
+  connectSocket,
+  connectLocalSocket,
+  disconnectSocket,
+} from './src/sockets/SocketManager';
 import { joinRoomClient } from './src/ProducerClient/producerClientEmits/joinRoomClient';
+import { joinLocalRoom } from './src/producers/producerEmits/joinLocalRoom';
 import { updateRoomParametersClient } from './src/ProducerClient/producerClientEmits/updateRoomParametersClient';
 import { createDeviceClient } from './src/ProducerClient/producerClientEmits/createDeviceClient';
 
@@ -247,7 +256,6 @@ import { streamSuccessAudioSwitch } from './src/consumers/streamSuccessAudioSwit
 import { checkPermission } from './src/consumers/checkPermission';
 import { producerClosed } from './src/consumers/socketReceiveMethods/producerClosed';
 import { newPipeProducer } from './src/consumers/socketReceiveMethods/newPipeProducer';
-
 
 //mediasfu functions
 import { updateMiniCardsGrid } from './src/consumers/updateMiniCardsGrid';
@@ -306,7 +314,6 @@ import { handleEndPoll } from './src/methods/pollsMethods/handleEndPoll';
 
 import { breakoutRoomUpdated } from './src/methods/breakoutRoomsMethods/breakoutRoomUpdated';
 
-
 import { startMeetingProgressTimer } from './src/methods/utils/meetingTimer/startMeetingProgressTimer';
 import { updateRecording } from './src/methods/recordingMethods/updateRecording';
 import { stopRecording } from './src/methods/recordingMethods/stopRecording';
@@ -341,6 +348,9 @@ import { allMembers } from './src/producers/socketReceiveMethods/allMembers';
 import { allMembersRest } from './src/producers/socketReceiveMethods/allMembersRest';
 import { disconnect } from './src/producers/socketReceiveMethods/disconnect';
 
+import { captureCanvasStream } from './src/methods/whiteboardMethods/captureCanvasStream';
+import { resumePauseAudioStreams } from './src/consumers/resumePauseAudioStreams';
+import { processConsumerTransportsAudio } from './src/consumers/processConsumerTransportsAudio';
 
 //Prebuilt Event Rooms
 import MediasfuGeneric from './src/components/mediasfuComponents/MediasfuGeneric';
@@ -357,7 +367,7 @@ import { generateRandomWaitingRoomList } from './src/methods/utils/generateRando
 import { generateRandomPolls } from './src/methods/utils/generateRandomPolls';
 
 //Key UI Components
-import MeetingProgressTimer  from './src/components/displayComponents/MeetingProgressTimer';
+import MeetingProgressTimer from './src/components/displayComponents/MeetingProgressTimer';
 import MiniAudio from './src/components/displayComponents/MiniAudio';
 import MiniCard from './src/components/displayComponents/MiniCard';
 import AudioCard from './src/components/displayComponents/AudioCard';
@@ -367,26 +377,188 @@ import MiniCardAudio from './src/components/displayComponents/MiniCardAudio';
 import MiniAudioPlayer from './src/methods/utils/MiniAudioPlayer/MiniAudioPlayer';
 import { SoundPlayer } from './src/methods/utils/SoundPlayer';
 
+//new utils
+import { joinRoomOnMediaSFU } from './src/methods/utils/joinRoomOnMediaSFU';
+import { createRoomOnMediaSFU } from './src/methods/utils/createRoomOnMediaSFU';
+import { checkLimitsAndMakeRequest } from './src/methods/utils/checkLimitsAndMakeRequest';
+import { createResponseJoinRoom } from './src/methods/utils/createResponseJoinRoom';
 
-export { 
-    initialValuesState,
-    LoadingModal, MainAspectComponent, ControlButtonsComponent, ControlButtonsAltComponent, ControlButtonsComponentTouch, OtherGridComponent, MainScreenComponent, MainGridComponent, SubAspectComponent, MainContainerComponent, AlertComponent, MenuModal, RecordingModal, RequestsModal, WaitingRoomModal, DisplaySettingsModal, EventSettingsModal, CoHostModal, ParticipantsModal, MessagesModal, MediaSettingsModal, ConfirmExitModal, ConfirmHereModal, ShareEventModal, WelcomePage, PreJoinPage,
-    Pagination, FlexibleGrid, FlexibleVideo, AudioGrid,
-    launchMenuModal, launchRecording, startRecording, confirmRecording, launchWaiting, launchCoHost, launchMediaSettings, launchDisplaySettings, launchSettings, launchRequests, launchParticipants, launchMessages, launchConfirmExit,
-    connectSocket, disconnectSocket, joinRoomClient, updateRoomParametersClient, createDeviceClient,
-    switchVideoAlt, clickVideo, clickAudio, clickScreenShare, streamSuccessVideo, streamSuccessAudio, streamSuccessScreen, streamSuccessAudioSwitch, checkPermission, producerClosed, newPipeProducer,
-    updateMiniCardsGrid, mixStreams, dispStreams, stopShareScreen, checkScreenShare, startShareScreen, requestScreenShare, reorderStreams, prepopulateUserMedia, getVideos, rePort, trigger, consumerResume, connectSendTransportAudio, connectSendTransportVideo, connectSendTransportScreen, processConsumerTransports, resumePauseStreams, readjust, checkGrid, getEstimate, 
-    calculateRowsAndColumns, addVideosGrid, onScreenChanges, sleep, changeVids, compareActiveNames, compareScreenStates, createSendTransport, resumeSendTransportAudio, receiveAllPipedTransports, disconnectSendTransportVideo, disconnectSendTransportAudio, disconnectSendTransportScreen, connectSendTransport, getPipedProducersAlt, signalNewConsumerTransport, connectRecvTransport, reUpdateInter, updateParticipantAudioDecibels, closeAndResize, autoAdjust, switchUserVideoAlt, switchUserVideo, switchUserAudio, receiveRoomMessages, formatNumber, connectIps,
-    startMeetingProgressTimer, updateRecording, stopRecording,
-    
-    userWaiting, personJoined, allWaitingRoomMembers, roomRecordParams, banParticipant, updatedCoHost, participantRequested, screenProducerId, updateMediaSettings, producerMediaPaused, producerMediaResumed, producerMediaClosed, controlMediaHost, meetingEnded, disconnectUserSelf, receiveMessage, meetingTimeRemaining, meetingStillThere, startRecords, reInitiateRecording, getDomains, updateConsumingDomains, recordingNotice, timeLeftRecording, stoppedRecording, hostRequestResponse, allMembers, allMembersRest, disconnect,
-    MediasfuGeneric, MediasfuBroadcast, MediasfuWebinar, MediasfuConference, MediasfuChat, generateRandomParticipants, generateRandomMessages, generateRandomRequestList, generateRandomWaitingRoomList, generateRandomPolls,
-
-    MeetingProgressTimer, MiniAudio, MiniCard, AudioCard, VideoCard, CardVideoDisplay, MiniCardAudio, MiniAudioPlayer, SoundPlayer,
-
-    pollUpdated, handleCreatePoll, handleVotePoll, handleEndPoll, breakoutRoomUpdated,
-
-    launchPoll, launchBreakoutRooms,
-
-    PollModal, BreakoutRoomsModal
+export {
+  initialValuesState,
+  LoadingModal,
+  MainAspectComponent,
+  ControlButtonsComponent,
+  ControlButtonsAltComponent,
+  ControlButtonsComponentTouch,
+  OtherGridComponent,
+  MainScreenComponent,
+  MainGridComponent,
+  SubAspectComponent,
+  MainContainerComponent,
+  AlertComponent,
+  MenuModal,
+  RecordingModal,
+  RequestsModal,
+  WaitingRoomModal,
+  DisplaySettingsModal,
+  EventSettingsModal,
+  CoHostModal,
+  ParticipantsModal,
+  MessagesModal,
+  MediaSettingsModal,
+  ConfirmExitModal,
+  ConfirmHereModal,
+  ShareEventModal,
+  WelcomePage,
+  PreJoinPage,
+  Pagination,
+  FlexibleGrid,
+  FlexibleVideo,
+  AudioGrid,
+  launchMenuModal,
+  launchRecording,
+  startRecording,
+  confirmRecording,
+  launchWaiting,
+  launchCoHost,
+  launchMediaSettings,
+  launchDisplaySettings,
+  launchSettings,
+  launchRequests,
+  launchParticipants,
+  launchMessages,
+  launchConfirmExit,
+  connectSocket,
+  connectLocalSocket,
+  disconnectSocket,
+  joinRoomClient,
+  joinLocalRoom,
+  updateRoomParametersClient,
+  createDeviceClient,
+  switchVideoAlt,
+  clickVideo,
+  clickAudio,
+  clickScreenShare,
+  streamSuccessVideo,
+  streamSuccessAudio,
+  streamSuccessScreen,
+  streamSuccessAudioSwitch,
+  checkPermission,
+  producerClosed,
+  newPipeProducer,
+  updateMiniCardsGrid,
+  mixStreams,
+  dispStreams,
+  stopShareScreen,
+  checkScreenShare,
+  startShareScreen,
+  requestScreenShare,
+  reorderStreams,
+  prepopulateUserMedia,
+  getVideos,
+  rePort,
+  trigger,
+  consumerResume,
+  connectSendTransportAudio,
+  connectSendTransportVideo,
+  connectSendTransportScreen,
+  processConsumerTransports,
+  resumePauseStreams,
+  readjust,
+  checkGrid,
+  getEstimate,
+  calculateRowsAndColumns,
+  addVideosGrid,
+  onScreenChanges,
+  sleep,
+  changeVids,
+  compareActiveNames,
+  compareScreenStates,
+  createSendTransport,
+  resumeSendTransportAudio,
+  receiveAllPipedTransports,
+  disconnectSendTransportVideo,
+  disconnectSendTransportAudio,
+  disconnectSendTransportScreen,
+  connectSendTransport,
+  getPipedProducersAlt,
+  signalNewConsumerTransport,
+  connectRecvTransport,
+  reUpdateInter,
+  updateParticipantAudioDecibels,
+  closeAndResize,
+  autoAdjust,
+  switchUserVideoAlt,
+  switchUserVideo,
+  switchUserAudio,
+  receiveRoomMessages,
+  formatNumber,
+  connectIps,
+  startMeetingProgressTimer,
+  updateRecording,
+  stopRecording,
+  userWaiting,
+  personJoined,
+  allWaitingRoomMembers,
+  roomRecordParams,
+  banParticipant,
+  updatedCoHost,
+  participantRequested,
+  screenProducerId,
+  updateMediaSettings,
+  producerMediaPaused,
+  producerMediaResumed,
+  producerMediaClosed,
+  controlMediaHost,
+  meetingEnded,
+  disconnectUserSelf,
+  receiveMessage,
+  meetingTimeRemaining,
+  meetingStillThere,
+  startRecords,
+  reInitiateRecording,
+  getDomains,
+  updateConsumingDomains,
+  recordingNotice,
+  timeLeftRecording,
+  stoppedRecording,
+  hostRequestResponse,
+  allMembers,
+  allMembersRest,
+  disconnect,
+  MediasfuGeneric,
+  MediasfuBroadcast,
+  MediasfuWebinar,
+  MediasfuConference,
+  MediasfuChat,
+  generateRandomParticipants,
+  generateRandomMessages,
+  generateRandomRequestList,
+  generateRandomWaitingRoomList,
+  generateRandomPolls,
+  MeetingProgressTimer,
+  MiniAudio,
+  MiniCard,
+  AudioCard,
+  VideoCard,
+  CardVideoDisplay,
+  MiniCardAudio,
+  MiniAudioPlayer,
+  SoundPlayer,
+  captureCanvasStream,
+  resumePauseAudioStreams,
+  processConsumerTransportsAudio,
+  pollUpdated,
+  handleCreatePoll,
+  handleVotePoll,
+  handleEndPoll,
+  breakoutRoomUpdated,
+  launchPoll,
+  launchBreakoutRooms,
+  PollModal,
+  BreakoutRoomsModal,
+  joinRoomOnMediaSFU,
+  createRoomOnMediaSFU,
+  checkLimitsAndMakeRequest,
+  createResponseJoinRoom,
 };

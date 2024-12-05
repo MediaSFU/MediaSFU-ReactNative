@@ -1,7 +1,7 @@
 import { Socket } from 'socket.io-client';
 import {
   CheckPermissionType, DisconnectSendTransportVideoParameters, DisconnectSendTransportVideoType, RequestPermissionCameraType, ShowAlert, StreamSuccessVideoParameters, StreamSuccessVideoType,
-   VidCons, MediaDevices, MediaStream,
+  VidCons, MediaDevices, MediaStream,
 } from '../../@types/types';
 
 
@@ -76,25 +76,25 @@ export type ClickVideoType = (options: ClickVideoOptions) => Promise<void>;
  *     recordResumed: false,
  *     recordPaused: true,
  *     recordStopped: false,
- *     recordingMediaOptions: "video",
- *     islevel: "1",
+ *     recordingMediaOptions: 'video',
+ *     islevel: '1',
  *     youAreCoHost: false,
  *     adminRestrictSetting: false,
  *     videoRequestState: null,
  *     videoRequestTime: Date.now(),
- *     member: "John Doe",
+ *     member: 'John Doe',
  *     socket: socketInstance,
- *     roomName: "room123",
- *     userDefaultVideoInputDevice: "default",
- *     currentFacingMode: "user",
+ *     roomName: 'room123',
+ *     userDefaultVideoInputDevice: 'default',
+ *     currentFacingMode: 'user',
  *     vidCons: { width: 1280, height: 720 },
  *     frameRate: 30,
  *     videoAction: false,
  *     localStream: null,
- *     audioSetting: "allow",
- *     videoSetting: "allow",
- *     screenshareSetting: "allow",
- *     chatSetting: "allow",
+ *     audioSetting: 'allow',
+ *     videoSetting: 'allow',
+ *     screenshareSetting: 'allow',
+ *     chatSetting: 'allow',
  *     updateRequestIntervalSeconds: 60,
  *     showAlert: showAlertFunction,
  *     updateVideoAlreadyOn: setVideoAlreadyOn,
@@ -177,7 +177,7 @@ export const clickVideo = async ({ parameters }: ClickVideoOptions): Promise<voi
 
     videoAlreadyOn = false;
     updateVideoAlreadyOn(videoAlreadyOn);
-    if (localStream){
+    if (localStream) {
       localStream.getVideoTracks()[0].enabled = false;
       updateLocalStream(localStream);
     }
@@ -197,10 +197,7 @@ export const clickVideo = async ({ parameters }: ClickVideoOptions): Promise<voi
     if (!videoAction && islevel !== '2' && !youAreCoHost) {
       response = await checkPermission({
         permissionType: 'videoSetting',
-        audioSetting,
-        videoSetting,
-        screenshareSetting,
-        chatSetting,
+        audioSetting, videoSetting, screenshareSetting, chatSetting,
       });
     } else {
       response = 0;
@@ -239,16 +236,16 @@ export const clickVideo = async ({ parameters }: ClickVideoOptions): Promise<voi
       const userRequest = { id: socket.id, name: member, icon: 'fa-video' };
       await socket.emit('participantRequest', { userRequest, roomName });
     } else if (response === 2) {
-      // if video permission is set to deny then show alert
+      //if video permission is set to deny then show alert
       showAlert?.({
         message: 'You cannot turn on your camera. Access denied by host.',
         type: 'danger',
         duration: 3000,
       });
     } else {
-      // if video permission is set to allow then turn on video
+      //if video permission is set to allow then turn on video
 
-      // first check if permission is granted
+      //first check if permission is granted
       if (!hasCameraPermission) {
         if (checkMediaPermission) {
           const statusCamera = await requestPermissionCamera();
@@ -290,20 +287,22 @@ export const clickVideo = async ({ parameters }: ClickVideoOptions): Promise<voi
             audio: false,
           };
         }
-      } else if (vidCons && vidCons.width && vidCons.height) {
-        mediaConstraints = {
-          video: { ...vidCons, frameRate: { ideal: frameRate } },
-          audio: false,
-        };
-        altMediaConstraints = {
-          video: { ...vidCons, frameRate: { ideal: frameRate } },
-          audio: false,
-        };
       } else {
-        mediaConstraints = {
-          video: { frameRate: { ideal: frameRate } },
-          audio: false,
-        };
+        if (vidCons && vidCons.width && vidCons.height) {
+          mediaConstraints = {
+            video: { ...vidCons, frameRate: { ideal: frameRate } },
+            audio: false,
+          };
+          altMediaConstraints = {
+            video: { ...vidCons, frameRate: { ideal: frameRate } },
+            audio: false,
+          };
+        } else {
+          mediaConstraints = {
+            video: { frameRate: { ideal: frameRate } },
+            audio: false,
+          };
+        }
       }
 
       await mediaDevices
@@ -317,13 +316,26 @@ export const clickVideo = async ({ parameters }: ClickVideoOptions): Promise<voi
             .then(async (stream) => {
               await streamSuccessVideo({ stream, parameters });
             })
-            .catch(() => {
-              showAlert?.({
-                message:
-                  'Allow access to your camera or check if your camera is not being used by another application.',
-                type: 'danger',
-                duration: 3000,
-              });
+            .catch(async () => {
+              //remove frameRate from constraints
+              altMediaConstraints = {
+                video: { ...vidCons },
+                audio: false,
+              };
+              await mediaDevices
+                .getUserMedia(altMediaConstraints)
+                .then(async (stream) => {
+                  await streamSuccessVideo({ stream, parameters });
+                }).catch(() => {
+
+                  showAlert?.({
+                    message:
+                      'Allow access to your camera or check if your camera is not being used by another application.',
+                    type: 'danger',
+                    duration: 3000,
+                  });
+
+                });
             });
         });
     }

@@ -24,6 +24,7 @@ export type { CloseAndResizeOptions, CloseAndResizeType, CloseAndResizeParameter
 export type { CompareActiveNamesOptions, CompareActiveNamesType, CompareActiveNamesParameters } from '../consumers/compareActiveNames';
 export type { CompareScreenStatesOptions, CompareScreenStatesType, CompareScreenStatesParameters } from '../consumers/compareScreenStates';
 export type { ConnectIpsOptions, ConnectIpsType, ConnectIpsParameters } from '../consumers/connectIps';
+export type { ConnectLocalIpsOptions, ConnectLocalIpsType, ConnectLocalIpsParameters } from '../consumers/connectLocalIps';
 export type { ConnectRecvTransportOptions, ConnectRecvTransportType, ConnectRecvTransportParameters } from '../consumers/connectRecvTransport';
 export type { ConnectSendTransportOptions, ConnectSendTransportType, ConnectSendTransportParameters } from '../consumers/connectSendTransport';
 export type { ConnectSendTransportAudioOptions, ConnectSendTransportAudioType, ConnectSendTransportAudioParameters } from '../consumers/connectSendTransportAudio';
@@ -143,6 +144,7 @@ export type { UpdateRoomParametersClientOptions, UpdateRoomParametersClientType,
 
 export type { JoinConRoomOptions, JoinConRoomType } from '../producers/producerEmits/joinConRoom';
 export type { JoinRoomOptions, JoinRoomType } from '../producers/producerEmits/joinRoom';
+export type { JoinLocalRoomOptions, JoinLocalRoomType } from '../producers/producerEmits/joinLocalRoom';
 
 export type { AllMembersOptions, AllMembersType, AllMembersParameters } from '../producers/socketReceiveMethods/allMembers';
 export type { AllMembersRestOptions, AllMembersRestType, AllMembersRestParameters } from '../producers/socketReceiveMethods/allMembersRest';
@@ -175,9 +177,7 @@ export type { UpdateConsumingDomainsOptions, UpdateConsumingDomainsType, UpdateC
 export type { UpdateMediaSettingsOptions, UpdateMediaSettingsType } from '../producers/socketReceiveMethods/updateMediaSettings';
 export type { UpdatedCoHostOptions, UpdatedCoHostType } from '../producers/socketReceiveMethods/updatedCoHost';
 export type { UserWaitingOptions, UserWaitingType } from '../producers/socketReceiveMethods/userWaiting';
-export type {
-  ConnectSocketOptions, ConnectSocketType, DisconnectSocketType, DisconnectSocketOptions,
-} from '../sockets/SocketManager';
+export type { ConnectSocketOptions, ConnectSocketType, DisconnectSocketType, DisconnectSocketOptions, ConnectLocalSocketOptions, ConnectLocalSocketType, ResponseLocalConnection, ResponseLocalConnectionData } from '../sockets/SocketManager';
 
 // export type { BackgroundModalOptions, BackgroundModalType, BackgroundModalParameters } from '../components/backgroundComponents/BackgroundModal';
 // export type { BreakoutRoomsModalOptions, BreakoutRoomsModalType, BreakoutRoomsModalParameters } from '../components/breakoutComponents/BreakoutRoomsModal';
@@ -227,6 +227,8 @@ export type { RequestsModalOptions, RequestsModalType } from '../components/requ
 // } from '../components/whiteboardComponents/Whiteboard';
 
 export type { CustomButtonsOptions, CustomButtonsType, CustomButton } from '../components/menuComponents/CustomButtons';
+
+export type { CreateJoinRoomType, CreateRoomOnMediaSFUType, CreateJoinRoomResponse, CreateJoinRoomError } from '../methods/utils/joinRoomOnMediaSFU';
 
 
 // React Native Exclusive
@@ -530,6 +532,23 @@ export interface CreateRoomOptions {
   dataBuffer: boolean; // Whether to return data buffer
   bufferType: 'images' | 'audio' | 'all'; // Type of buffer data
 }
+
+
+export interface ResponseJoinLocalRoom {
+  rtpCapabilities?: RtpCapabilities | null; // Object containing the RTP capabilities
+  isHost: boolean; // Indicates whether the user joining the room is the host.
+  eventStarted: boolean; // Indicates whether the event has started.
+  isBanned: boolean; // Indicates whether the user is banned from the room.
+  hostNotJoined: boolean; // Indicates whether the host has not joined the room.
+  eventRoomParams: MeetingRoomParams; // Object containing parameters related to the meeting room.
+  recordingParams: RecordingParams; // Object containing parameters related to recording.
+  secureCode: string; // Secure code (host password) associated with the host of the room.
+  mediasfuURL: string; // Media SFU URL
+  apiKey: string; // API key
+  apiUserName: string; // API username
+  allowRecord: boolean; // Indicates whether recording is allowed.
+}
+
 
 export interface ResponseJoinRoom {
   rtpCapabilities?: RtpCapabilities | null; // Object containing the RTP capabilities

@@ -1,13 +1,14 @@
+import { Socket } from 'socket.io-client';
 import {
   Participant, Request, ReorderStreamsType, ReorderStreamsParameters, SleepType, ConnectIpsParameters, OnScreenChangesParameters,
-  OnScreenChangesType, ConnectIpsType, ConsumeSocket,
+  OnScreenChangesType, ConnectIpsType, ConsumeSocket, ConnectLocalIpsType, ConnectLocalIpsParameters,
   CoHostResponsibility,
   WaitingRoomParticipant,
 } from '../../@types/types';
 
 /**
  * Handles participant management and UI updates for all members.
- * 
+ *
  * @param {Object} params - The parameters for the allMembers method.
  * @param {Participant[]} params.members - The array of participant members.
  * @param {Request[]} params.requestss - The array of requests.
@@ -19,7 +20,7 @@ import {
  * @param {string} params.apiKey - The API key.
  * @param {string} params.apiToken - The API token.
  * @returns {Promise<void>} - A promise that resolves when all participant management actions are completed.
- * 
+ *
  * @example
  * ```typescript
  * await allMembers({
@@ -36,7 +37,7 @@ import {
  * ```
  */
 
-export interface AllMembersParameters extends ReorderStreamsParameters, ConnectIpsParameters, OnScreenChangesParameters {
+export interface AllMembersParameters extends ReorderStreamsParameters, ConnectIpsParameters, OnScreenChangesParameters, ConnectLocalIpsParameters {
   participantsAll: Participant[];
   participants: Participant[];
   dispActiveNames: string[];
@@ -54,6 +55,7 @@ export interface AllMembersParameters extends ReorderStreamsParameters, ConnectI
   hostFirstSwitch: boolean;
   waitingRoomList: WaitingRoomParticipant[];
   islevel: string;
+  socket: Socket;
 
   updateParticipantsAll: (participantsAll: Participant[]) => void;
   updateParticipants: (participants: Participant[]) => void;
@@ -73,6 +75,7 @@ export interface AllMembersParameters extends ReorderStreamsParameters, ConnectI
   // mediasfu functions
   onScreenChanges: OnScreenChangesType;
   connectIps: ConnectIpsType;
+  connectLocalIps?: ConnectLocalIpsType;
   sleep: SleepType;
   reorderStreams: ReorderStreamsType;
 
@@ -91,6 +94,7 @@ export interface AllMembersOptions {
   apiKey: string;
   apiToken: string;
 }
+
 
 // Export the type definition for the function
 export type AllMembersType = (options: AllMembersOptions) => Promise<void>;
@@ -127,6 +131,7 @@ export const allMembers = async ({
     hostFirstSwitch,
     waitingRoomList,
     islevel,
+    socket,
 
     updateParticipantsAll,
     updateParticipants,
@@ -145,13 +150,12 @@ export const allMembers = async ({
 
     onScreenChanges,
     connectIps,
+    connectLocalIps,
     sleep,
     reorderStreams,
   } = parameters;
 
-  participantsAll = members.map(({
-    isBanned, isSuspended, name, audioID, videoID,
-  }) => ({
+  participantsAll = members.map(({ isBanned, isSuspended, name, audioID, videoID }) => ({
     isBanned,
     isSuspended,
     name,
@@ -177,9 +181,16 @@ export const allMembers = async ({
     }
   }
 
-  if (!membersReceived) {
+  // check to expect no roomRecvIPs for local instance
+  let onLocal = false;
+  if (roomRecvIPs.length === 1 && roomRecvIPs[0] === 'none') {
+    onLocal = true;
+  }
+
+
+  if (!membersReceived && !onLocal) {
     if (roomRecvIPs.length < 1) {
-      const checkIPs = setInterval(async () => {
+      let checkIPs = setInterval(async () => {
         if (roomRecvIPs.length > 0) {
           clearInterval(checkIPs);
 
@@ -236,7 +247,17 @@ export const allMembers = async ({
     }
   }
 
-  requestList = requestss.filter((request) => participants.some((participant) => participant.id === request.id));
+  if (onLocal && !membersReceived) {
+    if (connectLocalIps) {
+      await connectLocalIps({ socket: socket, parameters });
+    }
+    await sleep({ ms: 100 });
+    updateIsLoadingModalVisible(false);
+  }
+
+  requestList = requestss.filter((request) =>
+    participants.some((participant) => participant.id === request.id),
+  );
   updateRequestList(requestList);
 
   updateTotalReqWait(requestList.length + waitingRoomList.length);

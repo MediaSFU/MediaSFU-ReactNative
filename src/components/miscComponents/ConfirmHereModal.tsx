@@ -18,6 +18,7 @@ export interface ConfirmHereModalOptions {
   backgroundColor?: string;
   countdownDuration?: number;
   socket: Socket;
+  localSocket?: Socket;
   roomName: string;
   member: string;
 }
@@ -39,7 +40,7 @@ export type ConfirmHereModalType = (
  * ```tsx
  * import React, { useState } from 'react';
  * import { ConfirmHereModal } from 'mediasfu-reactnative';
- * 
+ *
  * function App() {
  *   const [isModalVisible, setModalVisible] = useState(true);
 
@@ -49,9 +50,10 @@ export type ConfirmHereModalType = (
  *       onConfirmHereClose={() => setModalVisible(false)}
  *       countdownDuration={120}
  *       socket={socketInstance}
- *       roomName="Main Room"
- *       member="User123"
- *       backgroundColor="#83c0e9"
+ *       localSocket={localSocketInstance}
+ *       roomName='Main Room'
+ *       member='User123'
+ *       backgroundColor='#83c0e9'
  *     />
  *   );
  * }
@@ -67,6 +69,7 @@ function startCountdown({
   onConfirm,
   onUpdateCounter,
   socket,
+  localSocket,
   roomName,
   member,
 }: {
@@ -74,6 +77,7 @@ function startCountdown({
   onConfirm: () => void;
   onUpdateCounter: (counter: number) => void;
   socket: Socket;
+  localSocket?: Socket;
   roomName: string;
   member: string;
 }) {
@@ -90,6 +94,18 @@ function startCountdown({
         roomName,
         ban: false,
       });
+
+      try {
+        if (localSocket && localSocket.id) {
+          localSocket.emit('disconnectUser', {
+            member: member,
+            roomName: roomName,
+            ban: false,
+          });
+        }
+      } catch  {
+        // Do nothing
+      }
       onConfirm();
     }
   }, 1000);
