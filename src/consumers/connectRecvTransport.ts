@@ -1,7 +1,6 @@
 import { Socket } from 'socket.io-client';
-import { Consumer, Device, Transport } from 'mediasoup-client/lib/types';
 import { ConsumerResumeType, ConsumerResumeParameters, Transport as TransportType } from '../@types/types';
-
+import { Consumer, Device, Transport } from 'mediasoup-client/lib/types';
 interface Params {
   id: string;
   producerId: string;
@@ -136,6 +135,7 @@ export const connectRecvTransport = async ({
                     params,
                     parameters,
                     nsock,
+                    consumer,
                   });
                 } catch (error) {
                   // Handle error
@@ -147,6 +147,7 @@ export const connectRecvTransport = async ({
         } catch (error) {
           // Handle error
           console.log('consume error', error);
+          return;
         }
       },
     );

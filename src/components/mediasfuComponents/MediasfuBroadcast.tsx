@@ -189,6 +189,10 @@ import {
   Shape,
   SelfieSegmentation,
   MediaStream as MediaStreamType,
+  CreateMediaSFURoomOptions,
+  JoinMediaSFURoomOptions,
+  JoinRoomOnMediaSFUType,
+  CreateRoomOnMediaSFUType,
 } from '../../@types/types';
 import {
   Device,
@@ -210,6 +214,12 @@ export type MediasfuBroadcastOptions = {
   seedData?: SeedData;
   useSeed?: boolean;
   imgSrc?: string;
+  sourceParameters?: { [key: string]: any };
+  updateSourceParameters?: (data: { [key: string]: any }) => void;
+  returnUI?: boolean;
+  noUIPreJoinOptions?: CreateMediaSFURoomOptions | JoinMediaSFURoomOptions;
+  joinMediaSFURoom?: JoinRoomOnMediaSFUType;
+  createMediaSFURoom?: CreateRoomOnMediaSFUType;
 };
 
 /**
@@ -228,6 +238,12 @@ export type MediasfuBroadcastOptions = {
  * @property {Object} [seedData={}] - Seed data for initial state.
  * @property {boolean} [useSeed=false] - Flag to use seed data.
  * @property {string} [imgSrc='https://mediasfu.com/images/logo192.png'] - Image source URL.
+ * @property {Object} [sourceParameters={}] - Source parameters.
+ * @property {function} [updateSourceParameters] - Function to update source parameters.
+ * @property {boolean} [returnUI=true] - Flag to return the UI.
+ * @property {CreateMediaSFURoomOptions | JoinMediaSFURoomOptions} [noUIPreJoinOptions] - Options for the prejoin page.
+ * @property {JoinRoomOnMediaSFUType} [joinMediaSFURoom] - Function to join a room on MediaSFU.
+ * @property {CreateRoomOnMediaSFUType} [createMediaSFURoom] - Function to create a room on MediaSFU.
  *
  * @typedef {Object} SeedData - Data structure to populate initial state in the MediasfuBroadcast.
  * @property {string} [member] - The member name.
@@ -254,6 +270,12 @@ export type MediasfuBroadcastOptions = {
  *   seedData={{}}
  *   useSeed={false}
  *   imgSrc='https://mediasfu.com/images/logo192.png'
+ *   sourceParameters={{ key: value }}
+ *   updateSourceParameters={updateSourceParameters}
+ *   returnUI={true}
+ *   noUIPreJoinOptions={customPreJoinOptions}
+ *   joinMediaSFURoom={joinRoomOnMediaSFU}
+ *   createMediaSFURoom={createRoomOnMediaSFU}
  * />
  * ```
  *
@@ -274,6 +296,12 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
   seedData = {},
   useSeed = false,
   imgSrc = 'https://mediasfu.com/images/logo192.png',
+  sourceParameters,
+  updateSourceParameters,
+  returnUI = true,
+  noUIPreJoinOptions,
+  joinMediaSFURoom,
+  createMediaSFURoom,
 }) => {
   const updateStatesToInitialValues = async () => {
     const initialValues = initialValuesState as { [key: string]: any };
@@ -1584,6 +1612,7 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
   const videoParams = useRef<ProducerOptions>({} as ProducerOptions); // Parameters for the video producer as ProducerOptions
   const audioParams = useRef<ProducerOptions>({} as ProducerOptions); // Parameters for the audio producer as ProducerOptions
   const audioProducer = useRef<Producer | null>(null); // Audio producer as Producer or null
+  const audioLevel = useRef<number>(0); // Audio level as number, default 0 for muted
   const localAudioProducer = useRef<Producer | null>(null); // Local audio producer as Producer or null
   const consumerTransports = useRef<TransportType[]>([]); // Array of consumer transports
   const consumingTransports = useRef<string[]>([]); // Array of consuming transport IDs
@@ -2028,6 +2057,10 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
     audioProducer.current = value;
   };
 
+  const updateAudioLevel = (value: number) => {
+    audioLevel.current = value;
+  };
+
   const updateLocalAudioProducer = (value: Producer | null) => {
     localAudioProducer.current = value;
   };
@@ -2234,6 +2267,19 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
 
   const getUpdatedAllParams = () => {
     // Get all the params for the room as well as the update functions for them and Media SFU functions and return them
+    try {
+      if (sourceParameters !== null) {
+        sourceParameters = {
+          ...getAllParams(),
+          ...mediaSFUFunctions(),
+        };
+        if (updateSourceParameters) {
+          updateSourceParameters(sourceParameters);
+        }
+      }
+    } catch {
+      // Do nothing
+    }
 
     return {
       ...getAllParams(),
@@ -2632,6 +2678,7 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
       videoParams: videoParams.current,
       audioParams: audioParams.current,
       audioProducer: audioProducer.current,
+      audioLevel: audioLevel.current,
       localAudioProducer: localAudioProducer.current,
       consumerTransports: consumerTransports.current,
       consumingTransports: consumingTransports.current,
@@ -2999,6 +3046,7 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
       updateVideoParams,
       updateAudioParams,
       updateAudioProducer,
+      updateAudioLevel,
       updateLocalAudioProducer,
       updateConsumerTransports,
       updateConsumingTransports,
@@ -3609,6 +3657,8 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
           localLink.length > 0 &&
           connectMediaSFU === true &&
           !link.current.includes('mediasfu.com'),
+        localLink,
+        joinMediaSFURoom,
       });
 
       data = await createResponseJoinRoom({ localRoom: localData });
@@ -3871,7 +3921,7 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
                 consume_sockets: consume_sockets.current,
               });
             }
-        },
+          },
         );
 
         socketDefault.on('personJoined', async ({ name }: { name: string }) => {
@@ -3905,7 +3955,7 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
               name,
               parameters: { ...getAllParams(), ...mediaSFUFunctions() },
             });
-        },
+          },
         );
 
         socketDefault.on(
@@ -3935,7 +3985,7 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
                 parameters: { ...getAllParams(), ...mediaSFUFunctions() },
               });
             }
-        },
+          },
         );
 
         socketDefault.on('meetingEnded', async function () {
@@ -3989,7 +4039,7 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
               updateMessages,
               updateShowMessagesBadge,
             });
-        },
+          },
         );
 
         socketDefault.on(
@@ -4000,7 +4050,7 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
               showAlert,
               eventType: eventType.current,
             });
-        },
+          },
         );
 
         socketDefault.on('meetingStillThere', async () => {
@@ -4118,14 +4168,14 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
       // there might be change in localSoscket for Community Edition
       let localChanged = false;
       localChanged =
-        localSocket.current && localSocket.current.id != socketAlt.id
+        localSocket.current && localSocket.current.id !== socketAlt.id
           ? true
           : false;
 
       if (!skipSockets && localChanged) {
         // call the connect socket method again
         await connect_Socket(apiUserName, token, true); // skipSocket = true
-        await sleep({ ms: 1000});
+        await sleep({ ms: 1000 });
         updateIsLoadingModalVisible(false);
         return socketDefault;
       } else {
@@ -4199,6 +4249,20 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
         startTime: Date.now() / 1000,
         parameters: { ...getAllParams(), ...mediaSFUFunctions() },
       });
+
+      try {
+        if (sourceParameters !== null) {
+          sourceParameters = {
+            ...getAllParams(),
+            ...mediaSFUFunctions(),
+          };
+          if (updateSourceParameters) {
+            updateSourceParameters(sourceParameters);
+          }
+        }
+      } catch {
+        console.log('error updateSourceParameters');
+      }
     }
   }, [validated]);
 
@@ -4240,8 +4304,12 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
           credentials={credentials}
           localLink={localLink}
           connectMediaSFU={connectMediaSFU}
+          returnUI={returnUI}
+          noUIPreJoinOptions={noUIPreJoinOptions}
+          joinMediaSFURoom={joinMediaSFURoom}
+          createMediaSFURoom={createMediaSFURoom}
         />
-      ) : (
+      ) : returnUI ? (
         <MainContainerComponent>
           {/* Main aspect component containsa ll but the control buttons (as used for webinar and conference) */}
           <MainAspectComponent
@@ -4339,120 +4407,128 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
             </MainScreenComponent>
           </MainAspectComponent>
         </MainContainerComponent>
+      ) : (
+        <></>
       )}
 
-      <ParticipantsModal
-        backgroundColor="rgba(217, 227, 234, 0.99)"
-        isParticipantsModalVisible={isParticipantsModalVisible}
-        onParticipantsClose={() => updateIsParticipantsModalVisible(false)}
-        participantsCounter={participantsCounter.current}
-        onParticipantsFilterChange={onParticipantsFilterChange}
-        parameters={{
-          updateParticipants: updateParticipants,
-          updateIsParticipantsModalVisible: updateIsParticipantsModalVisible,
+      {returnUI && (
+        <>
+          <ParticipantsModal
+            backgroundColor="rgba(217, 227, 234, 0.99)"
+            isParticipantsModalVisible={isParticipantsModalVisible}
+            onParticipantsClose={() => updateIsParticipantsModalVisible(false)}
+            participantsCounter={participantsCounter.current}
+            onParticipantsFilterChange={onParticipantsFilterChange}
+            parameters={{
+              updateParticipants: updateParticipants,
+              updateIsParticipantsModalVisible:
+                updateIsParticipantsModalVisible,
 
-          updateDirectMessageDetails,
-          updateStartDirectMessage,
-          updateIsMessagesModalVisible,
+              updateDirectMessageDetails,
+              updateStartDirectMessage,
+              updateIsMessagesModalVisible,
 
-          showAlert: showAlert,
+              showAlert: showAlert,
 
-          filteredParticipants: filteredParticipants.current,
-          participants: filteredParticipants.current,
-          roomName: roomName.current,
-          islevel: islevel.current,
-          member: member.current,
-          coHostResponsibility: coHostResponsibility.current,
-          coHost: coHost.current,
-          eventType: eventType.current,
+              filteredParticipants: filteredParticipants.current,
+              participants: filteredParticipants.current,
+              roomName: roomName.current,
+              islevel: islevel.current,
+              member: member.current,
+              coHostResponsibility: coHostResponsibility.current,
+              coHost: coHost.current,
+              eventType: eventType.current,
 
-          startDirectMessage: startDirectMessage.current,
-          directMessageDetails: directMessageDetails.current,
-          socket: socket.current,
+              startDirectMessage: startDirectMessage.current,
+              directMessageDetails: directMessageDetails.current,
+              socket: socket.current,
 
-          getUpdatedAllParams: getAllParams,
-        }}
-      />
+              getUpdatedAllParams: getAllParams,
+            }}
+          />
 
-      <RecordingModal
-        backgroundColor="rgba(217, 227, 234, 0.99)"
-        isRecordingModalVisible={isRecordingModalVisible}
-        onClose={() => updateIsRecordingModalVisible(false)}
-        startRecording={startRecording}
-        confirmRecording={confirmRecording}
-        parameters={{
-          ...getAllParams(),
-          ...mediaSFUFunctions(),
-        }}
-      />
+          <RecordingModal
+            backgroundColor="rgba(217, 227, 234, 0.99)"
+            isRecordingModalVisible={isRecordingModalVisible}
+            onClose={() => updateIsRecordingModalVisible(false)}
+            startRecording={startRecording}
+            confirmRecording={confirmRecording}
+            parameters={{
+              ...getAllParams(),
+              ...mediaSFUFunctions(),
+            }}
+          />
 
-      <MessagesModal
-        backgroundColor={
-          eventType.current === 'webinar' || eventType.current === 'conference'
-            ? '#f5f5f5'
-            : 'rgba(255, 255, 255, 0.25)'
-        }
-        isMessagesModalVisible={isMessagesModalVisible}
-        onMessagesClose={() => updateIsMessagesModalVisible(false)}
-        messages={messages.current}
-        eventType={eventType.current}
-        member={member.current}
-        islevel={islevel.current}
-        coHostResponsibility={coHostResponsibility.current}
-        coHost={coHost.current}
-        startDirectMessage={startDirectMessage.current}
-        directMessageDetails={directMessageDetails.current}
-        updateStartDirectMessage={updateStartDirectMessage}
-        updateDirectMessageDetails={updateDirectMessageDetails}
-        showAlert={showAlert}
-        roomName={roomName.current}
-        socket={socket.current}
-        chatSetting={chatSetting.current}
-      />
+          <MessagesModal
+            backgroundColor={
+              eventType.current === 'webinar' ||
+              eventType.current === 'conference'
+                ? '#f5f5f5'
+                : 'rgba(255, 255, 255, 0.25)'
+            }
+            isMessagesModalVisible={isMessagesModalVisible}
+            onMessagesClose={() => updateIsMessagesModalVisible(false)}
+            messages={messages.current}
+            eventType={eventType.current}
+            member={member.current}
+            islevel={islevel.current}
+            coHostResponsibility={coHostResponsibility.current}
+            coHost={coHost.current}
+            startDirectMessage={startDirectMessage.current}
+            directMessageDetails={directMessageDetails.current}
+            updateStartDirectMessage={updateStartDirectMessage}
+            updateDirectMessageDetails={updateDirectMessageDetails}
+            showAlert={showAlert}
+            roomName={roomName.current}
+            socket={socket.current}
+            chatSetting={chatSetting.current}
+          />
 
-      <ConfirmExitModal
-        backgroundColor="rgba(181, 233, 229, 0.97)"
-        isConfirmExitModalVisible={isConfirmExitModalVisible}
-        onConfirmExitClose={() => updateIsConfirmExitModalVisible(false)}
-        member={member.current}
-        roomName={roomName.current}
-        socket={socket.current}
-        islevel={islevel.current}
-      />
+          <ConfirmExitModal
+            backgroundColor="rgba(181, 233, 229, 0.97)"
+            isConfirmExitModalVisible={isConfirmExitModalVisible}
+            onConfirmExitClose={() => updateIsConfirmExitModalVisible(false)}
+            member={member.current}
+            roomName={roomName.current}
+            socket={socket.current}
+            islevel={islevel.current}
+          />
 
-      <ConfirmHereModal
-        backgroundColor="rgba(181, 233, 229, 0.97)"
-        isConfirmHereModalVisible={isConfirmHereModalVisible}
-        onConfirmHereClose={() => updateIsConfirmHereModalVisible(false)}
-        member={member.current}
-        roomName={roomName.current}
-        socket={socket.current}
-      />
+          <ConfirmHereModal
+            backgroundColor="rgba(181, 233, 229, 0.97)"
+            isConfirmHereModalVisible={isConfirmHereModalVisible}
+            onConfirmHereClose={() => updateIsConfirmHereModalVisible(false)}
+            member={member.current}
+            roomName={roomName.current}
+            socket={socket.current}
+          />
 
-      <ShareEventModal
-        isShareEventModalVisible={isShareEventModalVisible}
-        onShareEventClose={() => updateIsShareEventModalVisible(false)}
-        roomName={roomName.current}
-        islevel={islevel.current}
-        adminPasscode={adminPasscode.current}
-        eventType={eventType.current}
-        localLink={localLink}
-      />
+          <ShareEventModal
+            isShareEventModalVisible={isShareEventModalVisible}
+            onShareEventClose={() => updateIsShareEventModalVisible(false)}
+            roomName={roomName.current}
+            islevel={islevel.current}
+            adminPasscode={adminPasscode.current}
+            eventType={eventType.current}
+            localLink={localLink}
+          />
 
-      <AlertComponent
-        visible={alertVisible}
-        message={alertMessage}
-        type={alertType}
-        duration={alertDuration}
-        onHide={() => setAlertVisible(false)}
-        textColor={'#ffffff'}
-      />
+          <AlertComponent
+            visible={alertVisible}
+            message={alertMessage}
+            type={alertType}
+            duration={alertDuration}
+            onHide={() => setAlertVisible(false)}
+            textColor={'#ffffff'}
+          />
 
-      <LoadingModal
-        isVisible={isLoadingModalVisible}
-        backgroundColor="rgba(217, 227, 234, 0.99)"
-        displayColor="black"
-      />
+          <LoadingModal
+            isVisible={isLoadingModalVisible}
+            backgroundColor="rgba(217, 227, 234, 0.99)"
+            displayColor="black"
+          />
+        </>
+      )}
     </SafeAreaProvider>
   );
 };

@@ -9,6 +9,12 @@ export interface ConnectSendTransportAudioParameters {
   updateProducerTransport: (transport: Transport | null) => void;
   updateLocalAudioProducer?: (localProducer: Producer | null) => void;
   updateLocalProducerTransport?: (localTransport: Transport | null) => void;
+  updateAudioLevel: (level: number) => void;
+
+  // Function to get all parameters
+  getUpdatedAllParams: () => ConnectSendTransportAudioParameters;
+  [key: string]: any; // Extendable for additional parameters
+
 }
 
 export interface ConnectSendTransportAudioOptions {
@@ -44,6 +50,27 @@ const connectLocalSendTransportAudio = async ({
   }
 };
 
+export const updateMicLevel = async (audioProducer: Producer, updateAudioLevel: (level: number) => void) => {
+  try {
+    setInterval(() => {
+      const sender = audioProducer!.rtpSender;
+
+      sender?.getStats().then((stats) => {
+        stats.forEach((report) => {
+
+          if (report.type === 'media-source' && report.kind === 'audio' && report.audioLevel !== undefined) {
+            const newLevel = 127.5 + (report.audioLevel * 127.5);
+            updateAudioLevel(newLevel);
+          }
+
+        });
+      });
+    }, 1000);
+  } catch {
+    // Handle error
+  }
+}
+
 
 /**
  * Connects the send transport for audio by producing audio data and updating the audio producer and producer transport objects.
@@ -60,6 +87,8 @@ const connectLocalSendTransportAudio = async ({
  * @param {(producer: Producer | null) => void} options.parameters.updateAudioProducer - The function to update the audio producer object.
  * @param {(transport: Transport | null) => void} options.parameters.updateProducerTransport - The function to update the producer transport object.
  * @param {(localProducer: Producer | null) => void} [options.parameters.updateLocalAudioProducer] - The function to update the local audio producer object.
+ * @param {(localTransport: Transport | null) => void} [options.parameters.updateLocalProducerTransport] - The function to update the local producer transport object.
+ * @param {(level: number) => void} [options.parameters.updateAudioLevel] - The function to update the audio level.
  * @returns {Promise<void>} A promise that resolves when the connection is established.
  *
  * @example
@@ -74,6 +103,7 @@ const connectLocalSendTransportAudio = async ({
  *     updateProducerTransport: (transport) => console.log('Updated transport:', transport),
  *     updateLocalAudioProducer: (localProducer) => console.log('Updated local producer:', localProducer),
  *     updateLocalProducerTransport: (localTransport) => console.log('Updated local transport:', localTransport),
+ *     updateAudioLevel: (level) => console.log('Updated audio level:', level),
  *   },
  * };
  *
@@ -99,6 +129,9 @@ export const connectSendTransportAudio: ConnectSendTransportAudioType = async ({
     if (targetOption === 'all' || targetOption === 'remote') {
       audioProducer = await producerTransport!.produce(audioParams);
 
+      // Update the audio level
+      updateMicLevel(audioProducer, parameters.updateAudioLevel);
+
       // Update state with the new producer and transport
       updateAudioProducer(audioProducer);
       updateProducerTransport(producerTransport);
@@ -108,6 +141,14 @@ export const connectSendTransportAudio: ConnectSendTransportAudioType = async ({
     if (targetOption === 'all' || targetOption === 'local') {
       try {
         await connectLocalSendTransportAudio({ parameters, audioParams });
+
+        // Update the audio level
+        if (targetOption === 'local' && parameters.updateAudioLevel) {
+          if (!parameters.localAudioProducer) {
+            parameters = parameters.getUpdatedAllParams();
+          }
+          updateMicLevel(parameters.localAudioProducer!, parameters.updateAudioLevel);
+        }
       } catch (localError) {
         console.error('Local audio transport connection failed:', localError);
       }

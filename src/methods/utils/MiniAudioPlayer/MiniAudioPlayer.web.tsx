@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
-import { AudioContext } from 'standardized-audio-context';
+// import { AudioContext } from 'standardized-audio-context';
 import {
   RTCView,
 } from '../webrtc/webrtc';
@@ -13,6 +13,7 @@ import {
   Participant,
   MediaStream as MediaStreamType,
 } from '../../../@types/types';
+import { Consumer } from 'mediasoup-client/lib/types';
 
 export interface MiniAudioPlayerParameters extends
       ReUpdateInterParameters {
@@ -31,6 +32,7 @@ export interface MiniAudioPlayerParameters extends
 export interface MiniAudioPlayerOptions {
     stream: MediaStreamType | null;
     remoteProducerId: string;
+    consumer: Consumer;
     parameters: MiniAudioPlayerParameters;
     MiniAudioComponent?: React.ComponentType<any>;
     miniAudioProps?: Record<string, any>;
@@ -47,6 +49,7 @@ export type MiniAudioPlayerType = (
  * @component
  * @param {MiniAudioPlayerOptions} props - The properties for the MiniAudioPlayer component.
  * @param {MediaStream | null} props.stream - The media stream to be played by the audio player.
+ * @param {Consumer} props.consumer - The consumer object for consuming media.
  * @param {string} props.remoteProducerId - The ID of the remote producer.
  * @param {MiniAudioPlayerParameters} props.parameters - The parameters object containing various settings and methods.
  * @param {Function} props.parameters.getUpdatedAllParams - Function to get updated parameters.
@@ -66,7 +69,7 @@ export type MiniAudioPlayerType = (
  * import { MiniAudioPlayer } from 'mediasfu-reactnative';
  *
  * const WaveformVisualizer = ({ stream }: { stream: MediaStream }) => (
- *   <canvas width="300" height="50" />
+ *   <canvas width='300' height='50' />
  * );
  *
  * const App = () => {
@@ -84,7 +87,8 @@ export type MiniAudioPlayerType = (
  *   return (
  *     <MiniAudioPlayer
  *       stream={stream}
- *       remoteProducerId="producer123"
+ *       consumer={consumer}
+ *       remoteProducerId='producer123'
  *       parameters={parameters}
  *       MiniAudioComponent={WaveformVisualizer}
  *       miniAudioProps={{ color: 'blue' }}
@@ -97,6 +101,7 @@ export type MiniAudioPlayerType = (
 const MiniAudioPlayer: React.FC<MiniAudioPlayerOptions> = ({
   stream,
   remoteProducerId,
+  consumer,
   parameters,
   MiniAudioComponent,
   miniAudioProps,
@@ -112,32 +117,32 @@ const MiniAudioPlayer: React.FC<MiniAudioPlayerOptions> = ({
     limitedBreakRoom,
   } = parameters;
 
-  const audioContext = useRef<AudioContext | null>(
-    new AudioContext(),
-  );
-
   const [showWaveModal, setShowWaveModal] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState<boolean>(true);
   const autoWaveCheck = useRef<boolean>(false);
 
   useEffect(() => {
     if (stream) {
-      const analyser = audioContext.current?.createAnalyser();
-      analyser.fftSize = 32;
-      const bufferLength = analyser.frequencyBinCount;
-      const dataArray = new Uint8Array(bufferLength);
-
-      if (audioContext.current) {
-        const source = audioContext.current?.createMediaStreamSource(stream as any);
-        source.connect(analyser);
-      }
-
       let consLow: boolean = false;
+      let averageLoudness: number = 128;
 
       const intervalId = setInterval(() => {
-        analyser.getByteTimeDomainData(dataArray);
-        const averageLoudness = Array.from(dataArray).reduce((sum, value) => sum + value, 0)
-          / bufferLength;
+        try {
+          const receiver = consumer.rtpReceiver;
+          receiver?.getStats().then((stats) => {
+            stats.forEach((report) => {
+              if (
+                report.type === 'inbound-rtp' &&
+                report.kind === 'audio' &&
+                report.audioLevel
+              ) {
+                averageLoudness = 127.5 + report.audioLevel * 127.5;
+              }
+            });
+          });
+        } catch {
+          // Do nothing
+        }
 
         const updatedParams = getUpdatedAllParams();
         let {
@@ -316,7 +321,7 @@ const MiniAudioPlayer: React.FC<MiniAudioPlayerOptions> = ({
         clearInterval(intervalId);
       };
     }
-  }, [audioContext, stream]);
+  }, [stream]);
 
   const renderMiniAudioComponent = (): JSX.Element | null => {
     if (MiniAudioComponent) {

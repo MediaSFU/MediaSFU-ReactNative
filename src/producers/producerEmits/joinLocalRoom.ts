@@ -1,7 +1,7 @@
-import { ResponseJoinLocalRoom, PreJoinPageParameters } from '../../@types/types';
+import { ResponseJoinLocalRoom, PreJoinPageParameters, JoinMediaSFURoomOptions } from '../../@types/types';
 import { validateAlphanumeric } from '../../methods/utils/validateAlphanumeric';
 import { Socket } from 'socket.io-client';
-import { joinRoomOnMediaSFU } from '../../methods/utils/joinRoomOnMediaSFU';
+import { joinRoomOnMediaSFU, JoinRoomOnMediaSFUType } from '../../methods/utils/joinRoomOnMediaSFU';
 import { checkLimitsAndMakeRequest } from '../../methods/utils/checkLimitsAndMakeRequest';
 
 export interface JoinLocalRoomOptions {
@@ -13,6 +13,8 @@ export interface JoinLocalRoomOptions {
   apiUserName: string;
   parameters: PreJoinPageParameters;
   checkConnect?: boolean;
+  joinMediaSFURoom?: JoinRoomOnMediaSFUType,
+  localLink?: string;
 }
 
 // Export the type definition for the function
@@ -28,6 +30,8 @@ export interface CheckMediasfuURLOptions {
   islevel: string;
   socket: Socket;
   parameters: PreJoinPageParameters;
+  joinMediaSFURoom?: JoinRoomOnMediaSFUType,
+  localLink?: string;
 }
 
 // Export the type definition for the function
@@ -43,9 +47,11 @@ export type CheckMediasfuURLType = (options: CheckMediasfuURLOptions) => Promise
  * @param {string} options.islevel - The level of the user.
  * @param {Socket} options.socket - The socket instance to use for communication.
  * @param {PreJoinPageParameters} options.parameters - Additional parameters for pre-join page actions.
- *
+ * @param {JoinRoomOnMediaSFUType} [options.joinMediaSFURoom] - The function to join a room on MediaSFU.
+ * @param {string} [options.localLink] - The local link for the Community Edition.
+ * 
  * @returns {Promise<void>} A promise that resolves when the actions are complete.
- *
+ * 
  * @example
  * ```typescript
  * const options = {
@@ -80,6 +86,8 @@ export async function checkMediasfuURL({
   islevel,
   socket,
   parameters,
+  joinMediaSFURoom = joinRoomOnMediaSFU,
+  localLink = '',
 }: CheckMediasfuURLOptions): Promise<void> {
 
   if (
@@ -87,7 +95,7 @@ export async function checkMediasfuURL({
     data.mediasfuURL !== '' &&
     data.mediasfuURL.length > 10
   ) {
-
+   
     let link;
     let secretCode;
 
@@ -127,16 +135,17 @@ export async function checkMediasfuURL({
     data.apiUserName.length > 5 &&
     (roomName.startsWith('s') || roomName.startsWith('p'))
   ) {
-    const payload = {
+    const payload:JoinMediaSFURoomOptions = {
       action: 'join',
       meetingID: roomName,
       userName: member,
     };
 
-    const response = await joinRoomOnMediaSFU({
+    const response = await joinMediaSFURoom({
       payload,
       apiKey: data.apiKey,
       apiUserName: data.apiUserName,
+      localLink,
     });
 
     if (response.success && response.data && 'roomName' in response.data) {
@@ -145,12 +154,12 @@ export async function checkMediasfuURL({
         socket.emit(
           'updateMediasfuURL',
           { eventID: roomName, mediasfuURL: response.data.publicURL },
-          async () => {},
+          async () => {}
         );
       } catch {
         // Do nothing
       }
-
+    
       await checkLimitsAndMakeRequest({
         apiUserName: response.data.roomName,
         apiToken: response.data.secret,
@@ -177,9 +186,11 @@ export async function checkMediasfuURL({
  * @param {string} options.apiUserName - The API username of the user.
  * @param {PreJoinPageParameters} options.parameters - Additional parameters for pre-join page actions.
  * @param {boolean} options.checkConnect - A flag to check the MediaSFU URL and perform necessary actions.
- *
+ * @param {JoinRoomOnMediaSFUType} [options.joinMediaSFURoom] - The function to join a room on MediaSFU.
+ * @param {string} [options.localLink] - The local link for the Community Edition.
+ * 
  * @returns {Promise<object>} A promise that resolves with the data received from the 'joinRoom' event or rejects with a validation error.
- *
+ * 
  * @example
  * ```typescript
  * const options = {
@@ -212,6 +223,8 @@ async function joinLocalRoom
     apiUserName,
     parameters,
     checkConnect = false,
+    joinMediaSFURoom = joinRoomOnMediaSFU,
+    localLink = '',
   }: JoinLocalRoomOptions): Promise<ResponseJoinLocalRoom> {
 
   return new Promise((resolve, reject) => {
@@ -301,6 +314,8 @@ async function joinLocalRoom
                 islevel,
                 socket,
                 parameters,
+                joinMediaSFURoom,
+                localLink,
               });
             }else {
               // if mediasfuURL is present, split and get the secret code

@@ -1,3 +1,4 @@
+
 // Socket manager for media socket.
 import { MeetingRoomParams, RecordingParams } from '../@types/types';
 import io, { Socket } from 'socket.io-client'; // Importing socket type
@@ -16,7 +17,7 @@ async function validateApiKeyToken(value: string): Promise<boolean> {
 }
 
 export interface ResponseLocalConnection {
-  socket? : Socket;
+  socket?: Socket;
   data?: ResponseLocalConnectionData;
 }
 
@@ -50,6 +51,7 @@ export type ConnectSocketType = (options: ConnectSocketOptions) => Promise<Socke
 export type DisconnectSocketType = (options: DisconnectSocketOptions) => Promise<boolean>;
 export type ConnectLocalSocketType = (options: ConnectLocalSocketOptions) => Promise<ResponseLocalConnection>;
 
+
 /**
  * Connects to a media socket using the provided connection options.
  *
@@ -64,24 +66,22 @@ export type ConnectLocalSocketType = (options: ConnectLocalSocketOptions) => Pro
  * @example
  * ```typescript
  * const options = {
- *   apiUserName: "user123",
- *   apiKey: "yourApiKeyHere",
- *   link: "https://socketlink.com",
+ *   apiUserName: 'user123',
+ *   apiKey: 'yourApiKeyHere',
+ *   link: 'https://socketlink.com',
  * };
  *
  * try {
  *   const socket = await connectSocket(options);
- *   console.log("Connected to socket:", socket);
+ *   console.log('Connected to socket:', socket);
  * } catch (error) {
- *   console.error("Failed to connect to socket:", error);
+ *   console.error('Failed to connect to socket:', error);
  * }
  * ```
  */
 
 async function connectSocket(
-  {
-    apiUserName, apiKey, apiToken, link,
-  }: ConnectSocketOptions,
+  { apiUserName, apiKey, apiToken, link }: ConnectSocketOptions,
 ): Promise<Socket> {
   // Validate inputs
   if (!apiUserName) {
@@ -118,7 +118,7 @@ async function connectSocket(
       socket = io(`${link}/media`, {
         transports: ['websocket'],
         query: {
-          apiUserName,
+          apiUserName: apiUserName,
           apiKey: apiKey!,
         },
       });
@@ -126,7 +126,7 @@ async function connectSocket(
       socket = io(`${link}/media`, {
         transports: ['websocket'],
         query: {
-          apiUserName,
+          apiUserName: apiUserName,
           apiToken: apiToken!,
         },
       });
@@ -134,12 +134,22 @@ async function connectSocket(
 
     // Handle socket connection events
     socket.on('connection-success', ({ socketId }: { socketId: string }) => {
-      console.log('Connected to media socket.', socketId);
+      //check if link contains mediasfu.com and contains more than one c
+      let conn = 'media';
+      try {
+        if (link.includes('mediasfu.com') && (link.match(/c/g)?.length ?? 0) > 1) {
+          conn = 'consume';
+        }
+      } catch {
+        // do nothing
+      }
+
+      console.log(`Connected to ${conn} socket with ID: ${socketId}`);
       resolve(socket);
     });
 
     socket.on('connect_error', (error: Error) => {
-      reject(new Error(`Error connecting to media socket: ${error.message}`));
+      reject(new Error('Error connecting to media socket: ' + error.message));
     });
   });
 }
@@ -156,14 +166,14 @@ async function connectSocket(
  * @example
  * ```typescript
  * const options = {
- *   link: "http://localhost:3000",
+ *   link: 'http://localhost:3000',
  * };
  *
  * try {
  *   const { socket, data } = await connectLocalSocket(options);
- *   console.log("Connected to socket:", socket, data);
+ *   console.log('Connected to socket:', socket, data);
  * } catch (error) {
- *   console.error("Failed to connect to socket:", error);
+ *   console.error('Failed to connect to socket:', error);
  * }
  * ```
  */
@@ -205,9 +215,9 @@ async function connectLocalSocket({ link }: ConnectLocalSocketOptions): Promise<
  *
  * try {
  *   const isDisconnected = await disconnectSocket(options);
- *   console.log("Disconnected:", isDisconnected);
+ *   console.log('Disconnected:', isDisconnected);
  * } catch (error) {
- *   console.error("Failed to disconnect:", error);
+ *   console.error('Failed to disconnect:', error);
  * }
  * ```
  */
