@@ -1,6 +1,6 @@
 {
  "name": "mediasfu-reactnative",
- "version": "2.1.1",
+ "version": "2.1.2",
  "main": "dist/main.js",
  "types": "dist/types/main.d.ts",
  "type": "module",
@@ -63,8 +63,7 @@
   "react-native-webrtc": "^124.0.4",
   "react-native-webrtc-web-shim": "^1.0.7",
   "reanimated-color-picker": "^3.0.4",
-  "socket.io-client": "^4.8.1",
-  "standardized-audio-context": "^25.3.77"
+  "socket.io-client": "^4.8.1"
  },
  "devDependencies": {
   "@babel/core": "^7.25.2",
@@ -111,7 +110,6 @@
   "react-test-renderer": "^18.3.1",
   "reanimated-color-picker": "^3.0.4",
   "socket.io-client": "^4.8.1",
-  "standardized-audio-context": "^25.3.77",
   "typedoc": "^0.26.11",
   "typedoc-plugin-extras": "^3.1.0",
   "typedoc-plugin-markdown": "^4.2.10",

@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
-// import { AudioContext } from 'standardized-audio-context';
 import {
   RTCView,
 } from '../webrtc/webrtc';

@@ -52,7 +52,7 @@ export type StopShareScreenType = (options: StopShareScreenOptions) => Promise<v
 
 /**
  * Stops the screen sharing process and updates the relevant parameters and states.
- * 
+ *
  * @param {StopShareScreenOptions} options - The options for stopping the screen share.
  * @param {Object} options.parameters - The parameters required for stopping the screen share.
  * @param {Function} options.parameters.getUpdatedAllParams - Function to get updated parameters.
@@ -87,7 +87,7 @@ export type StopShareScreenType = (options: StopShareScreenOptions) => Promise<v
  * @param {Function} options.parameters.prepopulateUserMedia - Function to prepopulate user media.
  * @param {Function} options.parameters.reorderStreams - Function to reorder streams.
  * @param {Function} options.parameters.getVideos - Function to get videos.
- * 
+ *
  * @returns {Promise<void>} A promise that resolves when the screen sharing process is stopped.
  *
  * @example
@@ -126,7 +126,7 @@ export type StopShareScreenType = (options: StopShareScreenOptions) => Promise<v
  *     getVideos: getVideosFunction,
  *   },
  * };
- * 
+ *
  * stopShareScreen(options)
  *   .then(() => {
  *     console.log('Screen sharing stopped successfully');
@@ -198,7 +198,11 @@ export async function stopShareScreen({ parameters }: StopShareScreenOptions): P
     });
   }
 
-  localStreamScreen!.getTracks().forEach((track: MediaStreamTrack) => track.stop());
+  try {
+    localStreamScreen!.getTracks().forEach((track: MediaStreamTrack) => track.stop());
+  } catch {
+    // Do nothing
+  }
   updateLocalStreamScreen(null);
   await disconnectSendTransportScreen({ parameters });
 

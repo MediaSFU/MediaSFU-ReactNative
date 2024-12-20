@@ -42,6 +42,7 @@ const createLocalSendTransport = async ({
     let {
       islevel,
       member,
+      socket,
       localSocket,
       device,
       localProducerTransport,
@@ -53,7 +54,7 @@ const createLocalSendTransport = async ({
     } = parameters;
 
 
-    if (!localSocket || !localSocket.id) {
+    if (!localSocket || !localSocket.id || socket.id === localSocket.id) {
       return;
     }
 

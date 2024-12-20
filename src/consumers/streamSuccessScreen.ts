@@ -234,6 +234,7 @@ export const streamSuccessScreen = async ({
   // Update the transport created state
   transportCreatedScreen = true;
   updateTransportCreatedScreen(transportCreatedScreen);
+  transportCreated = true;
   updateTransportCreated(transportCreated);
 
   // Handle screen annotation modal

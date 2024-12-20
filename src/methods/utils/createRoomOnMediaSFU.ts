@@ -39,7 +39,7 @@ export const createRoomOnMediaSFU: CreateJoinRoomType = async ({
         let finalLink = 'https://mediasfu.com/v1/rooms/';
         if (localLink && localLink.trim() !== '' && !localLink.includes('mediasfu.com')) {
             localLink = localLink.replace(/\/$/, '');
-            finalLink = localLink + '/joinRoom';
+            finalLink = localLink + '/createRoom';
         }
 
         const response = await fetch(finalLink,
