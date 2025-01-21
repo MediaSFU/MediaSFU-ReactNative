@@ -243,7 +243,10 @@ export const clickAudio = async ({ parameters }: ClickAudioOptions): Promise<voi
         //allow
 
         if (audioPaused) {
-          localStream!.getAudioTracks()[0].enabled = true;
+          if (localStream && localStream.getAudioTracks().length > 0) {
+            localStream!.getAudioTracks()[0].enabled = true;
+            updateLocalStream(localStream);
+          }
           updateAudioAlreadyOn(true);
           await resumeSendTransportAudio({ parameters });
           socket.emit('resumeProducerAudio', { mediaTag: 'audio', roomName });

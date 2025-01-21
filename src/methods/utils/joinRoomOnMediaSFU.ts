@@ -50,16 +50,49 @@ export type JoinRoomOnMediaSFUType = (options: {
     success: boolean;
 }>;
 
+
 /**
- * Async function to join a room on MediaSFU.
+ * Asynchronously joins a room on MediaSFU.
  *
- * @param {object} options - The options for joining a room.
- * @param {JoinMediaSFURoomOptions} options.payload - The payload for the API request.
- * @param {string} options.apiUserName - The API username.
- * @param {string} options.apiKey - The API key.
- * @param {string} options.localLink - The local link.
- * @returns {Promise<{ data: CreateJoinRoomResponse | CreateJoinRoomError | null; success: boolean; }>} The response from the API.
- */
+ * This function sends a POST request to the MediaSFU API to join an existing room.
+ * It validates the provided credentials and constructs the appropriate API endpoint,
+ * including support for the Community Edition via a custom `localLink`.
+ *
+ * @param {object} options - Configuration options for joining the room.
+ * @param {JoinMediaSFURoomOptions | CreateMediaSFURoomOptions} options.payload - The payload containing the room details and action (`join` or `create`).
+ * @param {string} options.apiUserName - The API username, used for authentication.
+ * @param {string} options.apiKey - The API key, used for authentication.
+ * @param {string} [options.localLink=''] - The local link for Community Edition users. If provided, it overrides the default API URL.
+ *
+ * @returns {Promise<{
+*   data: CreateJoinRoomResponse | CreateJoinRoomError | null;
+*   success: boolean;
+* }>} A promise resolving to an object containing the API response:
+* - `data`: The response object, either `CreateJoinRoomResponse` or `CreateJoinRoomError`.
+* - `success`: Boolean indicating whether the operation was successful.
+*
+* @throws {Error} Throws an error if the request fails or if the provided credentials are invalid.
+*
+* @example
+* ```ts
+* const response = await joinRoomOnMediaSFU({
+*   payload: {
+*     action: 'join',
+*     meetingID: '123456',
+*     userName: 'user123',
+*   },
+*   apiUserName: 'yourAPIUSERNAME',
+*   apiKey: 'yourAPIKEY',
+*   localLink: 'http://localhost:3000', // Optional for Community Edition
+* });
+*
+* if (response.success) {
+*   console.log('Joined room:', response.data);
+* } else {
+*   console.error('Failed to join room:', response.data?.error);
+* }
+* ```
+*/
 
 export const joinRoomOnMediaSFU: CreateJoinRoomType = async ({
     payload,
