@@ -38,6 +38,10 @@ MediaSFU offers a cutting-edge streaming experience that empowers users to custo
 
 **[Get started now on GitHub!](https://github.com/MediaSFU/MediaSFUOpen)** 
 
+### ✅ React Native SDK Setup Guide  
+[![Watch the React Native SDK Setup Guide](http://i.ytimg.com/vi/uJkI7H26jq4/hqdefault.jpg)](https://www.youtube.com/watch?v=uJkI7H26jq4)  
+🎥 [**Watch the React Native SDK Setup Guide**](https://youtu.be/uJkI7H26jq4)
+
 ---
 
 ## Table of Contents
@@ -86,6 +90,123 @@ Instructions on how to install the module using npm for a standard React Native 
 ```bash
 npm install mediasfu-reactnative
 ```
+
+### **1.1 Important Installation Notes for React Native**
+
+#### 🚫 **Avoid Using `--force` or `--legacy-peer-deps`**
+
+Using these flags can override important dependency checks, potentially causing **unstable builds** or **unexpected behavior**.
+
+- **Why Avoid Them?**  
+  They bypass compatibility checks, which can introduce **bugs** or **conflicts** within your project.
+
+---
+
+#### ⚙️ **Use Package Overrides (Recommended)**  
+If you encounter **peer dependency conflicts**, use the `overrides` field in your `package.json` instead of forcing installations.
+
+##### ✅ **Example of Safe Overrides:**
+
+```json
+{
+  "overrides": {
+    "some-package": {
+      "dependency-name": "^1.2.3"
+    }
+  }
+}
+```
+
+- **Why This Works:**  
+  Overrides let you resolve conflicts **safely** without compromising the integrity of your project.
+
+---
+
+#### 🚩 **If You Absolutely Need to Use `--force` or `--legacy-peer-deps`**
+
+- Some peer dependencies **might be skipped**.  
+- You’ll need to **manually install** them to avoid runtime errors.
+
+##### 🔑 **Install the Required Peer Dependencies:**
+
+```bash
+npm install \
+"@react-native-async-storage/async-storage@^2.0.0" \
+"@react-native-clipboard/clipboard@^1.14.3" \
+"@react-native-community/slider@^4.5.5" \
+"@react-native-picker/picker@^2.9.0" \
+"@react-navigation/native@^6.1.18" \
+"@react-navigation/native-stack@^6.11.0" \
+"mediasoup-client@^3.7.17" \
+"react@^18.3.1" \
+"react-color@^2.19.3" \
+"react-native@^0.76.0" \
+"react-native-gesture-handler@^2.20.2" \
+"react-native-orientation-locker@^1.7.0" \
+"react-native-permissions@^5.0.2" \
+"react-native-picker-select@^9.3.1" \
+"react-native-reanimated@^3.16.1" \
+"react-native-safe-area-context@^4.12.0" \
+"react-native-screens@^3.35.0" \
+"react-native-sound@^0.11.2" \
+"react-native-status-bar-height@^2.6.0" \
+"react-native-vector-icons@^10.2.0" \
+"react-native-video@^6.7.0" \
+"react-native-webrtc@^124.0.4" \
+"react-native-webrtc-web-shim@^1.0.7" \
+"reanimated-color-picker@^3.0.4" \
+"socket.io-client@^4.8.1"
+```
+
+- **Why This Is Important:**  
+  These peer dependencies are critical for `mediasfu-reactjs` to function correctly within React Native.
+
+---
+
+#### 🔍 **How to Check for Peer Dependencies**
+
+1. **Open your `package.json`.**
+2. Look for the `peerDependencies` section:
+   ```json
+   "peerDependencies": {
+     "@react-native-async-storage/async-storage": "^2.0.0",
+     "@react-native-clipboard/clipboard": "^1.14.3",
+     "@react-native-community/slider": "^4.5.5",
+     "@react-native-picker/picker": "^2.9.0",
+     "@react-navigation/native": "^6.1.18",
+     "@react-navigation/native-stack": "^6.11.0",
+     "mediasoup-client": "^3.7.17",
+     "react": "^18.3.1",
+     "react-color": "^2.19.3",
+     "react-native": "^0.76.0",
+     "react-native-gesture-handler": "^2.20.2",
+     "react-native-orientation-locker": "^1.7.0",
+     "react-native-permissions": "^5.0.2",
+     "react-native-picker-select": "^9.3.1",
+     "react-native-reanimated": "^3.16.1",
+     "react-native-safe-area-context": "^4.12.0",
+     "react-native-screens": "^3.35.0",
+     "react-native-sound": "^0.11.2",
+     "react-native-status-bar-height": "^2.6.0",
+     "react-native-vector-icons": "^10.2.0",
+     "react-native-video": "^6.7.0",
+     "react-native-webrtc": "^124.0.4",
+     "react-native-webrtc-web-shim": "^1.0.7",
+     "reanimated-color-picker": "^3.0.4",
+     "socket.io-client": "^4.8.1"
+   }
+   ```
+
+3. **Ensure all are installed.** If not, run the install command above.
+
+---
+
+#### ✅ **Final Recommendations**
+
+- Always try to resolve conflicts using **overrides** first.
+- Only use `--force` or `--legacy-peer-deps` as a **last resort**.
+
+---
 
 ### 2.1 Obtain an API Key (If Required) 
    You can get your API key by signing up or logging into your account at [mediasfu.com](https://www.mediasfu.com/).
