@@ -1,6 +1,6 @@
 {
  "name": "mediasfu-reactnative",
- "version": "2.1.4",
+ "version": "2.1.5",
  "main": "dist/main.js",
  "types": "dist/types/main.d.ts",
  "type": "module",

@@ -21,9 +21,10 @@ export type VParamsType = {
 export const vParams: VParamsType = {
   encodings: [
     {
-      rid: 'r0',
-      maxBitrate: 800000,
+      rid: 'r2',
+      maxBitrate: 200000,
       scalabilityMode: 'L1T3',
+      scaleResolutionDownBy: 4.0,
     },
     {
       rid: 'r1',
@@ -32,12 +33,12 @@ export const vParams: VParamsType = {
       scaleResolutionDownBy: 2.0,
     },
     {
-      rid: 'r2',
-      maxBitrate: 200000,
+      rid: 'r0',
+      maxBitrate: 800000,
       scalabilityMode: 'L1T3',
-      scaleResolutionDownBy: 4.0,
     },
   ],
+
 
   codecOptions: {
     videoGoogleStartBitrate: 320,

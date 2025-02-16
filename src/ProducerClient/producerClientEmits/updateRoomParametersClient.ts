@@ -474,33 +474,6 @@ export const updateRoomParametersClient = ({ parameters }: UpdateRoomParametersC
     updateTargetResolution(data.meetingRoomParams.targetResolution);
     updateTargetResolutionHost(data.meetingRoomParams.targetResolutionHost);
 
-    // if data.recordingParams.recordingVideoSupport is true, remove all encodings and keep the higest (no scalability)
-    if (data.recordingParams.recordingVideoSupport) {
-      let selectedEncoding = vParamsValue.encodings[0];
-
-      selectedEncoding = vParamsValue.encodings.reduce((prev, curr) => {
-        const prevScale = prev.scaleResolutionDownBy || 1;
-        const currScale = curr.scaleResolutionDownBy || 1;
-        return currScale <= prevScale ? curr : prev;
-      });
-
-      vParamsValue.encodings = [selectedEncoding];
-
-      updateVParams(vParamsValue);
-
-      let selectedHEncoding = hParamsValue.encodings[0];
-
-      selectedHEncoding = hParamsValue.encodings.reduce((prev, curr) => {
-        const prevScale = prev.scaleResolutionDownBy || 1;
-        const currScale = curr.scaleResolutionDownBy || 1;
-        return currScale <= prevScale ? curr : prev;
-      });
-
-      hParamsValue.encodings = [selectedHEncoding];
-
-      updateHParams(hParamsValue);
-
-    }
   } catch (error) {
     console.log('updateRoomParametersClient error', error);
     if (parameters.showAlert) {

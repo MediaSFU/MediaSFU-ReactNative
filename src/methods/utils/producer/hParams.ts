@@ -21,9 +21,10 @@ export type HParamsType = {
 export const hParams: HParamsType = {
   encodings: [
     {
-      rid: 'r0',
-      maxBitrate: 960000,
+      rid: 'r2',
+      maxBitrate: 240000,
       scalabilityMode: 'L1T3',
+      scaleResolutionDownBy: 4.0,
     },
     {
       rid: 'r1',
@@ -32,10 +33,9 @@ export const hParams: HParamsType = {
       scaleResolutionDownBy: 2.0,
     },
     {
-      rid: 'r2',
-      maxBitrate: 240000,
+      rid: 'r0',
+      maxBitrate: 960000,
       scalabilityMode: 'L1T3',
-      scaleResolutionDownBy: 4.0,
     },
   ],
 
