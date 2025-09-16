@@ -571,6 +571,9 @@ export interface CreateRoomOptions {
   safeRoomAction: 'warn' | 'kick' | 'ban'; // Action for the safe room
   dataBuffer: boolean; // Whether to return data buffer
   bufferType: 'images' | 'audio' | 'all'; // Type of buffer data
+  supportSIP: boolean; // Whether to support SIP
+  directionSIP: 'inbound' | 'outbound' | 'both'; // Direction of SIP
+  preferPCMA: boolean; // Whether to prefer PCMA codec for SIP
 }
 
 
@@ -590,6 +593,9 @@ export interface CreateMediaSFURoomOptions {
   safeRoomAction?: 'warn' | 'kick' | 'ban'; // Action for the safe room
   dataBuffer?: boolean; // Whether to return data buffer
   bufferType?: 'images' | 'audio' | 'all'; // Type of buffer data
+  supportSIP?: boolean; // Whether to support SIP
+  directionSIP?: 'inbound' | 'outbound' | 'both'; // Direction of SIP
+  preferPCMA?: boolean; // Whether to prefer PCMA codec for SIP
 }
 
 export interface JoinMediaSFURoomOptions {

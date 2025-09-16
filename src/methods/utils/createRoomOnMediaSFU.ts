@@ -1,4 +1,5 @@
 import { CreateJoinRoomError, CreateJoinRoomResponse, CreateJoinRoomType, CreateMediaSFURoomOptions, JoinMediaSFURoomOptions } from '../../@types/types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 /**
@@ -61,6 +62,35 @@ export const createRoomOnMediaSFU: CreateJoinRoomType = async ({
     success: boolean;
 }> => {
     try {
+
+         // Build a unique identifier for this create/join request
+        const roomIdentifier = (payload as any).action === 'create'
+            ? `create_${(payload as CreateMediaSFURoomOptions).userName}_${(payload as CreateMediaSFURoomOptions).duration}_${(payload as CreateMediaSFURoomOptions).capacity}`
+            : `join_${(payload as JoinMediaSFURoomOptions).meetingID}_${(payload as any).userName}`;
+
+        const pendingKey = `mediasfu_pending_${roomIdentifier}`;
+        const PENDING_TIMEOUT = 30 * 1000; // 30 seconds
+
+        // Check pending status to prevent duplicate requests
+        try {
+            const pendingRequest = await AsyncStorage.getItem(pendingKey);
+            if (pendingRequest) {
+                const pendingData = JSON.parse(pendingRequest);
+                const timeSincePending = Date.now() - (pendingData?.timestamp ?? 0);
+                if (timeSincePending < PENDING_TIMEOUT) {
+                    return {
+                        data: { error: 'Room creation already in progress' },
+                        success: false,
+                    };
+                } else {
+                    // Stale lock, clear it
+                    await AsyncStorage.removeItem(pendingKey).catch(() => {});
+                }
+            }
+        } catch {
+            // Ignore AsyncStorage read/JSON errors
+        }
+
         if (
             !apiUserName ||
             !apiKey ||
@@ -76,6 +106,28 @@ export const createRoomOnMediaSFU: CreateJoinRoomType = async ({
         if (localLink && localLink.trim() !== '' && !localLink.includes('mediasfu.com')) {
             localLink = localLink.replace(/\/$/, '');
             finalLink = localLink + '/createRoom';
+        }
+
+        // Mark request as pending
+        try {
+            await AsyncStorage.setItem(
+                pendingKey,
+                JSON.stringify({
+                    timestamp: Date.now(),
+                    payload: {
+                        action: (payload as any).action,
+                        userName: (payload as any).userName,
+                        meetingID: (payload as any).meetingID || 'create',
+                    },
+                }),
+            );
+
+            // Auto-clear the pending flag after timeout to avoid stale locks
+            setTimeout(() => {
+                AsyncStorage.removeItem(pendingKey).catch(() => {});
+            }, PENDING_TIMEOUT);
+        } catch {
+            // Ignore AsyncStorage write errors
         }
 
         const response = await fetch(finalLink,
@@ -94,8 +146,14 @@ export const createRoomOnMediaSFU: CreateJoinRoomType = async ({
         }
 
         const data: CreateJoinRoomResponse = await response.json();
+        // Clear pending status on success
+        try { await AsyncStorage.removeItem(pendingKey); } catch { /* ignore */ }
         return { data, success: true };
     } catch (error) {
+        // Clear pending status on error
+        try { await AsyncStorage.removeItem(`mediasfu_pending_${(payload as any).action === 'create'
+            ? `create_${(payload as CreateMediaSFURoomOptions).userName}_${(payload as CreateMediaSFURoomOptions).duration}_${(payload as CreateMediaSFURoomOptions).capacity}`
+            : `join_${(payload as JoinMediaSFURoomOptions).meetingID}_${(payload as any).userName}`}`); } catch { /* ignore */ }
         const errorMessage = (error as Error).message || 'unknown error';
         return {
             data: { error: `Unable to create room, ${errorMessage}` },
