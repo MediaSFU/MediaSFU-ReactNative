@@ -71,6 +71,7 @@ MediaSFU offers a cutting-edge streaming experience that empowers users to custo
 - [Features](#features)
 - [Getting Started](#getting-started)
 - [Basic Usage Guide](#basic-usage-guide)
+- [Custom Components Guide](#custom-components-guide)
 - [Intermediate Usage Guide](#intermediate-usage-guide)
 - [Advanced Usage Guide](#advanced-usage-guide)
 - [API Reference](#api-reference)
@@ -159,7 +160,7 @@ npm install \
 "@react-native-picker/picker@^2.9.0" \
 "@react-navigation/native@^6.1.18" \
 "@react-navigation/native-stack@^6.11.0" \
-"mediasoup-client@^3.7.17" \
+"mediasoup-client@^3.16.0" \
 "react@^18.3.1" \
 "react-color@^2.19.3" \
 "react-native@^0.76.0" \
@@ -197,7 +198,7 @@ npm install \
      "@react-native-picker/picker": "^2.9.0",
      "@react-navigation/native": "^6.1.18",
      "@react-navigation/native-stack": "^6.11.0",
-     "mediasoup-client": "^3.7.17",
+     "mediasoup-client": "^3.16.0",
      "react": "^18.3.1",
      "react-color": "^2.19.3",
      "react-native": "^0.76.0",
@@ -1969,6 +1970,529 @@ During local UI development, the MediaSFU view is designed to be responsive to c
 
 While developing locally, users may encounter occasional error warnings as the UI attempts to communicate with the server. These warnings can be safely ignored, as they are simply indicative of unsuccessful server requests in the local development environment.
 
+# Custom Components Guide <a name="custom-components-guide"></a>
+
+MediaSFU React Native allows you to completely customize the appearance of participant video cards, audio cards, and mini cards by providing your own custom components. This guide shows you how to create and use custom components throughout the MediaSFU interface.
+
+## 🎯 **Custom Component Types**
+
+MediaSFU supports multiple types of custom components:
+
+### Individual Component Customization
+
+- **CustomVideoCard**: Replaces the default video display component for participants
+- **CustomAudioCard**: Replaces the default audio-only participant display
+- **CustomMiniCard**: Replaces the default mini participant card in grid views
+
+### Complete UI Replacement
+
+- **customComponent**: Replaces the entire MediaSFU interface with your completely custom UI
+
+Each custom component receives specific props and must follow the defined TypeScript interfaces.
+
+## 🎨 **Creating Custom Components**
+
+### Custom VideoCard Example
+
+```typescript
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { CustomVideoCardType } from './src/@types/types';
+
+const MyCustomVideoCard: CustomVideoCardType = ({
+  participant,
+  stream,
+  width,
+  height,
+  showControls,
+  showInfo,
+  name,
+  backgroundColor,
+  parameters,
+}) => {
+  return (
+    <View
+      style={[
+        styles.videoCardContainer,
+        {
+          width: width,
+          height: height,
+          backgroundColor: backgroundColor || 'rgba(0, 0, 0, 0.8)',
+        },
+      ]}
+    >
+      {/* Video rendering would go here */}
+      
+      {/* Custom participant info overlay */}
+      {showInfo && (
+        <View style={styles.videoInfoOverlay}>
+          <Text style={styles.videoInfoText}>
+            🎥 {name || participant.name}
+          </Text>
+        </View>
+      )}
+      
+      {/* Custom controls overlay */}
+      {showControls && (
+        <View style={styles.videoControlsOverlay}>
+          <View style={styles.controlButton}>
+            <Text style={styles.controlButtonText}>🔇</Text>
+          </View>
+          <View style={styles.controlButton}>
+            <Text style={styles.controlButtonText}>📹</Text>
+          </View>
+        </View>
+      )}
+    </View>
+  );
+};
+```
+
+### Custom AudioCard Example
+
+```typescript
+const MyCustomAudioCard: CustomAudioCardType = ({
+  name,
+  barColor,
+  textColor,
+  parameters,
+}) => {
+  const isActive = barColor; // barColor indicates if participant is speaking
+
+  return (
+    <View
+      style={[
+        styles.audioCardContainer,
+        {
+          backgroundColor: isActive ? '#ef4444' : '#6b7280',
+        },
+      ]}
+    >
+      {/* Audio wave animation background */}
+      {isActive && (
+        <View style={styles.audioWaveOverlay} />
+      )}
+      
+      {/* Avatar */}
+      <View style={styles.audioAvatar}>
+        <Text style={styles.audioAvatarText}>
+          {name ? name.charAt(0).toUpperCase() : '?'}
+        </Text>
+      </View>
+      
+      {/* Name */}
+      <Text style={[styles.audioNameText, { color: textColor || 'white' }]}>
+        {name}
+      </Text>
+      
+      {/* Speaking indicator */}
+      {isActive && (
+        <Text style={styles.speakingIndicator}>
+          🎤 Speaking...
+        </Text>
+      )}
+    </View>
+  );
+};
+```
+
+### Custom MiniCard Example
+
+```typescript
+const MyCustomMiniCard: CustomMiniCardType = ({
+  initials,
+  name,
+  showVideoIcon,
+  showAudioIcon,
+  parameters,
+}) => {
+  return (
+    <View style={styles.miniCardContainer}>
+      {/* Avatar/Initials */}
+      <View style={styles.miniAvatar}>
+        <Text style={styles.miniAvatarText}>
+          {initials || name?.charAt(0)?.toUpperCase() || '?'}
+        </Text>
+      </View>
+      
+      {/* Name */}
+      <Text style={styles.miniNameText} numberOfLines={1} ellipsizeMode="tail">
+        {name}
+      </Text>
+      
+      {/* Media status icons */}
+      <View style={styles.miniMediaIcons}>
+        {showVideoIcon && (
+          <Text style={styles.miniMediaIcon}>📹</Text>
+        )}
+        {showAudioIcon && (
+          <Text style={styles.miniMediaIcon}>🎤</Text>
+        )}
+      </View>
+    </View>
+  );
+};
+```
+
+## 🎨 **Complete Custom UI with customComponent**
+
+For maximum flexibility, you can replace the entire MediaSFU interface with your completely custom UI using the `customComponent` prop. This gives you full control over the entire user experience while still having access to all MediaSFU's underlying functionality.
+
+### Custom Component Interface
+
+```typescript
+interface CustomComponentProps {
+  parameters: {
+    // All MediaSFU state and functions are available here
+    // Including getAllParams() and mediaSFUFunctions()
+    participants: Participant[];
+    messages: Message[];
+    // ... hundreds of other state variables and functions
+  };
+}
+
+type CustomComponentType = React.FC<CustomComponentProps>;
+```
+
+### Creating a Complete Custom UI
+
+```typescript
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+
+const MyCompleteCustomUI: React.FC<{ parameters: any }> = ({ parameters }) => {
+  const {
+    // Extract the state and functions you need
+    participants,
+    messages,
+    localVideoStream,
+    isScreenShare,
+    clickVideo,
+    clickAudio,
+    clickScreenShare,
+    sendMessage,
+    // ... any other MediaSFU state/functions
+  } = parameters;
+
+  return (
+    <View style={styles.customContainer}>
+      <Text style={styles.header}>My Custom MediaSFU Interface</Text>
+      
+      {/* Your custom participant display */}
+      <View style={styles.participantsArea}>
+        {participants.map((participant, index) => (
+          <View key={index} style={styles.participant}>
+            <Text>{participant.name}</Text>
+            {/* Your custom participant UI */}
+          </View>
+        ))}
+      </View>
+      
+      {/* Your custom controls */}
+      <View style={styles.controls}>
+        <TouchableOpacity onPress={() => clickVideo({ parameters })}>
+          <Text style={styles.button}>Toggle Video</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => clickAudio({ parameters })}>
+          <Text style={styles.button}>Toggle Audio</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => clickScreenShare({ parameters })}>
+          <Text style={styles.button}>Share Screen</Text>
+        </TouchableOpacity>
+      </View>
+      
+      {/* Your custom chat */}
+      <View style={styles.chatArea}>
+        {messages.map((message, index) => (
+          <Text key={index} style={styles.message}>
+            {message.sender}: {message.text}
+          </Text>
+        ))}
+      </View>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  customContainer: {
+    flex: 1,
+    backgroundColor: '#f0f0f0',
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    padding: 20,
+  },
+  participantsArea: {
+    flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  participant: {
+    margin: 10,
+    padding: 10,
+    backgroundColor: 'white',
+    borderRadius: 8,
+  },
+  controls: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 20,
+  },
+  button: {
+    backgroundColor: '#007bff',
+    color: 'white',
+    padding: 10,
+    borderRadius: 5,
+    textAlign: 'center',
+  },
+  chatArea: {
+    height: 200,
+    backgroundColor: 'white',
+    padding: 10,
+  },
+  message: {
+    marginBottom: 5,
+  },
+});
+```
+
+### Using the Complete Custom UI
+
+```typescript
+import { MediasfuGeneric } from 'mediasfu-reactnative';
+
+const App = () => {
+  const credentials = { apiUserName: 'your-username', apiKey: 'your-key' };
+
+  return (
+    <MediasfuGeneric
+      credentials={credentials}
+      customComponent={MyCompleteCustomUI} // Replace entire MediaSFU UI
+      returnUI={true} // Can be true or false when using customComponent
+    />
+  );
+};
+```
+
+**Key Points:**
+
+- The `customComponent` prop completely replaces the default MediaSFU interface
+- You receive all MediaSFU state and functions through the `parameters` prop
+- You have full control over the entire user experience
+- All MediaSFU functionality (audio/video, screen sharing, messaging, etc.) remains available
+- Works with all MediaSFU components (Generic, Broadcast, Conference, Chat, Webinar)
+
+## 🚀 **Using Custom Components**
+
+Once you've created your custom components, you can use them with any MediaSFU component:
+
+### Basic Usage
+
+```typescript
+import React from 'react';
+import MediasfuGeneric from './src/components/mediasfuComponents/MediasfuGeneric';
+import PreJoinPage from './src/components/miscComponents/PreJoinPage';
+
+const App = () => {
+  const credentials = {
+    apiUserName: 'your-api-username',
+    apiKey: 'your-api-key'
+  };
+
+  return (
+    <MediasfuGeneric
+      PrejoinPage={PreJoinPage}
+      credentials={credentials}
+      localLink=""
+      connectMediaSFU={true}
+      
+      // Add your custom components here
+      customVideoCard={MyCustomVideoCard}
+      customAudioCard={MyCustomAudioCard}
+      customMiniCard={MyCustomMiniCard}
+      
+      // OR use complete custom UI (replaces entire interface)
+      // customComponent={MyCompleteCustomUI}
+    />
+  );
+};
+```
+
+### Usage with All MediaSFU Components
+
+Custom components work with **all** MediaSFU components:
+
+```typescript
+// MediasfuBroadcast with custom components
+<MediasfuBroadcast
+  PrejoinPage={PreJoinPage}
+  credentials={credentials}
+  customVideoCard={MyCustomVideoCard}
+  customAudioCard={MyCustomAudioCard}
+  customMiniCard={MyCustomMiniCard}
+  // customComponent={MyCompleteCustomUI} // Optional: Replace entire UI
+/>
+
+// MediasfuConference with custom components
+<MediasfuConference
+  PrejoinPage={PreJoinPage}
+  credentials={credentials}
+  customVideoCard={MyCustomVideoCard}
+  customAudioCard={MyCustomAudioCard}
+  customMiniCard={MyCustomMiniCard}
+  // customComponent={MyCompleteCustomUI} // Optional: Replace entire UI
+/>
+
+// MediasfuChat with custom components
+<MediasfuChat
+  PrejoinPage={PreJoinPage}
+  credentials={credentials}
+  customVideoCard={MyCustomVideoCard}
+  customAudioCard={MyCustomAudioCard}
+  customMiniCard={MyCustomMiniCard}
+  // customComponent={MyCompleteCustomUI} // Optional: Replace entire UI
+/>
+
+// MediasfuWebinar with custom components
+<MediasfuWebinar
+  PrejoinPage={PreJoinPage}
+  credentials={credentials}
+  customVideoCard={MyCustomVideoCard}
+  customAudioCard={MyCustomAudioCard}
+  customMiniCard={MyCustomMiniCard}
+  // customComponent={MyCompleteCustomUI} // Optional: Replace entire UI
+/>
+```
+
+## 🎛️ **Advanced Usage with Custom UI**
+
+For completely custom UI with no default MediaSFU interface:
+
+```typescript
+const App = () => {
+  const [sourceParameters, setSourceParameters] = useState({});
+  const updateSourceParameters = (data) => {
+    setSourceParameters(data);
+  };
+
+  const noUIPreJoinOptions = {
+    action: 'create',
+    capacity: 10,
+    duration: 15,
+    eventType: 'broadcast',
+    userName: 'YourName',
+  };
+
+  return (
+    <MediasfuGeneric
+      credentials={credentials}
+      localLink=""
+      connectMediaSFU={true}
+      
+      // Disable default UI
+      returnUI={false}
+      noUIPreJoinOptions={noUIPreJoinOptions}
+      sourceParameters={sourceParameters}
+      updateSourceParameters={updateSourceParameters}
+      
+      // Custom components will still be used in your custom UI
+      customVideoCard={MyCustomVideoCard}
+      customAudioCard={MyCustomAudioCard}
+      customMiniCard={MyCustomMiniCard}
+    />
+  );
+};
+```
+
+## 📱 **React Native CLI Compatibility**
+
+All custom components are fully compatible with React Native CLI and use:
+- **react-native-vector-icons** instead of Expo icons
+- **Standard React Native components** (View, Text, etc.)
+- **Platform-specific optimizations** for iOS and Android
+
+## 🎨 **Styling Examples**
+
+```typescript
+const styles = StyleSheet.create({
+  videoCardContainer: {
+    borderRadius: 16,
+    position: 'relative',
+    overflow: 'hidden',
+    borderWidth: 3,
+    borderColor: '#6366f1',
+  },
+  videoInfoOverlay: {
+    position: 'absolute',
+    bottom: 8,
+    left: 8,
+    backgroundColor: '#6366f1',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 20,
+  },
+  audioCardContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+    borderRadius: 16,
+    minHeight: 120,
+  },
+  miniCardContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    backgroundColor: '#1f2937',
+    borderRadius: 12,
+    minHeight: 80,
+    minWidth: 80,
+  },
+});
+```
+
+## 🔧 **Creating Multiple Themes**
+
+You can create multiple sets of custom components for different themes:
+
+```typescript
+// Business theme
+const BusinessVideoCard: CustomVideoCardType = ({ ... }) => { /* Business styling */ };
+const BusinessAudioCard: CustomAudioCardType = ({ ... }) => { /* Business styling */ };
+const BusinessMiniCard: CustomMiniCardType = ({ ... }) => { /* Business styling */ };
+
+// Gaming theme  
+const GamingVideoCard: CustomVideoCardType = ({ ... }) => { /* Gaming styling */ };
+const GamingAudioCard: CustomAudioCardType = ({ ... }) => { /* Gaming styling */ };
+const GamingMiniCard: CustomMiniCardType = ({ ... }) => { /* Gaming styling */ };
+
+// Use conditionally
+const App = () => {
+  const theme = 'business'; // or 'gaming'
+  
+  return (
+    <MediasfuGeneric
+      customVideoCard={theme === 'business' ? BusinessVideoCard : GamingVideoCard}
+      customAudioCard={theme === 'business' ? BusinessAudioCard : GamingAudioCard}
+      customMiniCard={theme === 'business' ? BusinessMiniCard : GamingMiniCard}
+    />
+  );
+};
+```
+
+## ✅ **Key Benefits**
+
+- **🎨 Complete Visual Control**: Customize every aspect of participant display
+- **📱 React Native Compatible**: Works seamlessly with React Native CLI
+- **🔄 Consistent Integration**: Components work across all MediaSFU event types
+- **⚡ Performance Optimized**: Efficient rendering with React Native best practices
+- **🎯 TypeScript Support**: Full type safety with comprehensive interfaces
+- **🔧 Flexible Implementation**: Support for multiple themes and conditional rendering
+
+Your custom components will now be used throughout the MediaSFU interface wherever participants are displayed, giving you complete control over the visual experience while maintaining all existing functionality.
+
 # Intermediate Usage Guide <a name="intermediate-usage-guide"></a>
 
 Expands on the basic usage, covering more advanced features and scenarios.
@@ -2911,33 +3435,37 @@ These functions enable seamless interaction with the server and ensure that the 
 
 ### Customizing Media Display in MediaSFU
 
-By default, media display in MediaSFU is handled by the following key functions:
+MediaSFU now supports **comprehensive custom component integration** that allows you to completely customize the appearance of participant video cards, audio cards, and mini cards throughout the interface.
 
-- **`prepopulateUserMedia`**: This function controls the main media grid, such as the host's video in webinar or broadcast views (MainGrid).
-- **`addVideosGrid`**: This function manages the mini grid's media, such as participants' media in MiniGrid views (MiniCards, AudioCards, VideoCards).
+#### New Custom Component System (Recommended)
 
-#### Customizing the Media Display
+For the latest and most comprehensive customization options, refer to the **[Custom Components Guide](#custom-components-guide)** which provides:
 
-If you want to modify the default content displayed by MediaSFU components, such as the `MiniCard`, `AudioCard`, or `VideoCard`, you can replace the default UI with your own custom components.
+- ✅ **Complete Visual Control**: Custom VideoCard, AudioCard, and MiniCard components
+- ✅ **TypeScript Support**: Fully typed interfaces for all custom components  
+- ✅ **React Native CLI Compatible**: Uses react-native-vector-icons and standard RN components
+- ✅ **Universal Integration**: Works with all MediaSFU components (Generic, Broadcast, Conference, Chat, Webinar)
+- ✅ **Simple Implementation**: Just pass your custom components as props
+- ✅ **Multiple Themes**: Support for conditional theming and multiple component sets
 
-To implement your custom UI for media display:
+**Example Usage:**
+```typescript
+<MediasfuGeneric
+  credentials={credentials}
+  customVideoCard={MyCustomVideoCard}
+  customAudioCard={MyCustomAudioCard}
+  customMiniCard={MyCustomMiniCard}
+/>
+```
 
-1. **Custom MainGrid (Host's Video)**:
-   - Modify the UI in the `prepopulateUserMedia` function.
-   - Example link to MediaSFU's default implementation: [`prepopulateUserMedia`](https://github.com/MediaSFU/MediaSFU-ReactNative/blob/main/src/consumers/prepopulateUserMedia.tsx).
+#### Legacy Custom Implementation (Advanced Users)
 
-2. **Custom MiniGrid (Participants' Media)**:
-   - Modify the UI in the `addVideosGrid` function.
-   - Example link to MediaSFU's default implementation: [`addVideosGrid`](https://github.com/MediaSFU/MediaSFU-ReactNative/blob/main/src/consumers/addVideosGrid.tsx).
+For advanced users who need deeper customization, you can still modify the core functions:
 
-To create a custom UI, you can refer to existing MediaSFU implementations like:
+- **`prepopulateUserMedia`**: Controls the main media grid (MainGrid)
+- **`addVideosGrid`**: Manages the mini grid's media (MiniCards, AudioCards, VideoCards)
 
-- [MediasfuGeneric](https://github.com/MediaSFU/MediaSFU-ReactNative/blob/main/src/components/mediasfuComponents/MediasfuGeneric.tsx)
-- [MediasfuBroadcast](https://github.com/MediaSFU/MediaSFU-ReactNative/blob/main/src/components/mediasfuComponents/MediasfuBroadcast.tsx)
-
-Once your custom components are built, modify the imports of `prepopulateUserMedia` and `addVideosGrid` to point to your custom implementations instead of the default MediaSFU ones.
-
-This allows for full flexibility in how media is displayed in both the main and mini grids, giving you the ability to tailor the user experience to your specific needs.
+**Note**: The new Custom Component System is recommended as it provides easier implementation, better maintainability, and full TypeScript support while achieving the same level of customization.
 
 # API Reference <a name="api-reference"></a>
 

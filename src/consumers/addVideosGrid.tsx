@@ -5,7 +5,7 @@ import AudioCard from '../components/displayComponents/AudioCard';
 
 import {
   Participant, Stream, UpdateMiniCardsGridType, UpdateMiniCardsGridParameters, AudioCardParameters, EventType,
-  MediaStream as MediaStreamType,
+  MediaStream as MediaStreamType, CustomVideoCardType, CustomAudioCardType, CustomMiniCardType,
 } from '../@types/types';
 
 export interface AddVideosGridParameters extends UpdateMiniCardsGridParameters, AudioCardParameters {
@@ -20,6 +20,11 @@ export interface AddVideosGridParameters extends UpdateMiniCardsGridParameters, 
   forceFullDisplay: boolean;
   otherGridStreams: JSX.Element[][];
   updateOtherGridStreams: (otherGridStreams: JSX.Element[][]) => void;
+
+  // Custom components
+  customVideoCard?: CustomVideoCardType;
+  customAudioCard?: CustomAudioCardType;
+  customMiniCard?: CustomMiniCardType;
 
   // mediasfu functions
   updateMiniCardsGrid: UpdateMiniCardsGridType;
@@ -138,6 +143,9 @@ export async function addVideosGrid({
     otherGridStreams,
     updateOtherGridStreams,
     updateMiniCardsGrid,
+    customVideoCard,
+    customAudioCard,
+    customMiniCard,
   } = parameters;
 
   const newComponents: JSX.Element[][] = [[], []];
@@ -179,19 +187,23 @@ export async function addVideosGrid({
             backgroundColor="transparent"
             showControls={eventType !== 'chat'}
             participant={participant}
+            customAudioCard={customAudioCard}
           />,
         );
       } else {
         newComponents[0].push(
           <MiniCard
-            key={`mini-${participant.id}`}
+            key={`mini-card-${participant.id}`}
             initials={participant.name}
             fontSize={20}
             customStyle={{
               backgroundColor: 'transparent',
-              borderWidth: eventType !== 'broadcast' ? 2 : 0,
+              borderRadius: 0,
+              borderWidth: 2,
               borderColor: 'black',
             }}
+            name={participant.name}
+            customMiniCard={customMiniCard}
           />,
         );
       }
@@ -212,6 +224,7 @@ export async function addVideosGrid({
               borderWidth: eventType !== 'broadcast' ? 2 : 0,
               borderColor: 'black',
             }}
+            customMiniCard={customMiniCard}
           />,
         );
       } else {
@@ -244,6 +257,7 @@ export async function addVideosGrid({
             name={participant.name}
             doMirror
             parameters={parameters}
+            customVideoCard={customVideoCard}
           />,
         );
       }
@@ -270,6 +284,7 @@ export async function addVideosGrid({
             name={participant_.name || ''}
             doMirror={false}
             parameters={parameters}
+            customVideoCard={customVideoCard}
           />,
         );
       }
@@ -326,6 +341,7 @@ export async function addVideosGrid({
               backgroundColor="transparent"
               showControls={eventType !== 'chat'}
               participant={participant}
+              customAudioCard={customAudioCard}
             />,
           );
         } else {
@@ -339,6 +355,8 @@ export async function addVideosGrid({
                 borderWidth: eventType !== 'broadcast' ? 2 : 0,
                 borderColor: 'black',
               }}
+              name={participant.name}
+              customMiniCard={customMiniCard}
             />,
           );
         }
@@ -365,6 +383,7 @@ export async function addVideosGrid({
               name={participant.name}
               doMirror={false}
               parameters={parameters}
+              customVideoCard={customVideoCard}
             />,
           );
         }

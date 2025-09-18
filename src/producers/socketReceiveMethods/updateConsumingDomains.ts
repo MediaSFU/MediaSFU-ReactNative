@@ -91,6 +91,8 @@ export const updateConsumingDomains = async ({
         await getDomains({
           domains, alt_domains, apiUserName, apiKey, apiToken, parameters,
         });
+      } else {
+        // If no alt_domains, directly connect IPs with the provided domains
         await connectIps({
           consume_sockets,
           remIP: domains,

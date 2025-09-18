@@ -22,6 +22,7 @@ import {
   Participant,
   AudioDecibels,
   MediaStream,
+  CustomVideoCardType,
 } from '../../@types/types';
 
 /**
@@ -69,6 +70,7 @@ export interface VideoCardOptions {
   audioDecibels?: AudioDecibels[];
   doMirror?: boolean;
   parameters: VideoCardParameters;
+  customVideoCard?: CustomVideoCardType;
 }
 
 export type VideoCardType = (options: VideoCardOptions) => JSX.Element;
@@ -150,6 +152,7 @@ const VideoCard: React.FC<VideoCardOptions> = ({
   audioDecibels = [],
   doMirror = false,
   parameters,
+  customVideoCard,
 }) => {
   // Initialize waveform animation values
   const [waveformAnimations] = useState<Animated.Value[]>(
@@ -382,23 +385,47 @@ const VideoCard: React.FC<VideoCardOptions> = ({
   };
 
   return (
-    <View style={[styles.card, customStyle, { backgroundColor }]}>
-      {/* Video Display */}
-      <CardVideoDisplay
-        remoteProducerId={remoteProducerId}
-        eventType={eventType}
-        forceFullDisplay={forceFullDisplay}
-        videoStream={videoStream}
-        backgroundColor={backgroundColor}
-        doMirror={doMirror}
-      />
+    <>
+      {customVideoCard ? (
+        customVideoCard({
+          name,
+          barColor,
+          textColor,
+          imageSource: participant?.imageURL,
+          roundedImage: true,
+          showControls,
+          showInfo,
+          videoInfoComponent,
+          videoControlsComponent,
+          controlsPosition,
+          infoPosition,
+          participant,
+          backgroundColor,
+          onVideoPress: () => {
+            // Handle video press if needed
+          },
+          parameters,
+        })
+      ) : (
+        <View style={[styles.card, customStyle, { backgroundColor }]}>
+          {/* Video Display */}
+          <CardVideoDisplay
+            remoteProducerId={remoteProducerId}
+            eventType={eventType}
+            forceFullDisplay={forceFullDisplay}
+            videoStream={videoStream}
+            backgroundColor={backgroundColor}
+            doMirror={doMirror}
+          />
 
-      {/* Participant Information */}
-      {renderInfo()}
+          {/* Participant Information */}
+          {renderInfo()}
 
-      {/* Video Controls */}
-      {renderControls()}
-    </View>
+          {/* Video Controls */}
+          {renderControls()}
+        </View>
+      )}
+    </>
   );
 };
 

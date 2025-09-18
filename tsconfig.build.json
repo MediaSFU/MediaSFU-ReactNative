@@ -9,7 +9,12 @@
       "jsx": "react-native",
       "module": "ESNext",
       "target": "ES2017",
-      "isolatedModules": true
+      "isolatedModules": true,
+      "baseUrl": "./",
+      "paths": {
+        "mediasoup-client": ["./node_modules/mediasoup-client"],
+        "mediasoup-client/*": ["./node_modules/mediasoup-client/*"]
+      }
     },
     "include": ["src","./main.tsx"],
     "exclude": ["node_modules", "build", "dist"]

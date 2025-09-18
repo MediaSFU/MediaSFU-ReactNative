@@ -10,6 +10,7 @@ import {
   ViewStyle,
   ImageStyle,
 } from 'react-native';
+import { CustomMiniCardType } from '../../@types/types';
 
 /**
  * Interface defining the props for the MiniCard component.
@@ -46,6 +47,31 @@ export interface MiniCardOptions {
    * Custom styles to apply to the image.
    */
   imageStyle?: StyleProp<ImageStyle>;
+
+  /**
+   * Whether to show the video icon.
+   */
+  showVideoIcon?: boolean;
+
+  /**
+   * Whether to show the audio icon.
+   */
+  showAudioIcon?: boolean;
+
+  /**
+   * The name of the participant.
+   */
+  name?: string;
+
+  /**
+   * Custom MiniCard component to replace default rendering.
+   */
+  customMiniCard?: CustomMiniCardType;
+
+  /**
+   * Additional parameters that can be passed to custom components.
+   */
+  parameters?: any;
 }
 
 export type MiniCardType = (options: MiniCardOptions) => JSX.Element;
@@ -96,7 +122,27 @@ const MiniCard: React.FC<MiniCardOptions> = ({
   imageSource,
   roundedImage = true,
   imageStyle,
+  showVideoIcon,
+  showAudioIcon,
+  name,
+  customMiniCard,
+  parameters,
 }) => {
+  // If a custom mini card is provided, use it instead of the default
+  if (customMiniCard) {
+    return customMiniCard({
+      initials: initials || '',
+      fontSize,
+      customStyle,
+      name: name || '',
+      showVideoIcon,
+      showAudioIcon,
+      imageSource,
+      roundedImage,
+      imageStyle,
+      parameters,
+    });
+  }
   // Define the style for the MiniCard
   const cardStyle: StyleProp<ViewStyle> = [
     styles.miniCard,

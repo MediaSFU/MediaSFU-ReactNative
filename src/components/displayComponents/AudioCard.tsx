@@ -26,6 +26,7 @@ import {
   AudioDecibels,
   CoHostResponsibility,
   ShowAlert,
+  CustomAudioCardType,
 } from '../../@types/types';
 
 export interface AudioCardParameters {
@@ -63,6 +64,7 @@ export interface AudioCardOptions {
   backgroundColor?: string;
   audioDecibels?: AudioDecibels;
   parameters: AudioCardParameters;
+  customAudioCard?: CustomAudioCardType;
 }
 
 export type AudioCardType = (options: AudioCardOptions) => JSX.Element;
@@ -154,6 +156,7 @@ const AudioCard: React.FC<AudioCardOptions> = ({
   backgroundColor,
   audioDecibels,
   parameters,
+  customAudioCard,
 }) => {
   // State for animated waveform bars
   const [waveformAnimations] = useState<Animated.Value[]>(
@@ -318,94 +321,108 @@ const AudioCard: React.FC<AudioCardOptions> = ({
   };
 
   return (
-    <View
-      style={[
-        styles.card,
-        customStyle,
-        { backgroundColor: backgroundColor || '#2c678f' },
-      ]}
-    >
-      {imageSource ? (
-        <Image
-          source={{ uri: imageSource }}
-          style={[
-            styles.backgroundImage as ImageStyle,
-            roundedImage ? (styles.roundedImage as ImageStyle) : undefined,
-            imageStyle as ImageStyle,
-          ]}
-          resizeMode="cover"
-        />
+    <>
+      {customAudioCard ? (
+        customAudioCard({
+          name,
+          barColor,
+          textColor,
+          imageSource,
+          roundedImage,
+          imageStyle,
+          parameters,
+        })
       ) : (
-        <MiniCard
-          initials={name}
-          fontSize={20}
-          customStyle={{
-            borderWidth: parameters.eventType !== 'broadcast' ? 2 : 0,
-            borderColor:
-              parameters.eventType !== 'broadcast' ? 'black' : 'transparent',
-          }}
-        />
-      )}
+        <View
+          style={[
+            styles.card,
+            customStyle,
+            { backgroundColor: backgroundColor || '#2c678f' },
+          ]}
+        >
+          {imageSource ? (
+            <Image
+              source={{ uri: imageSource }}
+              style={[
+                styles.backgroundImage as ImageStyle,
+                roundedImage ? (styles.roundedImage as ImageStyle) : undefined,
+                imageStyle as ImageStyle,
+              ]}
+              resizeMode="cover"
+            />
+          ) : (
+            <MiniCard
+              initials={name}
+              fontSize={20}
+              customStyle={{
+                borderWidth: parameters.eventType !== 'broadcast' ? 2 : 0,
+                borderColor:
+                  parameters.eventType !== 'broadcast' ? 'black' : 'transparent',
+              }}
+            />
+          )}
 
-      {/* Participant Info and Waveform */}
-      {videoInfoComponent ||
-        (showInfo && (
-          <View
-            style={[
-              getOverlayPosition({ position: infoPosition }),
-              Platform.OS === 'web'
-                ? showControls
-                  ? styles.overlayWeb
-                  : styles.overlayWebAlt
-                : styles.overlayMobile,
-            ]}
-          >
-            <View style={styles.nameColumn}>
-              <Text style={[styles.nameText, { color: textColor }]}>
-                {name}
-              </Text>
-            </View>
-            {showWaveform && (
+          {/* Participant Info and Waveform */}
+          {videoInfoComponent ||
+            (showInfo && (
               <View
-                style={
+                style={[
+                  getOverlayPosition({ position: infoPosition }),
                   Platform.OS === 'web'
-                    ? styles.waveformWeb
-                    : styles.waveformMobile
-                }
+                    ? showControls
+                      ? styles.overlayWeb
+                      : styles.overlayWebAlt
+                    : styles.overlayMobile,
+                ]}
               >
-                {waveformAnimations.map((animation, index) => (
-                  <Animated.View
-                    key={index}
-                    style={[
-                      styles.bar,
-                      {
-                        height: animation.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [1, 14],
-                        }),
-                        backgroundColor: barColor,
-                      },
-                    ]}
-                  />
-                ))}
+                <View style={styles.nameColumn}>
+                  <Text style={[styles.nameText, { color: textColor }]}>
+                    {name}
+                  </Text>
+                </View>
+                {showWaveform && (
+                  <View
+                    style={
+                      Platform.OS === 'web'
+                        ? styles.waveformWeb
+                        : styles.waveformMobile
+                    }
+                  >
+                    {waveformAnimations.map((animation, index) => (
+                      <Animated.View
+                        key={index}
+                        style={[
+                          styles.bar,
+                          {
+                            height: animation.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [1, 14],
+                            }),
+                            backgroundColor: barColor,
+                          },
+                        ]}
+                      />
+                    ))}
+                  </View>
+                )}
               </View>
-            )}
-          </View>
-        ))}
+            ))}
 
-      {/* Control Buttons */}
-      {videoControlsComponent ||
-        (showControls && (
-          <View
-            style={[
-              styles.overlayControls,
-              getOverlayPosition({ position: controlsPosition }),
-            ]}
-          >
-            {renderControls()}
-          </View>
-        ))}
-    </View>
+          {/* Control Buttons */}
+          {videoControlsComponent ||
+            (showControls && (
+              <View
+                style={[
+                  styles.overlayControls,
+                  getOverlayPosition({ position: controlsPosition }),
+                ]}
+              >
+                {renderControls()}
+              </View>
+            ))}
+        </View>
+      )}
+    </>
   );
 };
 

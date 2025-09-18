@@ -4,6 +4,7 @@ import AudioCard from '../components/displayComponents/AudioCard';
 // import { RTCView } from "../methods/utils/webrtc/webrtc";
 import {
   Participant, Stream, AudioCardParameters, EventType, MediaStream,
+  CustomVideoCardType, CustomAudioCardType, CustomMiniCardType,
 } from '../@types/types';
 
 export interface PrepopulateUserMediaParameters extends AudioCardParameters {
@@ -44,6 +45,11 @@ export interface PrepopulateUserMediaParameters extends AudioCardParameters {
   updateScreenForceFullDisplay: (force: boolean) => void;
   updateUpdateMainWindow: (update: boolean) => void;
   updateMainGridStream: (components: JSX.Element[]) => void;
+
+  // Custom component props
+  customVideoCard?: CustomVideoCardType;
+  customAudioCard?: CustomAudioCardType;
+  customMiniCard?: CustomMiniCardType;
 
   // mediasfu functions
   getUpdatedAllParams: () => PrepopulateUserMediaParameters;
@@ -200,6 +206,11 @@ export async function prepopulateUserMedia({
       updateScreenForceFullDisplay,
       updateUpdateMainWindow,
       updateMainGridStream,
+
+      // Custom component props
+      customVideoCard,
+      customAudioCard,
+      customMiniCard,
     } = parameters;
 
     // If the event type is 'chat', return early
@@ -336,6 +347,7 @@ export async function prepopulateUserMedia({
               name={host.name || ''}
               doMirror={false}
               parameters={parameters}
+              customVideoCard={customVideoCard}
             />,
           );
         }
@@ -383,6 +395,7 @@ export async function prepopulateUserMedia({
               name={host.name || ''}
               doMirror
               parameters={parameters}
+              customVideoCard={customVideoCard}
             />,
           );
 
@@ -425,6 +438,7 @@ export async function prepopulateUserMedia({
                   showControls={false}
                   backgroundColor="transparent"
                   participant={host}
+                  customAudioCard={customAudioCard}
                 />,
               );
 
@@ -452,6 +466,8 @@ export async function prepopulateUserMedia({
                     borderWidth: eventType !== 'broadcast' ? 2 : 0,
                     borderColor: 'black',
                   }}
+                  name={name}
+                  customMiniCard={customMiniCard}
                 />,
               );
 
@@ -494,6 +510,7 @@ export async function prepopulateUserMedia({
                   name={host.name || ''}
                   doMirror={false}
                   parameters={parameters}
+                  customVideoCard={customVideoCard}
                 />,
               );
 
@@ -543,6 +560,7 @@ export async function prepopulateUserMedia({
                   name={host.name || ''}
                   doMirror={member === host.name}
                   parameters={parameters}
+                  customVideoCard={customVideoCard}
                 />,
               );
 
@@ -561,6 +579,8 @@ export async function prepopulateUserMedia({
                     borderWidth: eventType !== 'broadcast' ? 2 : 0,
                     borderColor: 'black',
                   }}
+                  name={name}
+                  customMiniCard={customMiniCard}
                 />,
               );
 
@@ -593,6 +613,8 @@ export async function prepopulateUserMedia({
               borderWidth: eventType !== 'broadcast' ? 2 : 0,
               borderColor: 'black',
             }}
+            name={name}
+            customMiniCard={customMiniCard}
           />,
         );
 

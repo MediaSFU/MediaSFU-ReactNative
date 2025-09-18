@@ -233,6 +233,9 @@ import {
   JoinMediaSFURoomOptions,
   JoinRoomOnMediaSFUType,
   CreateRoomOnMediaSFUType,
+  CustomVideoCardType,
+  CustomAudioCardType,
+  CustomMiniCardType,
 } from '../../@types/types';
 import {
   Device,
@@ -260,6 +263,12 @@ export type MediasfuConferenceOptions = {
   noUIPreJoinOptions?: CreateMediaSFURoomOptions | JoinMediaSFURoomOptions;
   joinMediaSFURoom?: JoinRoomOnMediaSFUType;
   createMediaSFURoom?: CreateRoomOnMediaSFUType;
+
+  // Custom component props
+  customVideoCard?: CustomVideoCardType;
+  customAudioCard?: CustomAudioCardType;
+  customMiniCard?: CustomMiniCardType;
+  customComponent?: React.FC<{ parameters: any }>;
 };
 
 /**
@@ -341,6 +350,10 @@ const MediasfuConference: React.FC<MediasfuConferenceOptions> = ({
   noUIPreJoinOptions,
   joinMediaSFURoom,
   createMediaSFURoom,
+  customVideoCard,
+  customAudioCard,
+  customMiniCard,
+  customComponent,
 }) => {
   const updateStatesToInitialValues = async () => {
     const initialValues = initialValuesState as { [key: string]: any };
@@ -3207,6 +3220,11 @@ const MediasfuConference: React.FC<MediasfuConferenceOptions> = ({
 
       showAlert,
       getUpdatedAllParams,
+
+      // Custom component props
+      customVideoCard,
+      customAudioCard,
+      customMiniCard,
     };
   };
 
@@ -4694,6 +4712,8 @@ const MediasfuConference: React.FC<MediasfuConferenceOptions> = ({
           joinMediaSFURoom={joinMediaSFURoom}
           createMediaSFURoom={createMediaSFURoom}
         />
+      ) : customComponent ? (
+        React.createElement(customComponent, { parameters: { ...getAllParams(), ...mediaSFUFunctions() } })
       ) : returnUI ? (
         <MainContainerComponent>
           {/* Main aspect component containsa ll but the control buttons (as used for webinar and conference) */}

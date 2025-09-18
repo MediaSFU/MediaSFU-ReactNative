@@ -193,6 +193,9 @@ import {
   JoinMediaSFURoomOptions,
   JoinRoomOnMediaSFUType,
   CreateRoomOnMediaSFUType,
+  CustomVideoCardType,
+  CustomAudioCardType,
+  CustomMiniCardType,
 } from '../../@types/types';
 import {
   Device,
@@ -220,6 +223,12 @@ export type MediasfuBroadcastOptions = {
   noUIPreJoinOptions?: CreateMediaSFURoomOptions | JoinMediaSFURoomOptions;
   joinMediaSFURoom?: JoinRoomOnMediaSFUType;
   createMediaSFURoom?: CreateRoomOnMediaSFUType;
+
+  // Custom component props
+  customVideoCard?: CustomVideoCardType;
+  customAudioCard?: CustomAudioCardType;
+  customMiniCard?: CustomMiniCardType;
+  customComponent?: React.FC<{ parameters: any }>;
 };
 
 /**
@@ -302,6 +311,10 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
   noUIPreJoinOptions,
   joinMediaSFURoom,
   createMediaSFURoom,
+  customVideoCard,
+  customAudioCard,
+  customMiniCard,
+  customComponent,
 }) => {
   const updateStatesToInitialValues = async () => {
     const initialValues = initialValuesState as { [key: string]: any };
@@ -3116,6 +3129,11 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
 
       showAlert,
       getUpdatedAllParams,
+
+      // Custom component props
+      customVideoCard,
+      customAudioCard,
+      customMiniCard,
     };
   };
 
@@ -3512,11 +3530,6 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
     let fraction = 0.0;
 
     if (eventType.current === 'webinar' || eventType.current === 'conference') {
-      const currentHeight = Dimensions.get('window').height;
-      fraction = Number((40 / currentHeight).toFixed(3));
-      if (fraction !== controlHeight) {
-        updateControlHeight(fraction);
-      }
     } else {
       // Set default control button height for portrait mode or other event types
       const currentHeight = Dimensions.get('window').height;
@@ -4309,6 +4322,8 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
           joinMediaSFURoom={joinMediaSFURoom}
           createMediaSFURoom={createMediaSFURoom}
         />
+      ) : customComponent ? (
+        React.createElement(customComponent, { parameters: { ...getAllParams(), ...mediaSFUFunctions() } })
       ) : returnUI ? (
         <MainContainerComponent>
           {/* Main aspect component containsa ll but the control buttons (as used for webinar and conference) */}

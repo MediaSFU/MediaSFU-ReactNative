@@ -786,4 +786,67 @@ export type CreateWebRTCTransportResponse = {
   error?: string;
 };
 
+// Custom Component Interfaces for React Native CLI
+export interface CustomVideoCardOptions {
+  name: string;
+  barColor: string;
+  textColor: string;
+  imageSource?: string;
+  roundedImage?: boolean;
+  imageStyle?: any;
+  showControls?: boolean;
+  showInfo?: boolean;
+  videoInfoComponent?: React.ReactNode;
+  videoControlsComponent?: React.ReactNode;
+  controlsPosition?: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
+  infoPosition?: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
+  participant?: Participant;
+  backgroundColor?: string;
+  onVideoPress?: () => void;
+  parameters?: any;
+}
+
+export interface CustomAudioCardOptions {
+  name: string;
+  barColor: string;
+  textColor: string;
+  imageSource?: string;
+  roundedImage?: boolean;
+  imageStyle?: any;
+  parameters?: any;
+}
+
+export interface CustomMiniCardOptions {
+  initials: string;
+  fontSize: number;
+  customStyle?: any;
+  name: string;
+  showVideoIcon?: boolean;
+  showAudioIcon?: boolean;
+  imageSource?: string;
+  roundedImage?: boolean;
+  imageStyle?: any;
+  parameters?: any;
+}
+
+export interface CustomPreJoinPageOptions {
+  localLink?: string;
+  connectMediaSFU?: boolean;
+  parameters: any;
+  credentials?: { apiUserName: string; apiKey: string };
+  returnUI?: boolean;
+  noUIPreJoinOptions?: CreateMediaSFURoomOptions | JoinMediaSFURoomOptions;
+  createMediaSFURoom?: any;
+  joinMediaSFURoom?: any;
+}
+
+// Custom Component Builder Function Types
+export type CustomVideoCardType = (options: CustomVideoCardOptions) => JSX.Element;
+export type CustomAudioCardType = (options: CustomAudioCardOptions) => JSX.Element;
+export type CustomMiniCardType = (options: CustomMiniCardOptions) => JSX.Element;
+export type CustomPreJoinPageType = (options: CustomPreJoinPageOptions) => JSX.Element;
+
+// Custom Full UI Component Type
+export type CustomComponentType = React.FC<{ parameters: any }>;
+
 

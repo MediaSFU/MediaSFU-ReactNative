@@ -76,3 +76,5 @@ prebuild.js
 postbuild.js
 dist/
 docs/
+refNative/
+CUSTOM-COMPONENTS.md

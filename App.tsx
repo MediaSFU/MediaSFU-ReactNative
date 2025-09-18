@@ -7,6 +7,7 @@
  * 2. Handling API credentials securely depending on whether you use MediaSFU Cloud or your own MediaSFU CE server.
  * 3. Rendering custom UIs by disabling the default MediaSFU UI.
  * 4. Using custom "create room" and "join room" functions for secure, flexible integration.
+ * 5. Using custom components to customize participant display (NEW!)
  *
  * Note: All guide instructions are provided as code comments. They will not render to the user directly.
  */
@@ -32,6 +33,141 @@ import { generateRandomWaitingRoomList } from './src/methods/utils/generateRando
 import { createRoomOnMediaSFU } from './src/methods/utils/createRoomOnMediaSFU';
 import { joinRoomOnMediaSFU } from './src/methods/utils/joinRoomOnMediaSFU';
 import { CreateMediaSFURoomOptions, JoinMediaSFURoomOptions } from './src/@types/types';
+
+// =========================================================
+//                  CUSTOM COMPONENT EXAMPLES
+// =========================================================
+//
+// Import custom component types (uncomment to use custom components)
+// import {
+//   CustomVideoCardType,
+//   CustomAudioCardType,
+//   CustomMiniCardType,
+// } from './src/@types/types';
+//
+// Import pre-built custom components (see example-custom-components.js)
+// import {
+//   MyCustomVideoCard,
+//   MyCustomAudioCard,
+//   MyCustomMiniCard,
+// } from './example-custom-components';
+//
+// For detailed custom component examples and documentation,
+// see the "Custom Components Guide" section in README.md
+// or check out example-custom-components.js for complete working examples.
+
+// =========================================================
+//              COMPLETE CUSTOM UI COMPONENT (NEW!)
+// =========================================================
+//
+// The new customComponent prop allows you to replace the entire MediaSFU UI
+// with your own custom interface while still accessing all MediaSFU functionality.
+//
+// Example Custom UI Component:
+// import React from 'react';
+// import { View, Text, Button, StyleSheet } from 'react-native';
+//
+// interface CustomUIProps {
+//   parameters: any; // Contains all MediaSFU state and functions
+// }
+//
+// const MyCompleteCustomUI: React.FC<CustomUIProps> = ({ parameters }) => {
+//   const {
+//     // Core meeting controls
+//     clickVideo,
+//     clickAudio,
+//     clickScreenShare,
+//     clickChat,
+//     
+//     // State variables
+//     videoActive,
+//     audioActive,
+//     screenShareActive,
+//     chatActive,
+//     participants,
+//     messages,
+//     
+//     // UI utilities
+//     showAlert,
+//     
+//     // ... all other MediaSFU parameters and functions
+//   } = parameters;
+//
+//   return (
+//     <View style={styles.customContainer}>
+//       <Text style={styles.title}>My Custom MediaSFU Interface</Text>
+//       
+//       {/* Custom control panel */}
+//       <View style={styles.controlPanel}>
+//         <Button
+//           title={videoActive ? "Turn Off Video" : "Turn On Video"}
+//           onPress={() => clickVideo({ parameters })}
+//         />
+//         <Button
+//           title={audioActive ? "Mute Audio" : "Unmute Audio"}
+//           onPress={() => clickAudio({ parameters })}
+//         />
+//         <Button
+//           title={screenShareActive ? "Stop Share" : "Share Screen"}
+//           onPress={() => clickScreenShare({ parameters })}
+//         />
+//         <Button
+//           title={chatActive ? "Hide Chat" : "Show Chat"}
+//           onPress={() => clickChat({ parameters })}
+//         />
+//       </View>
+//       
+//       {/* Custom participants display */}
+//       <View style={styles.participantsArea}>
+//         <Text>Participants: {participants?.length || 0}</Text>
+//         {/* Your custom participant grid implementation */}
+//       </View>
+//       
+//       {/* Custom chat display */}
+//       {chatActive && (
+//         <View style={styles.chatArea}>
+//           <Text>Messages: {messages?.length || 0}</Text>
+//           {/* Your custom chat implementation */}
+//         </View>
+//       )}
+//     </View>
+//   );
+// };
+//
+// const styles = StyleSheet.create({
+//   customContainer: {
+//     flex: 1,
+//     backgroundColor: '#f0f0f0',
+//     padding: 20,
+//   },
+//   title: {
+//     fontSize: 24,
+//     fontWeight: 'bold',
+//     textAlign: 'center',
+//     marginBottom: 20,
+//   },
+//   controlPanel: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-around',
+//     marginBottom: 20,
+//   },
+//   participantsArea: {
+//     flex: 1,
+//     backgroundColor: 'white',
+//     padding: 10,
+//     borderRadius: 8,
+//     marginBottom: 10,
+//   },
+//   chatArea: {
+//     height: 200,
+//     backgroundColor: 'white',
+//     padding: 10,
+//     borderRadius: 8,
+//   },
+// });
+//
+// To use this custom UI, uncomment the import above and pass it to any MediaSFU component:
+// customComponent={MyCompleteCustomUI}
 
 /**
  * App Component
@@ -230,6 +366,110 @@ const App = () => {
   //     updateSourceParameters={updateSourceParameters}
   //   />
 
+  // Example with custom components (uncomment to use custom VideoCard, AudioCard, and MiniCard)
+  // return (
+  //   <MediasfuGeneric
+  //     PrejoinPage={PreJoinPage}
+  //     credentials={credentials}
+  //     localLink={localLink}
+  //     connectMediaSFU={connectMediaSFU}
+  //     returnUI={returnUI}
+  //     noUIPreJoinOptions={!returnUI ? noUIPreJoinOptions : undefined}
+  //     sourceParameters={!returnUI ? sourceParameters : undefined}
+  //     updateSourceParameters={!returnUI ? updateSourceParameters : undefined}
+  //     createMediaSFURoom={createRoomOnMediaSFU}
+  //     joinMediaSFURoom={joinRoomOnMediaSFU}
+  //
+  //     // Add your custom components here
+  //     customVideoCard={MyCustomVideoCard}
+  //     customAudioCard={MyCustomAudioCard}
+  //     customMiniCard={MyCustomMiniCard}
+  //   />
+  // );
+
+  // =========================================================
+  //           COMPLETE CUSTOM UI EXAMPLES (NEW!)
+  // =========================================================
+  //
+  // The new customComponent prop allows complete UI replacement
+  // while maintaining access to all MediaSFU functionality.
+  //
+  // Example 1: MediasfuGeneric with complete custom UI
+  // return (
+  //   <MediasfuGeneric
+  //     PrejoinPage={PreJoinPage}
+  //     credentials={credentials}
+  //     localLink={localLink}
+  //     connectMediaSFU={connectMediaSFU}
+  //     customComponent={MyCompleteCustomUI} // Replaces entire default UI
+  //     createMediaSFURoom={createRoomOnMediaSFU}
+  //     joinMediaSFURoom={joinRoomOnMediaSFU}
+  //   />
+  // );
+  //
+  // Example 2: MediasfuBroadcast with custom UI
+  // return (
+  //   <MediasfuBroadcast
+  //     PrejoinPage={PreJoinPage}
+  //     credentials={credentials}
+  //     localLink={localLink}
+  //     connectMediaSFU={connectMediaSFU}
+  //     customComponent={MyCompleteCustomUI} // Custom broadcast interface
+  //   />
+  // );
+  //
+  // Example 3: MediasfuConference with custom UI
+  // return (
+  //   <MediasfuConference
+  //     PrejoinPage={PreJoinPage}
+  //     credentials={credentials}
+  //     localLink={localLink}
+  //     connectMediaSFU={connectMediaSFU}
+  //     customComponent={MyCompleteCustomUI} // Custom conference interface
+  //   />
+  // );
+  //
+  // Example 4: MediasfuChat with custom UI
+  // return (
+  //   <MediasfuChat
+  //     PrejoinPage={PreJoinPage}
+  //     credentials={credentials}
+  //     localLink={localLink}
+  //     connectMediaSFU={connectMediaSFU}
+  //     customComponent={MyCompleteCustomUI} // Custom chat interface
+  //   />
+  // );
+  //
+  // Example 5: MediasfuWebinar with custom UI
+  // return (
+  //   <MediasfuWebinar
+  //     PrejoinPage={PreJoinPage}
+  //     credentials={credentials}
+  //     localLink={localLink}
+  //     connectMediaSFU={connectMediaSFU}
+  //     customComponent={MyCompleteCustomUI} // Custom webinar interface
+  //   />
+  // );
+  //
+  // Example 6: Hybrid approach - Custom UI with individual custom components
+  // return (
+  //   <MediasfuGeneric
+  //     PrejoinPage={PreJoinPage}
+  //     credentials={credentials}
+  //     localLink={localLink}
+  //     connectMediaSFU={connectMediaSFU}
+  //     customComponent={MyCompleteCustomUI}        // Complete UI replacement
+  //     customVideoCard={MyCustomVideoCard}         // Custom components used within your UI
+  //     customAudioCard={MyCustomAudioCard}         // (if your custom UI renders them)
+  //     customMiniCard={MyCustomMiniCard}           // Available via parameters.customComponents
+  //   />
+  // );
+  //
+  // Note: When using customComponent, the default MediaSFU UI is completely replaced.
+  // All MediaSFU functionality remains available through the parameters prop.
+  // You can still use individual custom components within your custom UI by accessing
+  // them through parameters.customComponents (if provided).
+
 
   return (
     <MediasfuGeneric
@@ -255,6 +495,38 @@ export default App;
  * =========================================================
  *                     ADDITIONAL NOTES
  * =========================================================
+ *
+ * Custom Components:
+ * MediaSFU now supports comprehensive custom component integration. You can:
+ * - Replace default VideoCard, AudioCard, and MiniCard components with your own
+ * - **NEW: Replace the entire MediaSFU UI with customComponent prop**
+ * - Access all MediaSFU state and functions through the 'parameters' prop
+ * - Use custom components with any MediaSFU component (Generic, Broadcast, Conference, Chat, Webinar)
+ * - See example-custom-components.js for complete working examples
+ * - Refer to the "Custom Components Guide" section in README.md for detailed documentation
+ *
+ * Complete UI Replacement (NEW!):
+ * The customComponent prop allows you to replace the entire default MediaSFU interface
+ * with your own custom React component while maintaining full access to MediaSFU functionality:
+ * 
+ * ```typescript
+ * // Your custom UI component receives all MediaSFU state and functions
+ * const MyCustomUI = ({ parameters }) => {
+ *   const { clickVideo, clickAudio, participants, messages, ...allOtherFunctions } = parameters;
+ *   return <YourCustomInterface />; // Build any UI you want
+ * };
+ * 
+ * // Use it with any MediaSFU component
+ * <MediasfuGeneric customComponent={MyCustomUI} />
+ * <MediasfuBroadcast customComponent={MyCustomUI} />
+ * <MediasfuConference customComponent={MyCustomUI} />
+ * // etc.
+ * ```
+ *
+ * Individual vs Complete UI Customization:
+ * - Individual components (customVideoCard, etc.): Replace specific parts of the default UI
+ * - customComponent: Replace the entire UI while keeping all MediaSFU functionality
+ * - Hybrid: Use customComponent with individual custom components available via parameters
  *
  * Handling Core Methods:
  * Once `sourceParameters` is populated, you can call core methods like `clickVideo` or `clickAudio` directly:
@@ -495,6 +767,63 @@ export default App;
 * ```
 *
 * These methods allow your custom UI to interact with MediaSFU's functionalities seamlessly.
+*
+* ### Simple Custom UI Example
+* Here's a minimal example of using the new customComponent prop:
+*
+* ```typescript
+* import React from 'react';
+* import { View, Text, TouchableOpacity } from 'react-native';
+* 
+* const SimpleCustomUI = ({ parameters }) => {
+*   const { 
+*     clickVideo, 
+*     clickAudio, 
+*     videoActive, 
+*     audioActive, 
+*     participants 
+*   } = parameters;
+* 
+*   return (
+*     <View style={{ flex: 1, padding: 20, backgroundColor: '#000' }}>
+*       <Text style={{ color: 'white', fontSize: 20, marginBottom: 20 }}>
+*         My Custom MediaSFU App - {participants?.length || 0} participants
+*       </Text>
+*       
+*       <TouchableOpacity 
+*         onPress={() => clickVideo({ parameters })}
+*         style={{ 
+*           backgroundColor: videoActive ? '#ff4444' : '#44ff44', 
+*           padding: 15, 
+*           margin: 10, 
+*           borderRadius: 8 
+*         }}
+*       >
+*         <Text style={{ color: 'white', textAlign: 'center' }}>
+*           {videoActive ? 'Turn Off Camera' : 'Turn On Camera'}
+*         </Text>
+*       </TouchableOpacity>
+*       
+*       <TouchableOpacity 
+*         onPress={() => clickAudio({ parameters })}
+*         style={{ 
+*           backgroundColor: audioActive ? '#ff4444' : '#44ff44', 
+*           padding: 15, 
+*           margin: 10, 
+*           borderRadius: 8 
+*         }}
+*       >
+*         <Text style={{ color: 'white', textAlign: 'center' }}>
+*           {audioActive ? 'Mute Microphone' : 'Unmute Microphone'}
+*         </Text>
+*       </TouchableOpacity>
+*     </View>
+*   );
+* };
+* 
+* // Use it with any MediaSFU component:
+* <MediasfuGeneric customComponent={SimpleCustomUI} credentials={credentials} />
+* ```
 *
 * ========================
 * ====== END OF GUIDE ======

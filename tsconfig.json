@@ -10,7 +10,7 @@
       "noEmit": true,
       "jsx": "react-native",
       "module": "esnext",
-      "moduleResolution": "node",
+      "moduleResolution": "bundler",
       "resolveJsonModule": true,
       "isolatedModules": true,
       "esModuleInterop": true,
@@ -19,6 +19,8 @@
       "baseUrl": "./",
       "paths": {
         "*": ["src/*"],
+        "mediasoup-client": ["./node_modules/mediasoup-client"],
+        "mediasoup-client/*": ["./node_modules/mediasoup-client/*"],
         "methods/utils/webrtc/webrtc": [
         "src/methods/utils/webrtc/webrtc",
         "src/methods/utils/webrtc/webrtc.web",

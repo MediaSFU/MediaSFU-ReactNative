@@ -55,7 +55,7 @@ export type JoinConsumeRoomType = (options: JoinConsumeRoomOptions) => Promise<J
 
 /**
  * Joins a consumption room by sending a request to the server, handling device setup, and managing piped transports.
- * 
+ *
  * @function
  * @async
  * @param {Object} options - The configuration options.
@@ -69,11 +69,11 @@ export type JoinConsumeRoomType = (options: JoinConsumeRoomOptions) => Promise<J
  * @example
  * import { joinConsumeRoom } from 'mediasfu-reactnative';
  * import { io } from 'socket.io-client';
- * 
+ *
  * const apiToken = 'your-api-token';
  * const apiUserName = 'your-api-username';
  * const remote_sock = io("http://localhost:3000");
- * 
+ *
  * const parameters = {
  *   roomName: 'room-name',
  *   islevel: '2',
@@ -84,7 +84,7 @@ export type JoinConsumeRoomType = (options: JoinConsumeRoomOptions) => Promise<J
  *   createDeviceClient: async (params) => { // Device client setup logic  },
  *   getUpdatedAllParams: () => console.log('Getting updated parameters'),
  * };
- * 
+ *
  * async function init() {
  *   try {
  *     const data = await joinConsumeRoom({
