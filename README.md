@@ -90,6 +90,13 @@ MediaSFU's React Native SDK comes with a host of powerful features out of the bo
 6. **Chat (Direct & Group)**: Facilitate communication with direct and group chat options.
 7. **Cloud Recording (track-based)**: Customize recordings with track-based options, including watermarks, name tags, background colors, and more.
 8. **Managed Events**: Manage events with features to handle abandoned and inactive participants, as well as enforce time and capacity limits.
+9. **AI Phone Agents**: Integrate AI-powered phone agents for automated customer interactions at a fraction of the cost of traditional providers.
+
+## 🆕 **New Advanced Media Access**
+
+**Interested in getting just the media stream of a specific participant?** You can now easily retrieve individual participant streams using `sourceParameters.getParticipantMedia()` [Learn more →](#media-device-and-stream-utility-methods)
+
+**Need to access available cameras and microphones?** Use `sourceParameters.getMediaDevicesList()` to enumerate all available media devices on the user's system programmatically.
 
 
 # Getting Started <a name="getting-started"></a>
@@ -3338,6 +3345,80 @@ Here's a tabulated list of advanced control functions along with brief explanati
 | [`captureCanvasStream`](https://www.mediasfu.com/reactnative/functions/captureCanvasStream)            | Captures a canvas stream. |
 | [`resumePauseAudioStreams`](https://www.mediasfu.com/reactnative/functions/resumePauseAudioStreams)        | Resumes or pauses audio streams. |
 | [`processConsumerTransportsAudio`](https://www.mediasfu.com/reactnative/functions/processConsumerTransportsAudio)  | Processes consumer transports for audio. |
+
+### Media Device and Stream Utility Methods
+
+MediaSFU provides utility methods for accessing media devices and participant streams programmatically. These methods are especially useful when building custom UI components or implementing advanced media management features.
+
+#### Available Utility Methods
+
+| Method | Description |
+|--------|-------------|
+| `getMediaDevicesList` | Retrieves available media devices (cameras/microphones) on the user's system. |
+| `getParticipantMedia` | Gets the media stream of a specific participant by ID or name. |
+
+#### Usage Examples
+
+##### 1. Get Available Media Devices
+
+Use `getMediaDevicesList` to enumerate available video or audio input devices:
+
+```typescript
+// Get available video input devices (cameras)
+const videoDevices = await getMediaDevicesList("videoinput");
+console.log("Available cameras:", videoDevices);
+
+// Get available audio input devices (microphones)  
+const audioDevices = await getMediaDevicesList("audioinput");
+console.log("Available microphones:", audioDevices);
+
+// Example response format:
+// [
+//   { deviceId: "abc123", kind: "videoinput", label: "FaceTime HD Camera" },
+//   { deviceId: "def456", kind: "videoinput", label: "External USB Camera" }
+// ]
+```
+
+##### 2. Get Participant Media Streams
+
+Use `getParticipantMedia` to retrieve a participant's video or audio stream:
+
+```typescript
+// Get participant's video stream by producer ID
+const participantVideoStream = await getParticipantMedia("producerId123", "", "video");
+if (participantVideoStream) {
+  // Use the stream (e.g., attach to video element, process, etc.)
+  console.log("Got participant video stream:", participantVideoStream);
+}
+
+// Get participant's audio stream by name
+const participantAudioStream = await getParticipantMedia("", "John Doe", "audio");
+if (participantAudioStream) {
+  // Use the audio stream
+  console.log("Got participant audio stream:", participantAudioStream);
+}
+
+// Get participant's video stream by name (if producer ID not available)
+const videoByName = await getParticipantMedia("", "Alice Smith", "video");
+```
+
+#### Method Parameters
+
+**`getMediaDevicesList(kind)`**
+- `kind`: `"videoinput"` | `"audioinput"` - Type of media device to enumerate
+
+**`getParticipantMedia(id, name, kind)`**
+- `id`: `string` - Producer ID of the participant's media (optional if name provided)
+- `name`: `string` - Participant's display name (optional if ID provided)  
+- `kind`: `string` - Media type, either `"video"` or `"audio"` (default: `"video"`)
+
+#### Common Use Cases
+
+- **Device Selection UI**: Build custom device picker components
+- **Advanced UI Components**: Create sophisticated media display components with stream access
+- **Accessibility Features**: Implement custom audio/video processing for accessibility
+
+These utility methods provide low-level access to MediaSFU's media management system, enabling advanced customizations while maintaining compatibility with the core MediaSFU functionality.
 
 
 ### Room Socket Events
