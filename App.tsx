@@ -78,7 +78,7 @@ import { CreateMediaSFURoomOptions, JoinMediaSFURoomOptions } from './src/@types
 //     clickAudio,
 //     clickScreenShare,
 //     clickChat,
-//     
+//
 //     // State variables
 //     videoActive,
 //     audioActive,
@@ -86,17 +86,17 @@ import { CreateMediaSFURoomOptions, JoinMediaSFURoomOptions } from './src/@types
 //     chatActive,
 //     participants,
 //     messages,
-//     
+//
 //     // UI utilities
 //     showAlert,
-//     
+//
 //     // ... all other MediaSFU parameters and functions
 //   } = parameters;
 //
 //   return (
 //     <View style={styles.customContainer}>
 //       <Text style={styles.title}>My Custom MediaSFU Interface</Text>
-//       
+//
 //       {/* Custom control panel */}
 //       <View style={styles.controlPanel}>
 //         <Button
@@ -116,13 +116,13 @@ import { CreateMediaSFURoomOptions, JoinMediaSFURoomOptions } from './src/@types
 //           onPress={() => clickChat({ parameters })}
 //         />
 //       </View>
-//       
+//
 //       {/* Custom participants display */}
 //       <View style={styles.participantsArea}>
 //         <Text>Participants: {participants?.length || 0}</Text>
 //         {/* Your custom participant grid implementation */}
 //       </View>
-//       
+//
 //       {/* Custom chat display */}
 //       {chatActive && (
 //         <View style={styles.chatArea}>
@@ -508,14 +508,14 @@ export default App;
  * Complete UI Replacement (NEW!):
  * The customComponent prop allows you to replace the entire default MediaSFU interface
  * with your own custom React component while maintaining full access to MediaSFU functionality:
- * 
+ *
  * ```typescript
  * // Your custom UI component receives all MediaSFU state and functions
  * const MyCustomUI = ({ parameters }) => {
  *   const { clickVideo, clickAudio, participants, messages, ...allOtherFunctions } = parameters;
  *   return <YourCustomInterface />; // Build any UI you want
  * };
- * 
+ *
  * // Use it with any MediaSFU component
  * <MediasfuGeneric customComponent={MyCustomUI} />
  * <MediasfuBroadcast customComponent={MyCustomUI} />
@@ -774,43 +774,43 @@ export default App;
 * ```typescript
 * import React from 'react';
 * import { View, Text, TouchableOpacity } from 'react-native';
-* 
+*
 * const SimpleCustomUI = ({ parameters }) => {
-*   const { 
-*     clickVideo, 
-*     clickAudio, 
-*     videoActive, 
-*     audioActive, 
-*     participants 
+*   const {
+*     clickVideo,
+*     clickAudio,
+*     videoActive,
+*     audioActive,
+*     participants
 *   } = parameters;
-* 
+*
 *   return (
 *     <View style={{ flex: 1, padding: 20, backgroundColor: '#000' }}>
 *       <Text style={{ color: 'white', fontSize: 20, marginBottom: 20 }}>
 *         My Custom MediaSFU App - {participants?.length || 0} participants
 *       </Text>
-*       
-*       <TouchableOpacity 
+*
+*       <TouchableOpacity
 *         onPress={() => clickVideo({ parameters })}
-*         style={{ 
-*           backgroundColor: videoActive ? '#ff4444' : '#44ff44', 
-*           padding: 15, 
-*           margin: 10, 
-*           borderRadius: 8 
+*         style={{
+*           backgroundColor: videoActive ? '#ff4444' : '#44ff44',
+*           padding: 15,
+*           margin: 10,
+*           borderRadius: 8
 *         }}
 *       >
 *         <Text style={{ color: 'white', textAlign: 'center' }}>
 *           {videoActive ? 'Turn Off Camera' : 'Turn On Camera'}
 *         </Text>
 *       </TouchableOpacity>
-*       
-*       <TouchableOpacity 
+*
+*       <TouchableOpacity
 *         onPress={() => clickAudio({ parameters })}
-*         style={{ 
-*           backgroundColor: audioActive ? '#ff4444' : '#44ff44', 
-*           padding: 15, 
-*           margin: 10, 
-*           borderRadius: 8 
+*         style={{
+*           backgroundColor: audioActive ? '#ff4444' : '#44ff44',
+*           padding: 15,
+*           margin: 10,
+*           borderRadius: 8
 *         }}
 *       >
 *         <Text style={{ color: 'white', textAlign: 'center' }}>
@@ -820,7 +820,7 @@ export default App;
 *     </View>
 *   );
 * };
-* 
+*
 * // Use it with any MediaSFU component:
 * <MediasfuGeneric customComponent={SimpleCustomUI} credentials={credentials} />
 * ```
