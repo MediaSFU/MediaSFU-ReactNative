@@ -2,24 +2,23 @@
   <img src="https://www.mediasfu.com/logo192.png" width="100" alt="MediaSFU Logo">
 </p>
 
-<p align="center">
-  <a href="https://twitter.com/media_sfu">
-    <img src="https://img.icons8.com/color/48/000000/twitter--v1.png" alt="Twitter" style="margin-right: 10px;">
-  </a>
-  <a href="https://www.mediasfu.com/forums">
-    <img src="https://img.icons8.com/color/48/000000/communication--v1.png" alt="Community Forum" style="margin-right: 10px;">
-  </a>
-  <a href="https://github.com/MediaSFU">
-    <img src="https://img.icons8.com/fluent/48/000000/github.png" alt="Github" style="margin-right: 10px;">
-  </a>
-  <a href="https://www.mediasfu.com/">
-    <img src="https://img.icons8.com/color/48/000000/domain--v1.png" alt="Website" style="margin-right: 10px;">
-  </a>
-  <a href="https://www.youtube.com/channel/UCELghZRPKMgjih5qrmXLtqw">
-    <img src="https://img.icons8.com/color/48/000000/youtube--v1.png" alt="Youtube" style="margin-right: 10px;">
-  </a>
-</p>
 
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  [![Twitter](https://img.shields.io/badge/Twitter-1DA1F2?style=flat&logo=twitter&logoColor=white)](https://twitter.com/media_sfu)
+  [![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white)](https://github.com/MediaSFU)
+  [![Website](https://img.shields.io/badge/Website-4285F4?style=flat&logo=google-chrome&logoColor=white)](https://www.mediasfu.com/)
+  [![YouTube](https://img.shields.io/badge/YouTube-FF0000?style=flat&logo=youtube&logoColor=white)](https://www.youtube.com/channel/UCELghZRPKMgjih5qrmXLtqw)
+  [![Community](https://img.shields.io/badge/Community-Forum-blue?style=flat&logo=discourse&logoColor=white)](https://www.mediasfu.com/forums)
+
+
+
+  [![Built with MediaSFU](https://img.shields.io/badge/Built%20with-MediaSFU-blue)](https://mediasfu.com)
+  [![React Native](https://img.shields.io/badge/React_Native-20232A?style=flat&logo=react&logoColor=61DAFB)](https://reactnative.dev)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+  [![NPM](https://img.shields.io/npm/v/mediasfu-reactnative.svg)](https://www.npmjs.com/package/mediasfu-reactnative)
+
+
+MediaSFU React Native SDK provides a comprehensive solution for building real-time communication applications. Part of the MediaSFU ecosystem with cross-platform support for iOS and Android environments, seamlessly integrating video conferencing, live streaming, and interactive media features into your mobile applications.
 
 ---
 
@@ -54,13 +53,41 @@ MediaSFU offers a cutting-edge streaming experience that empowers users to custo
 
 # MediaSFU React Native Module Documentation
 
+## 🚀 Quick Access to New Features
+
+### Media Device & Stream Utilities
+
+The SDK now includes powerful utility methods for advanced media control:
+
+**`getMediaDevicesList`** - Enumerate available cameras and microphones with automatic permission handling:
+```javascript
+const cameras = await parameters.getMediaDevicesList('videoinput');
+const microphones = await parameters.getMediaDevicesList('audioinput');
+```
+
+**`getParticipantMedia`** - Retrieve specific participant's video or audio stream from the session:
+```javascript
+import { getParticipantMedia } from 'mediasfu-reactnative';
+
+const videoStream = getParticipantMedia({
+  participantId: 'producer-123',
+  mediaType: 'video',
+  parameters: sourceParameters,
+});
+```
+
+These utilities enable advanced features like custom device selection interfaces, participant stream monitoring, and dynamic media routing. [See full documentation](#media-device-and-stream-utility-methods).
+
+---
+
 ## Unlock the Power of MediaSFU Community Edition  
 
 **MediaSFU Community Edition is free and open-source**—perfect for developers who want to run their own media server without upfront costs. With robust features and simple setup, you can launch your media solution in minutes. **Ready to scale?** Upgrade seamlessly to **MediaSFU Cloud** for enterprise-grade performance and global scalability.  
 
-**[Get started now on GitHub!](https://github.com/MediaSFU/MediaSFUOpen)** 
+**[Get started now on GitHub!](https://github.com/MediaSFU/MediaSFUOpen)**
 
-### ✅ React Native SDK Setup Guide  
+### ✅ React Native SDK Setup Guide
+
 [![Watch the React Native SDK Setup Guide](http://i.ytimg.com/vi/uJkI7H26jq4/hqdefault.jpg)](https://www.youtube.com/watch?v=uJkI7H26jq4)  
 🎥 [**Watch the React Native SDK Setup Guide**](https://youtu.be/uJkI7H26jq4)
 
@@ -92,12 +119,14 @@ MediaSFU's React Native SDK comes with a host of powerful features out of the bo
 8. **Managed Events**: Manage events with features to handle abandoned and inactive participants, as well as enforce time and capacity limits.
 9. **AI Phone Agents**: Integrate AI-powered phone agents for automated customer interactions at a fraction of the cost of traditional providers.
 
-## 🆕 **New Advanced Media Access**
+### 🆕 New Advanced Media Access
 
-**Interested in getting just the media stream of a specific participant?** You can now easily retrieve individual participant streams using `sourceParameters.getParticipantMedia()` [Learn more →](#media-device-and-stream-utility-methods)
+The SDK now includes powerful utility methods for fine-grained control over media devices and participant streams:
 
-**Need to access available cameras and microphones?** Use `sourceParameters.getMediaDevicesList()` to enumerate all available media devices on the user's system programmatically.
+- **`getMediaDevicesList`**: Enumerate available cameras and microphones with permission handling
+- **`getParticipantMedia`**: Retrieve specific participant's video or audio streams by ID or name
 
+These utilities enable advanced features like device selection interfaces, participant stream monitoring, and custom media routing. [Learn more in the Media Device & Stream Utilities section](#media-device-and-stream-utility-methods).
 
 # Getting Started <a name="getting-started"></a>
 
@@ -394,6 +423,1022 @@ If you encounter any issues during setup, refer to the [Troubleshooting](#troubl
 
 For more detailed information, visit the [mediasfu-reactnative GitHub Repository](https://github.com/MediaSFU/MediaSFU-ReactNative) and the [React Native Documentation](https://reactnative.dev/docs/getting-started).
 
+---
+
+# 📱 React Native SDK Comprehensive Guide <a name="sdk-guide"></a>
+
+This comprehensive guide provides clear, progressive learning paths from beginner to advanced usage. Each section builds upon the previous one with practical examples and detailed explanations.
+
+## Table of Contents - SDK Guide
+
+- [Quick Start (5 Minutes)](#quick-start-5-minutes)
+- [Understanding MediaSFU Architecture](#understanding-mediasfu-architecture)
+  - [The Three-Layer Architecture](#the-three-layer-architecture)
+  - [Event Room Types](#event-room-types)
+  - [The Three Usage Modes](#the-three-usage-modes)
+  - [Parameters Object: Your Control Center](#parameters-object-control-center)
+- [Core Concepts & Components](#core-concepts--components)
+  - [Display Components](#display-components)
+  - [Control Components](#control-components)
+  - [Modal Components](#modal-components)
+- [Working with Methods](#working-with-methods)
+  - [Media Control Methods](#media-control-methods)
+  - [Device Management Methods](#device-management-methods)
+  - [Participant Management Methods](#participant-management-methods)
+  - [Chat & Messaging Methods](#chat-messaging-methods)
+  - [Recording Methods](#recording-methods)
+  - [Polls & Survey Methods](#polls-survey-methods)
+  - [Breakout Room Methods](#breakout-room-methods)
+- [Advanced Customization & Styling](#advanced-customization--styling)
+- [Understanding Data Structures](#understanding-data-structures)
+- [Troubleshooting & Best Practices](#troubleshooting-best-practices-guide)
+- [Quick Reference: Complete Method List](#quick-reference-complete-method-list)
+
+---
+
+## Quick Start (5 Minutes) <a name="quick-start-5-minutes"></a>
+
+Get your first MediaSFU app running in just a few minutes.
+
+### Step 1: Install the Package
+
+```bash
+npm install mediasfu-reactnative
+```
+
+### Step 2: Import and Use
+
+```javascript
+import React from 'react';
+import { MediasfuGeneric } from 'mediasfu-reactnative';
+
+const App = () => {
+  // Option 1: Use without credentials (for testing/development)
+  return <MediasfuGeneric />;
+
+  // Option 2: Use with MediaSFU Cloud credentials
+  // const credentials = { apiUserName: 'your_username', apiKey: 'your_api_key' };
+  // return <MediasfuGeneric credentials={credentials} />;
+};
+
+export default App;
+```
+
+### Step 3: Run Your App
+
+```bash
+npx react-native run-android
+# or
+npx react-native run-ios
+```
+
+**That's it!** You now have a fully functional video conferencing app with:
+
+- ✅ Video and audio streaming
+- ✅ Screen sharing  
+- ✅ Chat messaging
+- ✅ Participant management
+- ✅ Recording capabilities
+- ✅ Breakout rooms
+- ✅ Polls
+
+---
+
+## Understanding MediaSFU Architecture <a name="understanding-mediasfu-architecture"></a>
+
+Before diving deeper, let's understand how MediaSFU is structured. This knowledge will help you make better decisions when building your application.
+
+### The Three-Layer Architecture
+
+```
+┌─────────────────────────────────────────────┐
+│      Your React Native Application          │
+│  (App.js, screens, navigation, logic)       │
+└─────────────────────────────────────────────┘
+                    ↓
+┌─────────────────────────────────────────────┐
+│       MediaSFU Components Layer             │
+│  (MediasfuGeneric, MediasfuBroadcast, etc.) │
+│       - Pre-built UI components              │
+│       - Event handling                       │
+│       - State management                     │
+└─────────────────────────────────────────────┘
+                    ↓
+┌─────────────────────────────────────────────┐
+│       MediaSFU Core Methods Layer           │
+│   (Stream control, room management,         │
+│    WebRTC handling, socket communication)   │
+└─────────────────────────────────────────────┘
+                    ↓
+┌─────────────────────────────────────────────┐
+│       MediaSFU Backend Services             │
+│ (MediaSFU Cloud or Community Edition)       │
+└─────────────────────────────────────────────┘
+```
+
+### Event Room Types
+
+MediaSFU provides 5 specialized room types, each optimized for specific use cases:
+
+| Room Type | Best For | Key Features |
+|-----------|----------|--------------|
+| **MediasfuGeneric** | General purpose meetings | Flexible layout, all features enabled |
+| **MediasfuBroadcast** | Live streaming events | Optimized for one-to-many communication |
+| **MediasfuWebinar** | Educational sessions | Presenter focus, Q&A features |
+| **MediasfuConference** | Business meetings | Equal participant layout, collaboration tools |
+| **MediasfuChat** | Interactive discussions | Chat-first interface, quick connections |
+
+```javascript
+// Choose the right room type for your use case
+import { 
+  MediasfuGeneric,
+  MediasfuWebinar, 
+  MediasfuBroadcast, 
+  MediasfuConference,
+  MediasfuChat
+} from 'mediasfu-reactnative';
+
+// For a webinar
+<MediasfuWebinar credentials={credentials} />
+
+// For a broadcast  
+<MediasfuBroadcast credentials={credentials} />
+
+// For a conference
+<MediasfuConference credentials={credentials} />
+```
+
+### The Three Usage Modes
+
+MediaSFU offers three progressive levels of customization. Understanding these modes is crucial for choosing the right approach for your project.
+
+#### Mode 1: Default UI (Simplest) ⭐ Best for Beginners
+
+Use MediaSFU's complete pre-built interface - perfect for rapid development.
+
+```javascript
+import React from 'react';
+import { MediasfuGeneric } from 'mediasfu-reactnative';
+
+const App = () => {
+  const credentials = { 
+    apiUserName: 'your_username', 
+    apiKey: 'your_api_key' 
+  };
+  
+  return <MediasfuGeneric credentials={credentials} />;
+};
+
+export default App;
+```
+
+**When to use:**
+
+- ✅ Prototyping or MVP development
+- ✅ Need a production-ready UI quickly
+- ✅ Standard video conferencing features are sufficient
+- ✅ Want to minimize development time
+
+**Advantages:**
+
+- Zero UI development needed
+- All features work out of the box
+- Automatic responsive layouts
+- Professional appearance
+
+#### Mode 2: Custom UI with MediaSFU Backend (Most Flexible) ⭐ Best for Custom Brands
+
+Build your own UI while using MediaSFU's powerful backend infrastructure.
+
+```javascript
+import React, { useState, useEffect } from 'react';
+import { View, TouchableOpacity, Text } from 'react-native';
+import { MediasfuGeneric } from 'mediasfu-reactnative';
+
+const App = () => {
+  const [sourceParameters, setSourceParameters] = useState(null);
+  const credentials = { apiUserName: 'your_username', apiKey: 'your_api_key' };
+
+  const updateSourceParameters = (params) => {
+    setSourceParameters(params);
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      <MediasfuGeneric 
+        returnUI={false}
+        sourceParameters={sourceParameters}
+        updateSourceParameters={updateSourceParameters}
+        credentials={credentials}
+        noUIPreJoinOptions={{ 
+          action: 'create',
+          userName: 'Your Name',
+          capacity: 50,
+          duration: 30,
+          eventType: 'conference'
+        }}
+      />
+      
+      {/* Your completely custom UI */}
+      {sourceParameters && (
+        <View style={styles.customControls}>
+          <TouchableOpacity 
+            onPress={() => sourceParameters.clickVideo({ 
+              parameters: sourceParameters 
+            })}
+            style={styles.controlButton}
+          >
+            <Text>{sourceParameters.videoAlreadyOn ? 'Stop Video' : 'Start Video'}</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            onPress={() => sourceParameters.clickAudio({ 
+              parameters: sourceParameters 
+            })}
+            style={styles.controlButton}
+          >
+            <Text>{sourceParameters.audioAlreadyOn ? 'Mute' : 'Unmute'}</Text>
+          </TouchableOpacity>
+
+          {/* Display participant count */}
+          <Text style={styles.participantCount}>
+            {sourceParameters.participants.length} Participants
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+};
+
+const styles = {
+  customControls: {
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    right: 20,
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    padding: 15,
+    borderRadius: 10,
+  },
+  controlButton: {
+    backgroundColor: '#4CAF50',
+    padding: 12,
+    borderRadius: 8,
+    marginVertical: 5,
+    alignItems: 'center',
+  },
+  participantCount: {
+    color: 'white',
+    fontSize: 16,
+    marginTop: 10,
+  }
+};
+
+export default App;
+```
+
+**When to use:**
+
+- ✅ Need complete control over UI/UX
+- ✅ Building a custom branded experience
+- ✅ Integrating into existing app design
+- ✅ Want to position controls differently
+
+**What you get:**
+
+- Access to all MediaSFU methods via `sourceParameters`
+- Full control over when and how to display UI
+- Ability to create completely custom layouts
+- Access to real-time room state and participant data
+
+#### Mode 3: Component Replacement (Balanced) ⭐ Best for Partial Customization
+
+Replace specific MediaSFU components while keeping the rest of the infrastructure.
+
+```javascript
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { 
+  MediasfuGeneric, 
+  FlexibleVideo, 
+  FlexibleGrid,
+  AudioGrid
+} from 'mediasfu-reactnative';
+
+// Your custom main screen component
+function CustomMainScreen({ parameters }) {
+  return (
+    <View style={styles.container}>
+      {/* Custom header */}
+      <View style={styles.header}>
+        <Text style={styles.roomName}>{parameters.roomName}</Text>
+        <Text style={styles.participantCount}>
+          {parameters.participants.length} participants
+        </Text>
+      </View>
+      
+      {/* Use MediaSFU's FlexibleVideo for main display */}
+      <View style={styles.mainVideo}>
+        <FlexibleVideo 
+          customWidth={parameters.componentSizes.mainWidth}
+          customHeight={parameters.componentSizes.mainHeight}
+          parameters={parameters}
+        />
+      </View>
+      
+      {/* Use MediaSFU's FlexibleGrid for participants */}
+      <View style={styles.participantGrid}>
+        <FlexibleGrid 
+          customWidth={parameters.componentSizes.otherWidth}
+          customHeight={parameters.componentSizes.otherHeight}
+          parameters={parameters}
+        />
+      </View>
+
+      {/* Show audio-only participants */}
+      <View style={styles.audioContainer}>
+        <AudioGrid parameters={parameters} />
+      </View>
+    </View>
+  );
+}
+
+const App = () => {
+  const credentials = { apiUserName: 'your_username', apiKey: 'your_api_key' };
+  
+  return (
+    <MediasfuGeneric 
+      credentials={credentials}
+      customComponent={CustomMainScreen}
+    />
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#1a1a1a',
+  },
+  header: {
+    backgroundColor: '#2d2d2d',
+    padding: 15,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  roomName: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  participantCount: {
+    color: '#4CAF50',
+    fontSize: 14,
+  },
+  mainVideo: {
+    flex: 3,
+  },
+  participantGrid: {
+    flex: 2,
+  },
+  audioContainer: {
+    height: 80,
+    backgroundColor: '#2d2d2d',
+  },
+});
+
+export default App;
+```
+
+**When to use:**
+
+- ✅ Need custom main interface but want to keep MediaSFU's components
+- ✅ Partial customization with minimal effort
+- ✅ Want to maintain MediaSFU's functionality while customizing layout
+- ✅ Need to rearrange existing components
+
+**What you get:**
+
+- Replace only the main screen component
+- Access to all MediaSFU's sub-components
+- `parameters` object with full access to methods
+- Automatic handling of WebRTC, sockets, and state
+
+### Parameters Object: Your Control Center <a name="parameters-object-control-center"></a>
+
+The `parameters` object (also called `sourceParameters` in Mode 2) is your gateway to all MediaSFU functionality. Understanding this object is crucial for advanced customization.
+
+**Key Categories:**
+
+```javascript
+// The parameters object structure
+{
+  // === MEDIA CONTROLS ===
+  clickVideo: (options) => {},              // Toggle video on/off
+  clickAudio: (options) => {},              // Toggle audio on/off
+  clickScreenShare: (options) => {},        // Toggle screen sharing
+  
+  // === ROOM STATE ===
+  roomName: 'meeting-room-123',            // Current room identifier
+  member: 'John Doe',                      // Current user's name
+  islevel: '2',                            // User role ('0'=participant, '2'=host)
+  participants: [],                        // Array of all participants
+  
+  // === MEDIA STREAMS ===
+  allVideoStreams: [],                     // All video producer streams
+  allAudioStreams: [],                     // All audio producer streams
+  localStream: null,                       // Your local media stream
+  
+  // === UI STATE ===
+  videoAlreadyOn: false,                   // Is your video currently on?
+  audioAlreadyOn: false,                   // Is your audio currently on?
+  
+  // === RECORDING ===
+  recordStarted: false,                    // Is recording active?
+  startRecording: (options) => {},         // Start recording
+  stopRecording: (options) => {},          // Stop recording
+  
+  // === CHAT & MESSAGING ===
+  messages: [],                            // All chat messages
+  sendMessage: (options) => {},            // Send a message
+  
+  // === DEVICE MANAGEMENT ===
+  getMediaDevicesList: (type) => {},       // Get available devices
+  
+  // And 180+ more properties and methods...
+}
+```
+
+**Access patterns in different modes:**
+
+```javascript
+// Mode 1 (Default UI): Parameters managed internally
+// You don't need to access them directly
+
+// Mode 2 (Custom UI): Access via sourceParameters state
+const [sourceParameters, setSourceParameters] = useState(null);
+sourceParameters.clickVideo({ parameters: sourceParameters });
+
+// Mode 3 (Component Replacement): Passed to your component
+function CustomComponent({ parameters }) {
+  parameters.clickVideo({ parameters });
+}
+```
+
+---
+
+## Core Concepts & Components <a name="core-concepts--components"></a>
+
+Now that you understand the architecture, let's explore the building blocks in detail.
+
+### Display Components <a name="display-components"></a>
+
+MediaSFU provides powerful, ready-to-use components for organizing and displaying media streams.
+
+#### FlexibleVideo - Main video display area
+
+The FlexibleVideo component automatically handles displaying the main video content.
+
+```javascript
+import { FlexibleVideo } from 'mediasfu-reactnative';
+
+<FlexibleVideo
+  customWidth={screenWidth}
+  customHeight={600}
+  parameters={parameters}
+/>
+```
+
+**Features:**
+
+- Automatically displays main presenter or screen share
+- Smooth transitions between video sources
+- Responsive sizing
+- Handles aspect ratio automatically
+
+**When to use:** Primary video display area, screen sharing, featured speaker view
+
+#### FlexibleGrid - Participant grid layout
+
+Creates an intelligent grid layout for displaying multiple participants.
+
+```javascript
+import { FlexibleGrid } from 'mediasfu-reactnative';
+
+<FlexibleGrid
+  customWidth={screenWidth}
+  customHeight={800}
+  parameters={parameters}
+/>
+```
+
+**Features:**
+
+- Intelligent auto-sizing (2x2, 3x3, 4x4 grids, etc.)
+- Automatic pagination for large participant lists
+- Dynamic reflow on orientation change
+- Optimized rendering performance
+
+**When to use:** Gallery view, displaying multiple participants, conference layouts
+
+#### AudioGrid - Audio-only participants
+
+Displays participants who have joined without video.
+
+```javascript
+import { AudioGrid } from 'mediasfu-reactnative';
+
+<AudioGrid parameters={parameters} />
+```
+
+**Features:**
+
+- Compact display for audio-only users
+- Visual audio level indicators
+- Name/initial displays
+- Space-efficient layout
+
+**When to use:** Audio-only participants, minimizing screen space, podcast-style recordings
+
+### Control Components <a name="control-components"></a>
+
+MediaSFU provides pre-built control components with different layouts:
+
+#### ControlButtonsComponentTouch - Touch-optimized controls
+
+```javascript
+import { ControlButtonsComponentTouch } from 'mediasfu-reactnative';
+
+<ControlButtonsComponentTouch
+  parameters={parameters}
+  position="bottom"
+  direction="horizontal"
+/>
+```
+
+**Includes:**
+
+- Mute/Unmute microphone
+- Start/Stop video
+- Screen share toggle
+- Participants list
+- Chat button
+- End call button
+
+### Modal Components <a name="modal-components"></a>
+
+MediaSFU includes pre-built modals for various features:
+
+```javascript
+import {
+  ParticipantsModal,      // Participant management
+  MessagesModal,          // Chat interface
+  SettingsModal,          // Application settings
+  RecordingModal,         // Recording controls
+  PollModal,              // Polls interface
+  BreakoutRoomsModal,     // Breakout rooms management
+} from 'mediasfu-reactnative';
+```
+
+**Controlling modals:**
+
+```javascript
+// Show participants modal
+parameters.updateIsParticipantsModalVisible(true);
+
+// Show chat
+parameters.updateIsMessagesModalVisible(true);
+
+// Show settings
+parameters.updateIsSettingsModalVisible(true);
+```
+
+---
+
+## Working with Methods <a name="working-with-methods"></a>
+
+MediaSFU provides 200+ methods for controlling every aspect of your real-time communication experience.
+
+### Media Control Methods <a name="media-control-methods"></a>
+
+#### Video Control
+
+```javascript
+// Toggle video on/off
+await parameters.clickVideo({
+  parameters: parameters,
+});
+
+// Check current video state
+console.log('Video is:', parameters.videoAlreadyOn ? 'ON' : 'OFF');
+
+// Switch between front and back camera
+await parameters.switchVideoAlt({
+  parameters: parameters,
+});
+```
+
+#### Audio Control
+
+```javascript
+// Toggle audio on/off
+await parameters.clickAudio({
+  parameters: parameters,
+});
+
+// Mute specific participant (host only)
+if (parameters.islevel === '2') {
+  await parameters.muteParticipants({
+    participant: {
+      id: 'participant-id',
+      name: 'John Doe',
+    },
+    parameters: parameters,
+  });
+}
+```
+
+#### Screen Sharing
+
+```javascript
+// Start/stop screen sharing
+await parameters.clickScreenShare({
+  parameters: parameters,
+});
+
+// Check if screen sharing is active
+console.log('Screen sharing:', parameters.screenAlreadyOn);
+```
+
+### Device Management Methods <a name="device-management-methods"></a>
+
+```javascript
+// Get all available cameras
+const cameras = await parameters.getMediaDevicesList('videoinput');
+console.log('Available cameras:', cameras);
+
+// Get all available microphones
+const microphones = await parameters.getMediaDevicesList('audioinput');
+console.log('Available microphones:', microphones);
+
+// Switch to specific camera
+await parameters.switchUserVideo({
+  videoPreference: cameras[1].deviceId,
+  parameters: parameters,
+});
+```
+
+### Participant Management Methods <a name="participant-management-methods"></a>
+
+```javascript
+// Get all participants
+const allParticipants = parameters.participants;
+console.log('Total participants:', parameters.participantsCounter);
+
+// Get participants by role
+const hosts = parameters.participants.filter(p => p.islevel === '2');
+const moderators = parameters.participants.filter(p => p.islevel === '1');
+
+// Remove participant (host only)
+if (parameters.islevel === '2') {
+  await parameters.removeParticipants({
+    participant: { id: 'participant-id', name: 'John Doe' },
+    parameters: parameters,
+  });
+}
+
+// Send direct message to participant
+await parameters.sendMessage({
+  message: 'Hello!',
+  receivers: ['participant-id'],
+  type: 'direct',
+  parameters: parameters,
+});
+```
+
+### Chat & Messaging Methods <a name="chat-messaging-methods"></a>
+
+```javascript
+// Send message to everyone
+await parameters.sendMessage({
+  message: 'Hello everyone!',
+  type: 'chat',
+  receivers: [],
+  parameters: parameters,
+});
+
+// Send direct message
+await parameters.sendMessage({
+  message: 'Hi John!',
+  type: 'direct',
+  receivers: ['participant-id'],
+  parameters: parameters,
+});
+
+// Access message history
+const allMessages = parameters.messages;
+const unreadCount = parameters.unreadMessageCount;
+```
+
+### Recording Methods <a name="recording-methods"></a>
+
+```javascript
+// Start recording (host only)
+if (parameters.islevel === '2') {
+  await parameters.startRecording({
+    parameters: parameters,
+  });
+}
+
+// Pause recording
+await parameters.pauseRecording({
+  parameters: parameters,
+});
+
+// Resume recording
+await parameters.resumeRecording({
+  parameters: parameters,
+});
+
+// Stop recording
+await parameters.stopRecording({
+  parameters: parameters,
+});
+
+// Configure recording settings
+await parameters.updateRecordingMediaOptions('video');
+await parameters.updateRecordingVideoOptions('all');
+```
+
+### Polls & Survey Methods <a name="polls-survey-methods"></a>
+
+```javascript
+// Create a poll (host only)
+if (parameters.islevel === '2') {
+  await parameters.handleCreatePoll({
+    poll: {
+      question: 'Should we take a break?',
+      type: 'yesNo',
+      options: ['Yes', 'No'],
+    },
+    parameters: parameters,
+  });
+}
+
+// Vote on a poll
+await parameters.handleVotePoll({
+  pollId: 'poll-123',
+  choice: 'Yes',
+  parameters: parameters,
+});
+
+// End a poll (host only)
+await parameters.handleEndPoll({
+  pollId: 'poll-123',
+  parameters: parameters,
+});
+
+// Access poll data
+const allPolls = parameters.polls;
+const activePolls = allPolls.filter(p => p.status === 'active');
+```
+
+### Breakout Room Methods <a name="breakout-room-methods"></a>
+
+```javascript
+// Launch breakout rooms interface (host only)
+if (parameters.islevel === '2') {
+  await parameters.launchBreakoutRooms({
+    parameters: parameters,
+  });
+}
+
+// Access breakout room data
+const breakoutRooms = parameters.breakoutRooms;
+const currentRoom = parameters.currentBreakoutRoom;
+
+// Check if user is in a breakout room
+const isInBreakoutRoom = currentRoom !== null;
+```
+
+---
+
+## Advanced Customization & Styling <a name="advanced-customization--styling"></a>
+
+### Custom Pre-Join Screen
+
+Create a completely custom pre-join experience:
+
+```javascript
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { MediasfuGeneric } from 'mediasfu-reactnative';
+
+function CustomPreJoinScreen({ onJoin }) {
+  const [userName, setUserName] = useState('');
+  const [roomName, setRoomName] = useState('');
+
+  const handleJoin = () => {
+    if (userName.trim() && roomName.trim()) {
+      onJoin({ userName: userName.trim(), roomName: roomName.trim() });
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Join a Meeting</Text>
+      
+      <TextInput
+        style={styles.input}
+        placeholder="Your Name"
+        value={userName}
+        onChangeText={setUserName}
+      />
+      
+      <TextInput
+        style={styles.input}
+        placeholder="Room Name"
+        value={roomName}
+        onChangeText={setRoomName}
+      />
+
+      <TouchableOpacity style={styles.joinButton} onPress={handleJoin}>
+        <Text style={styles.joinButtonText}>Join Meeting</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+function App() {
+  const [showMeeting, setShowMeeting] = useState(false);
+  const [meetingConfig, setMeetingConfig] = useState(null);
+
+  const handleJoin = (config) => {
+    setMeetingConfig(config);
+    setShowMeeting(true);
+  };
+
+  if (!showMeeting) {
+    return <CustomPreJoinScreen onJoin={handleJoin} />;
+  }
+
+  return (
+    <MediasfuGeneric
+      credentials={{ apiUserName: 'your_username', apiKey: 'your_api_key' }}
+      noUIPreJoinOptions={{
+        action: 'create',
+        userName: meetingConfig.userName,
+        capacity: 50,
+        duration: 30,
+        eventType: 'conference',
+      }}
+    />
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 20, justifyContent: 'center' },
+  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 30, textAlign: 'center' },
+  input: { padding: 15, borderRadius: 8, marginBottom: 15, backgroundColor: '#f0f0f0' },
+  joinButton: { backgroundColor: '#4CAF50', padding: 18, borderRadius: 8, alignItems: 'center' },
+  joinButtonText: { color: 'white', fontSize: 18, fontWeight: 'bold' },
+});
+
+export default App;
+```
+
+---
+
+## Understanding Data Structures <a name="understanding-data-structures"></a>
+
+### Participant Object
+
+```javascript
+{
+  id: 'participant-id-123',
+  name: 'John Doe',
+  islevel: '2',              // '0'=participant, '1'=co-host, '2'=host
+  muted: false,
+  videoOn: true,
+  isScreenShare: false,
+}
+```
+
+### Message Object
+
+```javascript
+{
+  sender: 'John Doe',
+  receivers: ['Jane Doe'],
+  message: 'Hello!',
+  timestamp: 1696118400000,
+  group: true,
+}
+```
+
+### Poll Object
+
+```javascript
+{
+  id: 'poll-123',
+  question: 'Should we take a break?',
+  type: 'yesNo',
+  options: ['Yes', 'No'],
+  votes: [5, 3],
+  status: 'active',
+}
+```
+
+---
+
+## Troubleshooting & Best Practices <a name="troubleshooting-best-practices-guide"></a>
+
+### Common Issues and Solutions
+
+#### Issue: Video not displaying on Android
+
+**Solution:** Ensure proper permissions in `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.CAMERA" />
+<uses-permission android:name="android.permission.RECORD_AUDIO" />
+```
+
+Request permissions at runtime:
+
+```javascript
+import { PermissionsAndroid, Platform } from 'react-native';
+
+async function requestPermissions() {
+  if (Platform.OS === 'android') {
+    await PermissionsAndroid.requestMultiple([
+      PermissionsAndroid.PERMISSIONS.CAMERA,
+      PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+    ]);
+  }
+}
+```
+
+### Best Practices
+
+✅ **Always request permissions** before accessing camera/microphone  
+✅ **Check device availability** before switching devices  
+✅ **Handle errors gracefully** with try-catch blocks  
+✅ **Lazy load modals** to improve performance  
+✅ **Test on real devices** - emulators have limited media support  
+
+---
+
+## Quick Reference: Complete Method List <a name="quick-reference-complete-method-list"></a>
+
+### Media Control
+
+- `clickVideo()` - Toggle video
+- `clickAudio()` - Toggle audio
+- `clickScreenShare()` - Toggle screen sharing
+- `switchVideoAlt()` - Switch camera
+- `switchUserVideo()` - Switch to specific camera
+- `switchUserAudio()` - Switch microphone
+
+### Device Management
+
+- `getMediaDevicesList()` - Get available devices
+- `checkPermission()` - Check permissions
+
+### Participant Management
+
+- `muteParticipants()` - Mute participant
+- `removeParticipants()` - Remove participant
+- `messageParticipants()` - Message participant
+
+### Recording
+
+- `startRecording()` - Start recording
+- `pauseRecording()` - Pause recording
+- `resumeRecording()` - Resume recording
+- `stopRecording()` - Stop recording
+
+### Chat & Messaging
+
+- `sendMessage()` - Send message
+- `updateMessages()` - Update message list
+
+### Polls
+
+- `handleCreatePoll()` - Create poll
+- `handleVotePoll()` - Vote on poll
+- `handleEndPoll()` - End poll
+
+### Breakout Rooms
+
+- `launchBreakoutRooms()` - Open breakout rooms
+- `updateBreakoutRooms()` - Update rooms
+- `returnToMainRoom()` - Exit breakout room
+
+---
+
+This comprehensive guide covers the essential aspects of MediaSFU React Native SDK. For additional details, visit the [full API documentation](https://www.mediasfu.com/reactnative/).
+
+---
 
 # Basic Usage Guide <a name="basic-usage-guide"></a>
 
