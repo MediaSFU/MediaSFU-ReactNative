@@ -61,7 +61,7 @@ export type NewPipeProducerType = (options: NewPipeProducerOptions) => Promise<v
  * @example
  * import { newPipeProducer } from 'mediasfu-reactnative';
  * import { io } from 'socket.io-client';
- * 
+ *
  * const parameters = {
  *   shareScreenStarted: true,
  *   shared: true,
@@ -71,11 +71,11 @@ export type NewPipeProducerType = (options: NewPipeProducerOptions) => Promise<v
  *   updateFirst_round: (firstRound) => console.log('First round updated:', firstRound),
  *   updateLandScaped: (landScaped) => console.log('Landscape status updated:', landScaped),
  * };
- * 
+ *
  * const producerId = 'producer-123';
  * const islevel = '2';
  * const nsock = io("http://localhost:3000");
- * 
+ *
  * async function init() {
  *   try {
  *     await newPipeProducer({
@@ -89,7 +89,7 @@ export type NewPipeProducerType = (options: NewPipeProducerOptions) => Promise<v
  *     console.error('Error creating new pipe producer:', error);
  *   }
  * }
- * 
+ *
  * init();
  */
 

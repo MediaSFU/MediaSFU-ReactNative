@@ -22,7 +22,7 @@ export type CheckPauseStateType = (options: CheckPauseStateOptions) => Promise<b
  * @param {Function} options.showAlert - A function to show an alert message if the pause limit is reached.
  * @returns {Promise<boolean>} - A promise that resolves to `true` if the recording can be paused, otherwise `false`.
  * @example
- * 
+ *
  * ```typescript
  * const canPause = await checkPauseState({
  *   recordingMediaOptions: "audio",

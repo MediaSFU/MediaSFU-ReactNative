@@ -6,6 +6,8 @@ import {
   Pressable,
   StyleSheet,
   Dimensions,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { Socket } from 'socket.io-client';
@@ -23,166 +25,149 @@ import {
 /**
  * Interface defining the props for the MessagesModal component.
  */
+/**
+ * Configuration options for the `MessagesModal` component.
+ *
+ * @interface MessagesModalOptions
+ *
+ * **Modal Control:**
+ * @property {boolean} isMessagesModalVisible Controls visibility of the chat modal.
+ * @property {() => void} onMessagesClose Invoked when the modal should close.
+ *
+ * **Messaging:**
+ * @property {(options: SendMessageOptions) => Promise<void>} [onSendMessagePress=sendMessage] Handler triggered when sending a message.
+ * @property {Message[]} messages Collection of messages to render within the panel.
+ *
+ * **Appearance:**
+ * @property {'topRight' | 'topLeft' | 'bottomRight' | 'bottomLeft'} [position='topRight'] Preferred anchor position.
+ * @property {string} [backgroundColor='#f5f5f5'] Surface color of the modal.
+ * @property {string} [activeTabBackgroundColor='#7AD2DCFF'] Highlight color for the active tab.
+ * @property {StyleProp<ViewStyle>} [style] Additional styles merged into the modal container.
+ *
+ * **Session Context:**
+ * @property {EventType} eventType Session type directing permissions and UI.
+ * @property {string} member Display name of the current user.
+ * @property {string} islevel Permission level for the current user.
+ * @property {CoHostResponsibility[]} coHostResponsibility Matrix describing co-host capabilities.
+ * @property {string} coHost Co-host identifier.
+ * @property {string} roomName Active room identifier.
+ * @property {Socket} socket Socket.io connection for real-time updates.
+ * @property {string} chatSetting Chat configuration toggle (e.g., `'all' | 'hostOnly'`).
+ *
+ * **Direct Messaging:**
+ * @property {boolean} startDirectMessage Flag that determines whether direct message mode is active.
+ * @property {Participant | null} directMessageDetails Target participant for direct messaging.
+ * @property {(start: boolean) => void} updateStartDirectMessage State setter for direct message mode.
+ * @property {(participant: Participant | null) => void} updateDirectMessageDetails Setter for direct message context.
+ *
+ * **Alerts:**
+ * @property {ShowAlert} [showAlert] Optional alert callback for user feedback.
+ *
+ * **Advanced Render Overrides:**
+ * @property {(options: { defaultContent: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContent]
+ * Override for the default chat panel layout.
+ * @property {(options: { defaultContainer: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContainer]
+ * Override for wrapping the modal with custom UI (e.g., animated containers).
+ */
 export interface MessagesModalOptions {
-  /**
-   * Determines if the messages modal is visible.
-   */
   isMessagesModalVisible: boolean;
-
-  /**
-   * Function to close the messages modal.
-   */
   onMessagesClose: () => void;
-
-  /**
-   * Function to handle sending messages.
-   * Defaults to the imported sendMessage function.
-   */
   onSendMessagePress?: (options: SendMessageOptions) => Promise<void>;
-
-  /**
-   * Array of message objects to display.
-   */
   messages: Message[];
-
-  /**
-   * Position of the modal on the screen.
-   * Possible values: 'topRight', 'topLeft', 'bottomRight', 'bottomLeft'.
-   * @default 'topRight'
-   */
   position?: 'topRight' | 'topLeft' | 'bottomRight' | 'bottomLeft';
-
-  /**
-   * Background color of the modal.
-   * @default '#f5f5f5'
-   */
   backgroundColor?: string;
-
-  /**
-   * Background color of the active tab.
-   * @default '#7AD2DCFF',
-   */
   activeTabBackgroundColor?: string;
-
-  /**
-   * Type of the event (e.g., webinar, conference, broadcast, chat).
-   */
   eventType: EventType;
-
-  /**
-   * Current member's username.
-   */
   member: string;
-
-  /**
-   * Level of the user.
-   */
   islevel: string;
-
-  /**
-   * Array of co-host responsibilities.
-   */
   coHostResponsibility: CoHostResponsibility[];
-
-  /**
-   * Co-host's username.
-   */
   coHost: string;
-
-  /**
-   * Flag to start a direct message.
-   */
   startDirectMessage: boolean;
-
-  /**
-   * Details of the direct message.
-   */
   directMessageDetails: Participant | null;
-
-  /**
-   * Function to update the start direct message flag.
-   */
   updateStartDirectMessage: (start: boolean) => void;
-
-  /**
-   * Function to update direct message details.
-   */
   updateDirectMessageDetails: (participant: Participant | null) => void;
-
-  /**
-   * Function to show alerts.
-   */
   showAlert?: ShowAlert;
-
-  /**
-   * Name of the chat room.
-   */
   roomName: string;
-
-  /**
-   * Socket object for real-time communication.
-   */
   socket: Socket;
-
-  /**
-   * Settings for the chat.
-   */
   chatSetting: string;
+  style?: StyleProp<ViewStyle>;
+  renderContent?: (options: {
+    defaultContent: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
+  renderContainer?: (options: {
+    defaultContainer: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
 }
 
 export type MessagesModalType = (options: MessagesModalOptions) => JSX.Element;
 
 /**
- * MessagesModal component displays a modal for direct and group messages.
+ * MessagesModal centralizes broadcast and direct messaging in a responsive modal. It adapts to event
+ * context, offers tabs for chat segmentation, and coordinates direct-message flows with overrideable
+ * handlers and layouts.
  *
- * @component
- * @param {MessagesModalOptions} props - The properties for the MessagesModal component.
- * @returns {JSX.Element} The rendered MessagesModal component.
+ * ### Key Features
+ * - Integrates with `sendMessage` by default but accepts custom handlers.
+ * - Supports direct messaging mode with participant-specific metadata.
+ * - Configurable positioning and theming for consistent branding.
+ * - Uses `MessagePanel` to render messages with built-in tab management.
+ * - Provides render overrides for both container and content.
  *
- * @example
+ * ### Accessibility
+ * - Close button exposes descriptive labels for screen readers.
+ * - Tab changes propagate via accessible Pressables inside `MessagePanel`.
+ *
+ * @param {MessagesModalOptions} props Modal configuration options.
+ * @returns {JSX.Element} Rendered messages modal.
+ *
+ * @example Default configuration with built-in handlers.
  * ```tsx
- * import React, { useState } from 'react';
- * import { MessagesModal } from 'mediasfu-reactnative';
- * 
- * function App() {
- *   const [isVisible, setIsVisible] = useState(true);
- *   const messages = [
- *     { sender: 'Alice', message: 'Hello everyone!', timestamp: '10:01', group: true },
- *     { sender: 'Bob', message: 'Hey Alice!', timestamp: '10:02', receivers: ['Alice'], group: false },
- *   ];
-
- *   const handleSendMessage = async (options) => {
- *     // Logic for sending a message
- *     console.log('Message sent:', options);
- *   };
-
- *   return (
- *     <MessagesModal
- *       isMessagesModalVisible={isVisible}
- *       onMessagesClose={() => setIsVisible(false)}
- *       messages={messages}
- *       onSendMessagePress={handleSendMessage}
- *       eventType="conference"
- *       member="john_doe"
- *       islevel="1"
- *       coHostResponsibility={[{ name: 'chat', value: true }]}
- *       coHost="jane_doe"
- *       startDirectMessage={false}
- *       directMessageDetails={null}
- *       updateStartDirectMessage={(start) => console.log('Start Direct Message:', start)}
- *       updateDirectMessageDetails={(participant) => console.log('Direct Message Participant:', participant)}
- *       showAlert={(alert) => console.log('Alert:', alert)}
- *       roomName="MainRoom"
- *       socket={socketInstance}
- *       chatSetting="default"
- *       position="bottomRight"
- *       backgroundColor="#f5f5f5"
- *       activeTabBackgroundColor="#7AD2DCFF"
- *     />
- *   );
- * }
-
- * export default App;
+ * <MessagesModal
+ *   isMessagesModalVisible={visible}
+ *   onMessagesClose={hide}
+ *   messages={messages}
+ *   eventType="conference"
+ *   member={userName}
+ *   islevel="1"
+ *   coHostResponsibility={responsibilities}
+ *   coHost={coHostName}
+ *   startDirectMessage={false}
+ *   directMessageDetails={null}
+ *   updateStartDirectMessage={setStartDm}
+ *   updateDirectMessageDetails={setDmDetails}
+ *   roomName={roomId}
+ *   socket={socket}
+ *   chatSetting="default"
+ * />
+ * ```
+ *
+ * @example Custom send handler and styling.
+ * ```tsx
+ * <MessagesModal
+ *   isMessagesModalVisible
+ *   onMessagesClose={close}
+ *   messages={messageHistory}
+ *   onSendMessagePress={sendCustomMessage}
+ *   eventType="webinar"
+ *   member="host_01"
+ *   islevel="2"
+ *   backgroundColor="#101826"
+ *   activeTabBackgroundColor="#3b82f6"
+ *   style={{ borderRadius: 24 }}
+ *   {...dmProps}
+ * />
+ * ```
+ *
+ * @example Animated container override.
+ * ```tsx
+ * <MessagesModal
+ *   {...props}
+ *   renderContainer={({ defaultContainer }) => (
+ *     <FadeIn>{defaultContainer}</FadeIn>
+ *   )}
+ * />
  * ```
  */
 
@@ -207,6 +192,9 @@ const MessagesModal: React.FC<MessagesModalOptions> = ({
   roomName,
   socket,
   chatSetting,
+  style,
+  renderContent,
+  renderContainer,
 }) => {
   const screenWidth = Dimensions.get('window').width;
   let modalWidth = 0.8 * screenWidth;
@@ -284,7 +272,118 @@ const MessagesModal: React.FC<MessagesModalOptions> = ({
     // Force re-render when reRender state changes
   }, [reRender]);
 
-  return (
+  const dimensions = { width: modalWidth, height: 0 };
+
+  const defaultContent = (
+    <>
+      <View style={styles.header}>
+        {eventType === 'webinar' || eventType === 'conference' ? (
+          <View style={styles.tabsContainer}>
+            <Pressable
+              onPress={switchToDirectTab}
+              style={[
+                styles.tab,
+                activeTab.current === 'direct' && styles.activeTab,
+                activeTab.current === 'direct' && { backgroundColor: activeTabBackgroundColor },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab.current === 'direct' && styles.activeTabText,
+                ]}
+              >
+                Direct
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={switchToGroupTab}
+              style={[
+                styles.tab,
+                activeTab.current === 'group' && styles.activeTab,
+                activeTab.current === 'group' && { backgroundColor: activeTabBackgroundColor },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab.current === 'group' && styles.activeTabText,
+                ]}
+              >
+                Group
+              </Text>
+            </Pressable>
+          </View>
+        ) : null}
+
+        {/* Close Button */}
+        <Pressable onPress={onMessagesClose} style={styles.closeButton}>
+          <FontAwesome5 name="times" size={24} color="black" />
+        </Pressable>
+      </View>
+
+      <View style={styles.separator} />
+
+      <View style={styles.modalBody}>
+        {activeTab.current === 'direct'
+          && (eventType === 'webinar' || eventType === 'conference') && (
+            <MessagePanel
+              messages={directMessages}
+              messagesLength={messages.length}
+              type="direct"
+              onSendMessagePress={onSendMessagePress}
+              username={member}
+              backgroundColor={backgroundColor}
+              focusedInput={focusedInput}
+              showAlert={showAlert}
+              eventType={eventType}
+              member={member}
+              islevel={islevel}
+              coHostResponsibility={coHostResponsibility}
+              coHost={coHost}
+              directMessageDetails={directMessageDetails}
+              updateStartDirectMessage={updateStartDirectMessage}
+              updateDirectMessageDetails={updateDirectMessageDetails}
+              roomName={roomName}
+              socket={socket}
+              chatSetting={chatSetting}
+              startDirectMessage={startDirectMessage}
+            />
+        )}
+
+        {activeTab.current === 'group' && (
+          <MessagePanel
+            messages={groupMessages}
+            messagesLength={messages.length}
+            type="group"
+            onSendMessagePress={onSendMessagePress}
+            username={member}
+            backgroundColor={backgroundColor}
+            focusedInput={false}
+            showAlert={showAlert}
+            eventType={eventType}
+            member={member}
+            islevel={islevel}
+            coHostResponsibility={coHostResponsibility}
+            coHost={coHost}
+            directMessageDetails={directMessageDetails}
+            updateStartDirectMessage={updateStartDirectMessage}
+            updateDirectMessageDetails={updateDirectMessageDetails}
+            roomName={roomName}
+            socket={socket}
+            chatSetting={chatSetting}
+            startDirectMessage={startDirectMessage}
+          />
+        )}
+      </View>
+    </>
+  );
+
+  const content = renderContent
+    ? renderContent({ defaultContent, dimensions })
+    : defaultContent;
+
+  const defaultContainer = (
     <Modal
       animationType="fade"
       transparent
@@ -292,111 +391,16 @@ const MessagesModal: React.FC<MessagesModalOptions> = ({
       onRequestClose={onMessagesClose}
     >
       <View style={[styles.modalContainer, getModalPosition({ position })]}>
-        <View style={[styles.modalContent, { backgroundColor, width: modalWidth }]}>
-          <View style={styles.header}>
-            {eventType === 'webinar' || eventType === 'conference' ? (
-              <View style={styles.tabsContainer}>
-                <Pressable
-                  onPress={switchToDirectTab}
-                  style={[
-                    styles.tab,
-                    activeTab.current === 'direct' && styles.activeTab,
-                    activeTab.current === 'direct' && { backgroundColor: activeTabBackgroundColor },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.tabText,
-                      activeTab.current === 'direct' && styles.activeTabText,
-                    ]}
-                  >
-                    Direct
-                  </Text>
-                </Pressable>
-                <Pressable
-                  onPress={switchToGroupTab}
-                  style={[
-                    styles.tab,
-                    activeTab.current === 'group' && styles.activeTab,
-                    activeTab.current === 'group' && { backgroundColor: activeTabBackgroundColor },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.tabText,
-                      activeTab.current === 'group' && styles.activeTabText,
-                    ]}
-                  >
-                    Group
-                  </Text>
-                </Pressable>
-              </View>
-            ) : null}
-
-            {/* Close Button */}
-            <Pressable onPress={onMessagesClose} style={styles.closeButton}>
-              <FontAwesome5 name="times" size={24} color="black" />
-            </Pressable>
-          </View>
-
-          <View style={styles.separator} />
-
-          <View style={styles.modalBody}>
-            {activeTab.current === 'direct'
-              && (eventType === 'webinar' || eventType === 'conference') && (
-                <MessagePanel
-                  messages={directMessages}
-                  messagesLength={messages.length}
-                  type="direct"
-                  onSendMessagePress={onSendMessagePress}
-                  username={member}
-                  backgroundColor={backgroundColor}
-                  focusedInput={focusedInput}
-                  showAlert={showAlert}
-                  eventType={eventType}
-                  member={member}
-                  islevel={islevel}
-                  coHostResponsibility={coHostResponsibility}
-                  coHost={coHost}
-                  directMessageDetails={directMessageDetails}
-                  updateStartDirectMessage={updateStartDirectMessage}
-                  updateDirectMessageDetails={updateDirectMessageDetails}
-                  roomName={roomName}
-                  socket={socket}
-                  chatSetting={chatSetting}
-                  startDirectMessage={startDirectMessage}
-                />
-            )}
-
-            {activeTab.current === 'group' && (
-              <MessagePanel
-                messages={groupMessages}
-                messagesLength={messages.length}
-                type="group"
-                onSendMessagePress={onSendMessagePress}
-                username={member}
-                backgroundColor={backgroundColor}
-                focusedInput={false}
-                showAlert={showAlert}
-                eventType={eventType}
-                member={member}
-                islevel={islevel}
-                coHostResponsibility={coHostResponsibility}
-                coHost={coHost}
-                directMessageDetails={directMessageDetails}
-                updateStartDirectMessage={updateStartDirectMessage}
-                updateDirectMessageDetails={updateDirectMessageDetails}
-                roomName={roomName}
-                socket={socket}
-                chatSetting={chatSetting}
-                startDirectMessage={startDirectMessage}
-              />
-            )}
-          </View>
+        <View style={[styles.modalContent, { backgroundColor, width: modalWidth }, style]}>
+          {content}
         </View>
       </View>
     </Modal>
   );
+
+  return renderContainer
+    ? renderContainer({ defaultContainer, dimensions })
+    : defaultContainer;
 };
 
 export default MessagesModal;

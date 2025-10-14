@@ -35,7 +35,7 @@ export type CompareActiveNamesType = (options: CompareActiveNamesOptions) => Pro
  * @returns {Promise<void>} A promise that resolves when the comparison is complete.
  *
  * @throws Will log an error message if an error occurs during the comparison.
- * 
+ *
  * @example
  * const options = {
  *   restart: false,
@@ -47,7 +47,7 @@ export type CompareActiveNamesType = (options: CompareActiveNamesOptions) => Pro
  *     trigger: triggerFunction,
  *   },
  * };
- * 
+ *
  * compareActiveNames(options)
  *   .then(() => {
  *     console.log('Active names compared successfully');

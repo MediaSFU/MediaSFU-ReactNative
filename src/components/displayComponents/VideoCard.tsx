@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   ViewStyle,
   ImageStyle,
   Platform,
+  LayoutChangeEvent,
 } from 'react-native';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { Socket } from 'socket.io-client';
@@ -26,7 +27,24 @@ import {
 } from '../../@types/types';
 
 /**
- * Interface defining the parameters required by the VideoCard component.
+ * Parameters used by `VideoCard` to synchronize meeting state and permissions.
+ *
+ * @interface VideoCardParameters
+ *
+ * **Session Context:**
+ * @property {Socket} socket Socket connection for media control events.
+ * @property {string} roomName Active room identifier.
+ * @property {CoHostResponsibility[]} coHostResponsibility Allowed co-host actions.
+ * @property {ShowAlert} [showAlert] Optional alert dispatcher.
+ * @property {string} coHost Current co-host.
+ * @property {Participant[]} participants Roster for participant lookups.
+ * @property {string} member Local member identifier.
+ * @property {string} islevel Privilege level for the local user.
+ * @property {AudioDecibels[]} audioDecibels Live audio intensity readings.
+ *
+ * **Helpers:**
+ * @property {() => VideoCardParameters} getUpdatedAllParams Refresh callback to pull the latest values.
+ * @property {[key: string]: any} [key: string] Additional parameters proxied through the card.
  */
 export interface VideoCardParameters {
   socket: Socket;
@@ -38,14 +56,52 @@ export interface VideoCardParameters {
   member: string;
   islevel: string;
   audioDecibels: AudioDecibels[];
-
-  // Function to get updated parameters
   getUpdatedAllParams: () => VideoCardParameters;
   [key: string]: any;
 }
 
 /**
- * Interface defining the options for the VideoCard component.
+ * Options for rendering a `VideoCard`.
+ *
+ * @interface VideoCardOptions
+ *
+ * **Appearance:**
+ * @property {StyleProp<ViewStyle>} [customStyle] Additional styling for the video card shell.
+ * @property {StyleProp<ViewStyle>} [style] Optional wrapper styling for override containers.
+ * @property {string} name Participant display name.
+ * @property {string} [barColor='red'] Waveform color.
+ * @property {string} [textColor='white'] Label color.
+ * @property {string} [imageSource] Backup image when no stream is available.
+ * @property {boolean} [roundedImage=false] Rounds fallback image corners.
+ * @property {StyleProp<ImageStyle>} [imageStyle] Additional image styling.
+ * @property {string} [backgroundColor='#2c678f'] Background fill color.
+ *
+ * **Video Source:**
+ * @property {string} remoteProducerId Identifier for the remote stream owner.
+ * @property {EventType} eventType Current event type (meeting, webinar, etc.).
+ * @property {boolean} forceFullDisplay Forces video to fill the card.
+ * @property {MediaStream | null} videoStream Media stream to render.
+ * @property {boolean} [doMirror=false] Mirrors the video for self-views.
+ *
+ * **Controls & Info:**
+ * @property {boolean} [showControls=true] Shows default control overlay.
+ * @property {boolean} [showInfo=true] Shows participant info overlay.
+ * @property {React.ReactNode} [videoInfoComponent] Custom info overlay content.
+ * @property {React.ReactNode} [videoControlsComponent] Custom control overlay content.
+ * @property {'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight'} [controlsPosition='topLeft'] Control overlay anchor.
+ * @property {'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight'} [infoPosition='topRight'] Info overlay anchor.
+ *
+ * **Behaviour:**
+ * @property {Participant} participant Participant metadata for controls.
+ * @property {AudioDecibels[]} [audioDecibels] Collection of audio decibels for waveform.
+ * @property {VideoCardParameters} parameters Shared meeting parameter bundle.
+ * @property {CustomVideoCardType} [customVideoCard] Override for the card body layout.
+ *
+ * **Advanced Render Overrides:**
+ * @property {(options: { defaultContent: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContent]
+ * Custom renderer for card internals.
+ * @property {(options: { defaultContainer: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContainer]
+ * Custom renderer for the container wrapper.
  */
 export interface VideoCardOptions {
   customStyle?: StyleProp<ViewStyle>;
@@ -71,64 +127,58 @@ export interface VideoCardOptions {
   doMirror?: boolean;
   parameters: VideoCardParameters;
   customVideoCard?: CustomVideoCardType;
+  style?: StyleProp<ViewStyle>;
+  renderContent?: (options: {
+    defaultContent: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
+  renderContainer?: (options: {
+    defaultContainer: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
 }
 
 export type VideoCardType = (options: VideoCardOptions) => JSX.Element;
 
 /**
- * VideoCard is a flexible React Native component for displaying a participant's video stream with optional controls and information.
- * It includes an animated waveform based on audio decibels.
+ * VideoCard renders participant video with optional overlays for controls, info, and audio waveforms.
+ * It integrates with `controlMedia` to enforce host actions and offers override hooks for bespoke layouts.
  *
- * @param {VideoCardOptions} props - The configuration options for the VideoCard component.
+ * ### Key Features
+ * - Streams video via `CardVideoDisplay`, falling back to initials or an image.
+ * - Provides animated waveform tied to decibel telemetry when enabled.
+ * - Offers customizable overlays for participant info and media controls.
+ * - Supports mirrored self-view and force-fill presentations.
  *
- * @example
+ * ### Accessibility
+ * - Controls expose iconography and can be wrapped in accessible touch targets.
+ * - Text overlays default to high-contrast color schemes.
+ *
+ * @param {VideoCardOptions} props Video card configuration.
+ * @returns {JSX.Element} Rendered video card.
+ *
+ * @example Default usage with host controls.
  * ```tsx
- * import React from 'react';
- * import { VideoCard } from 'mediasfu-reactnative';
- * import { Socket } from 'socket.io-client';
- * 
- * const socket = Socket('https://example.com'); // Example socket instance
- * 
- * function App() {
- *   return (
- *     <VideoCard
- *       name="John Doe"
- *       remoteProducerId="1234"
- *       eventType="meeting"
- *       forceFullDisplay={true}
- *       videoStream={null}
- *       participant={{
- *         name: 'John Doe',
- *         id: '123',
- *         videoOn: true,
- *         muted: false,
- *       }}
- *       parameters={{
- *         socket,
- *         roomName: 'room1',
- *         coHostResponsibility: [],
- *         getUpdatedAllParams: () => ({
- *           socket,
- *           roomName: 'room1',
- *           coHostResponsibility: [],
- *           audioDecibels: [],
- *           participants: [{ name: 'John Doe', id: '123', videoOn: true, muted: false }],
- *           member: '123',
- *           islevel: '1',
- *           coHost: 'coHostId',
- *         }),
- *       }}
- *       backgroundColor="#2c678f"
- *       showControls={true}
- *       showInfo={true}
- *       barColor="green"
- *       textColor="white"
- *       doMirror={false}
- *     />
- *   );
- * }
- * 
- * export default App;
+ * <VideoCard
+ *   name={participant.name}
+ *   participant={participant}
+ *   remoteProducerId={producerId}
+ *   videoStream={stream}
+ *   parameters={parameters}
+ *   forceFullDisplay
+ * />
+ * ```
+ *
+ * @example Custom content override.
+ * ```tsx
+ * <VideoCard
+ *   {...props}
+ *   renderContent={({ defaultContent }) => (
+ *     <View style={{ borderRadius: 16, overflow: 'hidden' }}>
+ *       {defaultContent}
+ *     </View>
+ *   )}
+ * />
  * ```
  */
 
@@ -153,7 +203,12 @@ const VideoCard: React.FC<VideoCardOptions> = ({
   doMirror = false,
   parameters,
   customVideoCard,
+  style,
+  renderContent,
+  renderContainer,
 }) => {
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
   // Initialize waveform animation values
   const [waveformAnimations] = useState<Animated.Value[]>(
     Array.from({ length: 9 }, () => new Animated.Value(0)),
@@ -384,10 +439,34 @@ const VideoCard: React.FC<VideoCardOptions> = ({
     );
   };
 
-  return (
-    <>
-      {customVideoCard ? (
-        customVideoCard({
+  const handleLayout = useCallback((event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout;
+    setDimensions((current) => {
+      if (current.width === width && current.height === height) {
+        return current;
+      }
+      return { width, height };
+    });
+  }, []);
+
+  const accessibilityLabel = useMemo(() => {
+    let base = `Video card for ${participant?.name || name}`;
+    if (participant?.muted) {
+      base += ', audio muted';
+    }
+    if (participant?.videoOn) {
+      base += ', video on';
+    } else {
+      base += ', video off';
+    }
+    return base;
+  }, [name, participant?.muted, participant?.name, participant?.videoOn]);
+
+  const defaultContent = useMemo(
+    () => (
+      <>
+        {customVideoCard ? (
+          customVideoCard({
           name,
           barColor,
           textColor,
@@ -407,7 +486,7 @@ const VideoCard: React.FC<VideoCardOptions> = ({
           parameters,
         })
       ) : (
-        <View style={[styles.card, customStyle, { backgroundColor }]}>
+        <>
           {/* Video Display */}
           <CardVideoDisplay
             remoteProducerId={remoteProducerId}
@@ -423,10 +502,51 @@ const VideoCard: React.FC<VideoCardOptions> = ({
 
           {/* Video Controls */}
           {renderControls()}
-        </View>
-      )}
-    </>
+        </>
+        )}
+      </>
+    ),
+    [
+      backgroundColor,
+      barColor,
+      controlsPosition,
+      customVideoCard,
+      doMirror,
+      eventType,
+      forceFullDisplay,
+      infoPosition,
+      name,
+      parameters,
+      participant,
+      remoteProducerId,
+      showControls,
+      showInfo,
+      textColor,
+      videoControlsComponent,
+      videoInfoComponent,
+      videoStream,
+    ],
   );
+
+  const content = useMemo(
+    () => (renderContent ? renderContent({ defaultContent, dimensions }) : defaultContent),
+    [defaultContent, dimensions, renderContent],
+  );
+
+  const defaultContainer = (
+    <View
+      style={[styles.card, customStyle, { backgroundColor }, style]}
+      onLayout={handleLayout}
+      accessibilityRole="image"
+      accessibilityLabel={accessibilityLabel}
+    >
+      {content}
+    </View>
+  );
+
+  return renderContainer
+    ? renderContainer({ defaultContainer, dimensions })
+    : defaultContainer;
 };
 
 export default VideoCard;

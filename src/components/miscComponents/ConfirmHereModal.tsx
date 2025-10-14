@@ -9,9 +9,37 @@ import {
   StyleSheet,
   Dimensions,
   ActivityIndicator,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 import { Socket } from 'socket.io-client';
 
+/**
+ * Configuration options for the `ConfirmHereModal` component.
+ *
+ * @interface ConfirmHereModalOptions
+ *
+ * **Modal Control:**
+ * @property {boolean} isConfirmHereModalVisible Controls the visibility state.
+ * @property {() => void} onConfirmHereClose Invoked when the user confirms or the modal times out.
+ *
+ * **Countdown Behaviour:**
+ * @property {number} [countdownDuration=120] Seconds before the user is automatically disconnected.
+ * @property {Socket} socket Primary socket used to emit `disconnectUser` events.
+ * @property {Socket} [localSocket] Optional secondary socket mirror for local transports.
+ * @property {string} roomName Active room identifier attached to disconnect events.
+ * @property {string} member Member identifier associated with the confirmation prompt.
+ *
+ * **Appearance:**
+ * @property {string} [backgroundColor='#83c0e9'] Modal card background color.
+ * @property {StyleProp<ViewStyle>} [style] Additional container styling.
+ *
+ * **Advanced Render Overrides:**
+ * @property {(options: { defaultContent: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContent]
+ * Custom renderer for the modal body.
+ * @property {(options: { defaultContainer: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContainer]
+ * Custom renderer for the modal container implementation.
+ */
 export interface ConfirmHereModalOptions {
   isConfirmHereModalVisible: boolean;
   onConfirmHereClose: () => void;
@@ -21,6 +49,15 @@ export interface ConfirmHereModalOptions {
   localSocket?: Socket;
   roomName: string;
   member: string;
+  style?: StyleProp<ViewStyle>;
+  renderContent?: (options: {
+    defaultContent: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
+  renderContainer?: (options: {
+    defaultContainer: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
 }
 
 export type ConfirmHereModalType = (
@@ -28,37 +65,44 @@ export type ConfirmHereModalType = (
 ) => JSX.Element;
 
 /**
- * ConfirmHereModal is a React Native functional component that displays a modal asking the user
- * to confirm their presence. If the user does not confirm within the countdown duration,
- * it emits a 'disconnectUser' event via Socket.io.
+ * ConfirmHereModal prompts attendees to confirm their presence before a timeout disconnects them.
+ * It coordinates socket emission for remote disconnects, exposes override hooks, and supports
+ * custom theming.
  *
- * @component
- * @param {ConfirmHereModalOptions} props - The properties for the ConfirmHereModal component.
- * @returns {JSX.Element} The rendered ConfirmHereModal component.
+ * ### Key Features
+ * - Countdown-driven confirmation with automatic disconnect when time lapses.
+ * - Emits `disconnectUser` on both primary and optional local sockets.
+ * - Provides render overrides for bespoke layouts and container animations.
+ * - Supports custom background colors and styling via `StyleProp`.
  *
- * @example
+ * ### Accessibility
+ * - Buttons expose descriptive accessibility labels for screen readers.
+ * - Countdown text uses semantic ordering and high-contrast defaults.
+ *
+ * @param {ConfirmHereModalOptions} props Modal options and callbacks.
+ * @returns {JSX.Element} Rendered confirmation modal.
+ *
+ * @example Basic usage with default countdown.
  * ```tsx
- * import React, { useState } from 'react';
- * import { ConfirmHereModal } from 'mediasfu-reactnative';
+ * <ConfirmHereModal
+ *   isConfirmHereModalVisible={visible}
+ *   onConfirmHereClose={closeModal}
+ *   roomName={roomName}
+ *   member={memberId}
+ *   socket={socket}
+ * />
+ * ```
  *
- * function App() {
- *   const [isModalVisible, setModalVisible] = useState(true);
-
- *   return (
- *     <ConfirmHereModal
- *       isConfirmHereModalVisible={isModalVisible}
- *       onConfirmHereClose={() => setModalVisible(false)}
- *       countdownDuration={120}
- *       socket={socketInstance}
- *       localSocket={localSocketInstance}
- *       roomName='Main Room'
- *       member='User123'
- *       backgroundColor='#83c0e9'
- *     />
- *   );
- * }
-
- * export default App;
+ * @example Custom container with radial gradient background.
+ * ```tsx
+ * <ConfirmHereModal
+ *   {...props}
+ *   backgroundColor="rgba(15, 23, 42, 0.95)"
+ *   style={{ borderRadius: 24 }}
+ *   renderContainer={({ defaultContainer }) => (
+ *     <BlurView intensity={60}>{defaultContainer}</BlurView>
+ *   )}
+ * />
  * ```
  */
 
@@ -117,8 +161,12 @@ const ConfirmHereModal: React.FC<ConfirmHereModalOptions> = ({
   backgroundColor = '#83c0e9',
   countdownDuration = 120,
   socket,
+  localSocket,
   roomName,
   member,
+  style,
+  renderContent,
+  renderContainer,
 }) => {
   const [counter, setCounter] = useState<number>(countdownDuration);
 
@@ -135,6 +183,7 @@ const ConfirmHereModal: React.FC<ConfirmHereModalOptions> = ({
         onConfirm: onConfirmHereClose,
         onUpdateCounter: setCounter,
         socket,
+        localSocket,
         roomName,
         member,
       });
@@ -154,7 +203,39 @@ const ConfirmHereModal: React.FC<ConfirmHereModalOptions> = ({
     // Additional logic if needed
   };
 
-  return (
+  const dimensions = { width: modalWidth, height: 0 };
+
+  const defaultContent = (
+    <View style={styles.modalBody}>
+      {/* Spinner */}
+      <ActivityIndicator
+        size="large"
+        color={'#000000'}
+        style={styles.spinnerContainer}
+      />
+
+      {/* Modal Content */}
+      <Text style={styles.modalTitle}>Are you still there?</Text>
+      <Text style={styles.modalMessage}>
+        Please confirm if you are still present.
+      </Text>
+      <Text style={styles.modalCounter}>
+        Time remaining: <Text style={styles.counterText}>{counter}</Text>{' '}
+        seconds
+      </Text>
+
+      {/* Confirm Button */}
+      <Pressable onPress={handleConfirmHere} style={styles.confirmButton}>
+        <Text style={styles.confirmButtonText}>Yes</Text>
+      </Pressable>
+    </View>
+  );
+
+  const content = renderContent
+    ? renderContent({ defaultContent, dimensions })
+    : defaultContent;
+
+  const defaultContainer = (
     <Modal
       transparent
       animationType="slide"
@@ -163,35 +244,17 @@ const ConfirmHereModal: React.FC<ConfirmHereModalOptions> = ({
     >
       <View style={styles.modalContainer}>
         <View
-          style={[styles.modalContent, { backgroundColor, width: modalWidth }]}
+          style={[styles.modalContent, { backgroundColor, width: modalWidth }, style]}
         >
-          <View style={styles.modalBody}>
-            {/* Spinner */}
-            <ActivityIndicator
-              size="large"
-              color={'#000000'}
-              style={styles.spinnerContainer}
-            />
-
-            {/* Modal Content */}
-            <Text style={styles.modalTitle}>Are you still there?</Text>
-            <Text style={styles.modalMessage}>
-              Please confirm if you are still present.
-            </Text>
-            <Text style={styles.modalCounter}>
-              Time remaining: <Text style={styles.counterText}>{counter}</Text>{' '}
-              seconds
-            </Text>
-
-            {/* Confirm Button */}
-            <Pressable onPress={handleConfirmHere} style={styles.confirmButton}>
-              <Text style={styles.confirmButtonText}>Yes</Text>
-            </Pressable>
-          </View>
+          {content}
         </View>
       </View>
     </Modal>
   );
+
+  return renderContainer
+    ? renderContainer({ defaultContainer, dimensions })
+    : defaultContainer;
 };
 
 export default ConfirmHereModal;

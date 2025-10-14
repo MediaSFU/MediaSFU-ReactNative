@@ -54,7 +54,7 @@ export type ConnectRecvTransportType = (options: ConnectRecvTransportOptions) =>
  *   nsock: socket,
  *   parameters: connectRecvTransportOptions,
  * };
- * 
+ *
  * connectRecvTransport(options)
  *   .then(() => {
  *     console.log('Transport connected and consuming media');

@@ -29,7 +29,7 @@ export type ReInitiateRecordingType = (options: ReInitiateRecordingOptions) => P
  *   socket: socketInstance,
  *   adminRestrictSetting: false,
  * };
- * 
+ *
  * await reInitiateRecording(options);
  * ```
  */

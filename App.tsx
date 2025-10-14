@@ -39,22 +39,266 @@ import { CreateMediaSFURoomOptions, JoinMediaSFURoomOptions } from './src/@types
 // =========================================================
 //
 // Import custom component types (uncomment to use custom components)
-// import {
-//   CustomVideoCardType,
-//   CustomAudioCardType,
-//   CustomMiniCardType,
-// } from './src/@types/types';
+import {
+  CustomVideoCardType,
+  CustomAudioCardType,
+  CustomMiniCardType,
+} from './src/@types/types';
+import { View, Text } from 'react-native';
+
+// =========================================================
+//              EXAMPLE CUSTOM COMPONENTS
+// =========================================================
 //
-// Import pre-built custom components (see example-custom-components.js)
-// import {
-//   MyCustomVideoCard,
-//   MyCustomAudioCard,
-//   MyCustomMiniCard,
-// } from './example-custom-components';
+// These are example custom components that you can use to replace
+// the default VideoCard, AudioCard, and MiniCard components.
+// Feel free to modify these examples or create your own custom components.
+
+// Example Custom VideoCard for React Native
+const CustomVideoCard: CustomVideoCardType = ({
+  name,
+  barColor,
+  textColor,
+  imageSource,
+  roundedImage,
+  imageStyle,
+  showControls,
+  showInfo,
+  videoInfoComponent,
+  videoControlsComponent,
+  controlsPosition,
+  infoPosition,
+  participant,
+  backgroundColor,
+  onVideoPress,
+  parameters,
+}) => {
+  return (
+    <View
+      style={[
+        {
+          width: '100%',
+          height: '100%',
+          backgroundColor: backgroundColor || 'rgba(0, 0, 0, 0.8)',
+          borderRadius: 16,
+          position: 'relative',
+          overflow: 'hidden',
+          borderWidth: 3,
+          borderColor: '#6366f1',
+        },
+      ]}
+    >
+      {/* Custom video display would go here */}
+      {/* Note: Video rendering in React Native requires platform-specific implementation */}
+
+      {/* Custom participant info overlay */}
+      {showInfo && (
+        <View style={{
+          position: 'absolute',
+          bottom: 8,
+          left: 8,
+          backgroundColor: '#6366f1',
+          paddingHorizontal: 12,
+          paddingVertical: 4,
+          borderRadius: 20,
+        }}>
+          <Text style={{
+            color: 'white',
+            fontSize: 14,
+            fontWeight: 'bold',
+          }}>
+            🎥 {name || participant?.name}
+          </Text>
+        </View>
+      )}
+
+      {/* Custom controls overlay */}
+      {showControls && (
+        <View style={{
+          position: 'absolute',
+          top: 8,
+          right: 8,
+          flexDirection: 'row',
+          gap: 8,
+        }}>
+          <View style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            borderRadius: 16,
+            width: 32,
+            height: 32,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <Text style={{ color: 'white', fontSize: 16 }}>🔇</Text>
+          </View>
+          <View style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            borderRadius: 16,
+            width: 32,
+            height: 32,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <Text style={{ color: 'white', fontSize: 16 }}>📹</Text>
+          </View>
+        </View>
+      )}
+    </View>
+  );
+};
+
+// Example Custom AudioCard for React Native
+const CustomAudioCard: CustomAudioCardType = ({
+  name,
+  barColor,
+  textColor,
+  parameters,
+}) => {
+  const isActive = barColor; // barColor indicates if participant is speaking
+
+  return (
+    <View
+      style={{
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 20,
+        borderRadius: 16,
+        minHeight: 120,
+        position: 'relative',
+        overflow: 'hidden',
+        backgroundColor: isActive ? '#ef4444' : '#6b7280',
+      }}
+    >
+      {/* Audio wave animation background */}
+      {isActive && (
+        <View style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+          opacity: 0.5,
+        }} />
+      )}
+
+      {/* Avatar */}
+      <View style={{
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 12,
+        zIndex: 1,
+      }}>
+        <Text style={{
+          fontSize: 24,
+          fontWeight: 'bold',
+          color: 'white',
+        }}>
+          {name ? name.charAt(0).toUpperCase() : '?'}
+        </Text>
+      </View>
+
+      {/* Name */}
+      <Text style={{
+        fontSize: 16,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        color: textColor || 'white',
+        zIndex: 1,
+      }}>
+        {name}
+      </Text>
+
+      {/* Speaking indicator */}
+      {isActive && (
+        <Text style={{
+          marginTop: 8,
+          fontSize: 12,
+          color: 'rgba(255, 255, 255, 0.8)',
+          zIndex: 1,
+        }}>
+          🎤 Speaking...
+        </Text>
+      )}
+    </View>
+  );
+};
+
+// Example Custom MiniCard for React Native
+const CustomMiniCard: CustomMiniCardType = ({
+  initials,
+  name,
+  showVideoIcon,
+  showAudioIcon,
+  parameters,
+}) => {
+  return (
+    <View style={{
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 12,
+      backgroundColor: '#1f2937',
+      borderRadius: 12,
+      minHeight: 80,
+      minWidth: 80,
+      borderWidth: 2,
+      borderColor: '#6366f1',
+    }}>
+      {/* Avatar/Initials */}
+      <View style={{
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#6366f1',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 6,
+      }}>
+        <Text style={{
+          fontSize: 16,
+          fontWeight: 'bold',
+          color: 'white',
+        }}>
+          {initials || name?.charAt(0)?.toUpperCase() || '?'}
+        </Text>
+      </View>
+
+      {/* Name */}
+      <Text style={{
+        fontSize: 10,
+        textAlign: 'center',
+        marginBottom: 6,
+        color: 'white',
+        maxWidth: '100%',
+      }} numberOfLines={1} ellipsizeMode="tail">
+        {name}
+      </Text>
+
+      {/* Media status icons */}
+      <View style={{
+        flexDirection: 'row',
+        gap: 4,
+      }}>
+        {showVideoIcon && (
+          <Text style={{ fontSize: 12, opacity: 0.7 }}>📹</Text>
+        )}
+        {showAudioIcon && (
+          <Text style={{ fontSize: 12, opacity: 0.7 }}>🎤</Text>
+        )}
+      </View>
+    </View>
+  );
+};
+
 //
-// For detailed custom component examples and documentation,
+// For more detailed custom component examples and documentation,
 // see the "Custom Components Guide" section in README.md
-// or check out example-custom-components.js for complete working examples.
+// or check out example-custom-components.tsx for complete working examples.
 
 // =========================================================
 //              COMPLETE CUSTOM UI COMPONENT (NEW!)
@@ -470,6 +714,217 @@ const App = () => {
   // You can still use individual custom components within your custom UI by accessing
   // them through parameters.customComponents (if provided).
 
+  // =========================================================
+  //              UI OVERRIDES EXAMPLES (NEW!)
+  // =========================================================
+  //
+  // MediaSFU now supports comprehensive UI component overrides through the
+  // uiOverrides prop. You can replace any display, modal, or functional component
+  // with your own custom implementation.
+  //
+  // Available UI Override Categories:
+  //
+  // 1. DISPLAY COMPONENTS (Layout & Video Display)
+  //    - mainContainer: Main viewport container
+  //    - mainAspect: Responsive main aspect container
+  //    - mainScreen: Main/secondary region calculator
+  //    - mainGrid: Primary on-stage grid
+  //    - subAspect: Auxiliary control strip
+  //    - otherGrid: Secondary participant grid
+  //    - flexibleVideo: Video grid with screenboard overlay
+  //    - flexibleGrid: Row/column matrix layout
+  //    - audioGrid: Audio-only participant grid
+  //    - pagination: Page navigation controls
+  //
+  // 2. CONTROL COMPONENTS
+  //    - controlButtons: Main control button bar
+  //    - controlButtonsAlt: Compact stage-adjacent controls
+  //
+  // 3. UTILITY COMPONENTS
+  //    - loadingModal: Loading overlay
+  //    - alert: Alert/notification modal
+  //
+  // 4. MODAL COMPONENTS
+  //    - menuModal: Main menu modal
+  //    - recordingModal: Recording controls modal
+  //    - requestsModal: Participant requests modal
+  //    - waitingRoomModal: Waiting room management modal
+  //    - coHostModal: Co-host management modal
+  //    - mediaSettingsModal: Media device settings modal
+  //    - displaySettingsModal: Display preferences modal
+  //    - eventSettingsModal: Event configuration modal
+  //    - participantsModal: Participants list modal
+  //    - messagesModal: Chat messages modal
+  //    - confirmExitModal: Exit confirmation modal
+  //    - confirmHereModal: Presence confirmation modal
+  //    - shareEventModal: Event sharing modal
+  //    - pollModal: Polls modal
+  //    - breakoutRoomsModal: Breakout rooms modal
+  //
+  // 5. AUDIO COMPONENTS
+  //    - miniAudio: Mini audio level indicator
+  //    - miniAudioPlayer: Audio stream player with waveform
+  //
+  // 6. FUNCTIONAL OVERRIDES
+  //    - consumerResume: Consumer resume function
+  //    - addVideosGrid: Video grid addition function
+  //
+  // Example 1: Replace main grid and control buttons
+  // import { CustomMainGrid } from './components/CustomMainGrid';
+  // import { CustomControls } from './components/CustomControls';
+  //
+  // const uiOverrides = {
+  //   mainGrid: CustomMainGrid,
+  //   controlButtons: CustomControls,
+  // };
+  //
+  // return (
+  //   <MediasfuGeneric
+  //     PrejoinPage={PreJoinPage}
+  //     credentials={credentials}
+  //     connectMediaSFU={connectMediaSFU}
+  //     uiOverrides={uiOverrides}
+  //   />
+  // );
+  //
+  // Example 2: Custom modals for branded experience
+  // import { BrandedMenu } from './components/BrandedMenu';
+  // import { BrandedParticipants } from './components/BrandedParticipants';
+  // import { BrandedChat } from './components/BrandedChat';
+  //
+  // const uiOverrides = {
+  //   menuModal: BrandedMenu,
+  //   participantsModal: BrandedParticipants,
+  //   messagesModal: BrandedChat,
+  //   alert: CustomAlert,
+  // };
+  //
+  // return (
+  //   <MediasfuConference
+  //     PrejoinPage={PreJoinPage}
+  //     credentials={credentials}
+  //     connectMediaSFU={connectMediaSFU}
+  //     uiOverrides={uiOverrides}
+  //   />
+  // );
+  //
+  // Example 3: Complete layout overhaul
+  // import {
+  //   CustomMainContainer,
+  //   CustomMainAspect,
+  //   CustomMainScreen,
+  //   CustomMainGrid,
+  //   CustomOtherGrid,
+  //   CustomFlexibleGrid,
+  //   CustomPagination
+  // } from './components/CustomLayout';
+  //
+  // const uiOverrides = {
+  //   mainContainer: CustomMainContainer,
+  //   mainAspect: CustomMainAspect,
+  //   mainScreen: CustomMainScreen,
+  //   mainGrid: CustomMainGrid,
+  //   otherGrid: CustomOtherGrid,
+  //   flexibleGrid: CustomFlexibleGrid,
+  //   pagination: CustomPagination,
+  // };
+  //
+  // return (
+  //   <MediasfuWebinar
+  //     PrejoinPage={PreJoinPage}
+  //     credentials={credentials}
+  //     connectMediaSFU={connectMediaSFU}
+  //     uiOverrides={uiOverrides}
+  //   />
+  // );
+  //
+  // Example 4: Custom audio visualizations
+  // import { CustomMiniAudio } from './components/CustomMiniAudio';
+  // import { CustomMiniAudioPlayer } from './components/CustomMiniAudioPlayer';
+  //
+  // const uiOverrides = {
+  //   miniAudio: CustomMiniAudio,
+  //   miniAudioPlayer: CustomMiniAudioPlayer,
+  // };
+  //
+  // return (
+  //   <MediasfuBroadcast
+  //     PrejoinPage={PreJoinPage}
+  //     credentials={credentials}
+  //     connectMediaSFU={connectMediaSFU}
+  //     uiOverrides={uiOverrides}
+  //   />
+  // );
+  //
+  // Example 5: Hybrid approach - UI overrides + custom cards + custom component
+  // import { MyCompleteCustomUI } from './components/MyCompleteCustomUI';
+  // import { MyCustomVideoCard } from './components/MyCustomVideoCard';
+  // import { CustomMainGrid } from './components/CustomMainGrid';
+  // import { CustomControlButtons } from './components/CustomControlButtons';
+  //
+  // const uiOverrides = {
+  //   mainGrid: CustomMainGrid,
+  //   controlButtons: CustomControlButtons,
+  //   alert: CustomAlert,
+  // };
+  //
+  // return (
+  //   <MediasfuGeneric
+  //     PrejoinPage={PreJoinPage}
+  //     credentials={credentials}
+  //     connectMediaSFU={connectMediaSFU}
+  //     customComponent={MyCompleteCustomUI}  // Complete UI replacement
+  //     customVideoCard={MyCustomVideoCard}   // Custom video cards
+  //     uiOverrides={uiOverrides}             // Override specific components
+  //   />
+  // );
+  //
+  // Example 6: Functional overrides for custom behavior
+  // import { customConsumerResume } from './functions/customConsumerResume';
+  // import { customAddVideosGrid } from './functions/customAddVideosGrid';
+  //
+  // const uiOverrides = {
+  //   consumerResume: customConsumerResume,     // Custom consumer resume logic
+  //   addVideosGrid: customAddVideosGrid,       // Custom video grid logic
+  // };
+  //
+  // return (
+  //   <MediasfuConference
+  //     PrejoinPage={PreJoinPage}
+  //     credentials={credentials}
+  //     connectMediaSFU={connectMediaSFU}
+  //     uiOverrides={uiOverrides}
+  //   />
+  // );
+  //
+  // Note: All UI override components receive the same props as the default components.
+  // Refer to each component's TypeScript interface for prop requirements.
+  // For detailed component documentation, see the respective component files in
+  // src/components/displayComponents/ and src/components/*/
+
+  // =========================================================
+  //           CONTAINERIZATION & STYLING (NEW!)
+  // =========================================================
+  //
+  // Customize the root container styling for any MediaSFU component:
+  //
+  // Example: Custom container with dark theme
+  // const containerStyle = {
+  //   backgroundColor: '#1a1a1a',
+  //   borderRadius: 10,
+  //   borderWidth: 2,
+  //   borderColor: '#333',
+  //   overflow: 'hidden',
+  // };
+  //
+  // return (
+  //   <MediasfuConference
+  //     PrejoinPage={PreJoinPage}
+  //     credentials={credentials}
+  //     connectMediaSFU={connectMediaSFU}
+  //     containerStyle={containerStyle}
+  //   />
+  // );
 
   return (
     <MediasfuGeneric
@@ -485,6 +940,33 @@ const App = () => {
       updateSourceParameters={!returnUI ? updateSourceParameters : undefined}
       createMediaSFURoom={createRoomOnMediaSFU} // no need to specify if not using custom functions
       joinMediaSFURoom={joinRoomOnMediaSFU} // no need to specify if not using custom functions
+
+      // ===== ADVANCED CUSTOMIZATION OPTIONS =====
+      // Uncomment and customize as needed:
+
+      // Custom participant card components
+      // customVideoCard={MyCustomVideoCard}
+      // customAudioCard={MyCustomAudioCard}
+      // customMiniCard={MyCustomMiniCard}
+
+      // Complete UI replacement
+      // customComponent={MyCompleteCustomUI}
+
+      // UI component overrides
+      // uiOverrides={{
+      //   mainGrid: CustomMainGrid,
+      //   controlButtons: CustomControlButtons,
+      //   participantsModal: BrandedParticipants,
+      //   messagesModal: BrandedChat,
+      //   alert: CustomAlert,
+      //   // ... add more overrides as needed
+      // }}
+
+      // Container styling
+      // containerStyle={{
+      //   backgroundColor: '#1a1a1a',
+      //   borderRadius: 10,
+      // }}
     />
   );
 };

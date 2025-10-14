@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   ViewStyle,
   ImageStyle,
   Animated,
+  LayoutChangeEvent,
 } from 'react-native';
 import { getOverlayPosition } from '../../methods/utils/getOverlayPosition';
 
@@ -17,103 +18,64 @@ import { getOverlayPosition } from '../../methods/utils/getOverlayPosition';
 type OverlayPosition = 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
 
 /**
- * Interface defining the props for the MiniCardAudio component.
+ * Options for rendering a `MiniCardAudio`.
+ *
+ * @interface MiniCardAudioOptions
+ *
+ * **Appearance:**
+ * @property {StyleProp<ViewStyle>} [customStyle] Additional styling for the audio card body.
+ * @property {StyleProp<ViewStyle>} [style] Styling applied to the outer wrapper.
+ * @property {string} name Participant label text.
+ * @property {string} [imageSource] Optional background image.
+ * @property {boolean} [roundedImage=false] Whether the image should be rounded.
+ * @property {StyleProp<ImageStyle>} [imageStyle] Extra styling for the background image.
+ *
+ * **Waveform & Overlay:**
+ * @property {boolean} showWaveform Toggles waveform animation visibility.
+ * @property {OverlayPosition} [overlayPosition='topLeft'] Overlay anchor for the name/waveform row.
+ * @property {string} [barColor='white'] Waveform bar color.
+ * @property {string} [textColor='white'] Participant text color.
+ *
+ * **Advanced Render Overrides:**
+ * @property {(options: { defaultContent: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContent]
+ * Override for the internal layout.
+ * @property {(options: { defaultContainer: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContainer]
+ * Override for the outer container.
  */
 export interface MiniCardAudioOptions {
-  /**
-   * Custom styles to apply to the card.
-   */
   customStyle?: StyleProp<ViewStyle>;
-
-  /**
-   * The name to display on the card.
-   */
   name: string;
-
-  /**
-   * Flag to show or hide the waveform animation.
-   */
   showWaveform: boolean;
-
-  /**
-   * Position of the overlay on the card.
-   * @default 'topLeft'
-   */
   overlayPosition?: OverlayPosition;
-
-  /**
-   * The color of the waveform bars.
-   * @default 'white'
-   */
   barColor?: string;
-
-  /**
-   * The color of the text.
-   * @default 'white'
-   */
   textColor?: string;
-
-  /**
-   * The source URI for the background image.
-   */
   imageSource?: string;
-
-  /**
-   * Flag to apply rounded corners to the image.
-   * @default false
-   */
   roundedImage?: boolean;
-
-  /**
-   * Custom styles to apply to the image.
-   */
   imageStyle?: StyleProp<ImageStyle>;
+  style?: StyleProp<ViewStyle>;
+  renderContent?: (options: {
+    defaultContent: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
+  renderContainer?: (options: {
+    defaultContainer: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
 }
 
 export type MiniCardAudioType = (options: MiniCardAudioOptions) => JSX.Element;
 
 /**
- * MiniCardAudio displays an audio card with optional waveform animation and custom styling options.
+ * MiniCardAudio renders a compact audio badge with optional waveform animation. It is ideal for spotlighting
+ * speaking participants in grid layouts or mini overlays.
  *
- * This component supports showing an animated waveform, an image, and custom positioning for the overlay. It is designed
- * for displaying audio-related information in a visually appealing, customizable way.
+ * ### Key Features
+ * - Animated waveform synchronized via `Animated` API.
+ * - Overlay positioning helper for name/waveform cluster.
+ * - Supports background imagery with optional rounded styling.
  *
- * @component
- * @param {MiniCardAudioOptions} props - Configuration options for the MiniCardAudio component.
- * @param {StyleProp<ViewStyle>} [props.customStyle] - Custom styles for the card container.
- * @param {string} props.name - The name displayed on the audio card.
- * @param {boolean} props.showWaveform - Toggles the waveform animation display.
- * @param {OverlayPosition} [props.overlayPosition='topLeft'] - Position of the overlay on the card.
- * @param {string} [props.barColor='white'] - Color of the waveform bars.
- * @param {string} [props.textColor='white'] - Color of the displayed name text.
- * @param {string} [props.imageSource] - URI for the background image.
- * @param {boolean} [props.roundedImage=false] - Determines if the image should have rounded corners.
- * @param {StyleProp<ImageStyle>} [props.imageStyle] - Custom styles for the background image.
- *
- * @returns {JSX.Element} The MiniCardAudio component.
- *
- * @example
- * ```tsx
- * import React from 'react';
- * import { MiniCardAudio } from 'mediasfu-reactnative';
- *
- * function App() {
- *   return (
- *     <MiniCardAudio
- *       name="Alice Johnson"
- *       showWaveform={true}
- *       overlayPosition="bottomRight"
- *       barColor="blue"
- *       textColor="white"
- *       imageSource="https://example.com/profile.jpg"
- *       roundedImage={true}
- *       customStyle={{ width: 100, height: 100 }}
- *     />
- *   );
- * }
- *
- * export default App;
- * ```
+ * @param {MiniCardAudioOptions} props Audio mini card configuration.
+ * @returns {JSX.Element} Rendered audio mini card.
  */
 
 const MiniCardAudio: React.FC<MiniCardAudioOptions> = ({
@@ -126,19 +88,31 @@ const MiniCardAudio: React.FC<MiniCardAudioOptions> = ({
   imageSource,
   roundedImage = false,
   imageStyle,
+  style,
+  renderContent,
+  renderContainer,
 }) => {
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
   // Initialize waveform animation values
   const [waveformAnimations] = useState<Animated.Value[]>(
     Array.from({ length: 9 }, () => new Animated.Value(0)),
   );
 
-  // Reference to store interval IDs (if using setInterval)
-  // Not recommended in React Native; using Animated API instead
+  /**
+   * Retrieves the animation duration for a specific bar.
+   * @param {number} index - The index of the waveform bar.
+   * @returns {number} The duration in milliseconds.
+   */
+  const getAnimationDuration = useCallback((index: number): number => {
+    const durations = [474, 433, 407, 458, 400, 427, 441, 419, 487];
+    return durations[index] || 400;
+  }, []);
 
   /**
    * Animates the waveform bars using the Animated API.
    */
-  const animateWaveform = () => {
+  const animateWaveform = useCallback(() => {
     const animations = waveformAnimations.map((animation, index) => Animated.loop(
       Animated.sequence([
         Animated.timing(animation, {
@@ -155,27 +129,17 @@ const MiniCardAudio: React.FC<MiniCardAudioOptions> = ({
     ));
 
     Animated.parallel(animations).start();
-  };
+  }, [getAnimationDuration, waveformAnimations]);
 
   /**
    * Resets the waveform animations to their initial state.
    */
-  const resetWaveform = () => {
+  const resetWaveform = useCallback(() => {
     waveformAnimations.forEach((animation) => {
       animation.setValue(0);
       animation.stopAnimation();
     });
-  };
-
-  /**
-   * Retrieves the animation duration for a specific bar.
-   * @param index - The index of the waveform bar.
-   * @returns number - The duration in milliseconds.
-   */
-  const getAnimationDuration = (index: number): number => {
-    const durations = [474, 433, 407, 458, 400, 427, 441, 419, 487];
-    return durations[index] || 400;
-  };
+  }, [waveformAnimations]);
 
   useEffect(() => {
     if (showWaveform) {
@@ -188,48 +152,97 @@ const MiniCardAudio: React.FC<MiniCardAudioOptions> = ({
     return () => {
       resetWaveform();
     };
+  }, [animateWaveform, resetWaveform, showWaveform]);
 
-  }, [showWaveform]);
+  const handleLayout = useCallback((event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout;
+    setDimensions((current) => {
+      if (current.width === width && current.height === height) {
+        return current;
+      }
+      return { width, height };
+    });
+  }, []);
 
-  return (
-    <View style={[styles.card, customStyle]}>
-      {imageSource && (
-        <Image
-          source={{ uri: imageSource }}
-          style={[
-            styles.backgroundImage,
-            roundedImage && styles.roundedImage,
-            imageStyle,
-          ]}
-          resizeMode="cover"
-        />
-      )}
-      <View style={[getOverlayPosition({ position: overlayPosition }), styles.overlayContainer]}>
-        <View style={styles.nameColumn}>
-          <Text style={[styles.nameText, { color: textColor }]}>{name}</Text>
-        </View>
-        {showWaveform && (
-          <View style={styles.waveformContainer}>
-            {waveformAnimations.map((animation, index) => (
-              <Animated.View
-                key={index}
-                style={[
-                  styles.bar,
-                  {
-                    height: animation.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [1, 16],
-                    }),
-                    backgroundColor: barColor,
-                  },
-                ]}
-              />
-            ))}
-          </View>
+  const accessibilityLabel = useMemo(() => {
+    if (showWaveform) {
+      return `${name} is speaking`;
+    }
+    return name;
+  }, [name, showWaveform]);
+
+  const defaultContent = useMemo(
+    () => (
+      <>
+        {imageSource && (
+          <Image
+            source={{ uri: imageSource }}
+            style={[
+              styles.backgroundImage,
+              roundedImage && styles.roundedImage,
+              imageStyle,
+            ]}
+            resizeMode="cover"
+          />
         )}
-      </View>
+        <View style={[getOverlayPosition({ position: overlayPosition }), styles.overlayContainer]}>
+          <View style={styles.nameColumn}>
+            <Text style={[styles.nameText, { color: textColor }]}>{name}</Text>
+          </View>
+          {showWaveform && (
+            <View style={styles.waveformContainer}>
+              {waveformAnimations.map((animation, index) => (
+                <Animated.View
+                  key={index}
+                  style={[
+                    styles.bar,
+                    {
+                      height: animation.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [1, 16],
+                      }),
+                      backgroundColor: barColor,
+                    },
+                  ]}
+                />
+              ))}
+            </View>
+          )}
+        </View>
+      </>
+    ),
+    [
+      barColor,
+      imageSource,
+      imageStyle,
+      name,
+      overlayPosition,
+      roundedImage,
+      showWaveform,
+      textColor,
+      waveformAnimations,
+    ],
+  );
+
+  const content = useMemo(
+    () => (renderContent ? renderContent({ defaultContent, dimensions }) : defaultContent),
+    [defaultContent, dimensions, renderContent],
+  );
+
+  const defaultContainer = (
+    <View
+      style={[styles.card, customStyle, style]}
+      onLayout={handleLayout}
+      accessibilityRole="image"
+      accessibilityLabel={accessibilityLabel}
+    >
+      {content}
     </View>
   );
+
+  return renderContainer
+    ? renderContainer({ defaultContainer, dimensions })
+    : defaultContainer;
 };
 
 export default MiniCardAudio;

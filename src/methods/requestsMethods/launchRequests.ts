@@ -13,7 +13,7 @@ export type LaunchRequestsType = (options: LaunchRequestsOptions) => void;
  * @param {Function} options.updateIsRequestsModalVisible - Function to update the visibility state of the requests modal.
  * @param {boolean} options.isRequestsModalVisible - Current visibility state of the requests modal.
  * @returns {void}
- * 
+ *
  * @example
  * ```typescript
  * launchRequests({

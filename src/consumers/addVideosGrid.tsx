@@ -1,3 +1,4 @@
+import React from 'react';
 import MiniCard from '../components/displayComponents/MiniCard';
 import VideoCard from '../components/displayComponents/VideoCard';
 import AudioCard from '../components/displayComponents/AudioCard';
@@ -25,6 +26,9 @@ export interface AddVideosGridParameters extends UpdateMiniCardsGridParameters, 
   customVideoCard?: CustomVideoCardType;
   customAudioCard?: CustomAudioCardType;
   customMiniCard?: CustomMiniCardType;
+  videoCardComponent?: React.ComponentType<React.ComponentProps<typeof VideoCard>>;
+  audioCardComponent?: React.ComponentType<React.ComponentProps<typeof AudioCard>>;
+  miniCardComponent?: React.ComponentType<React.ComponentProps<typeof MiniCard>>;
 
   // mediasfu functions
   updateMiniCardsGrid: UpdateMiniCardsGridType;
@@ -142,11 +146,158 @@ export async function addVideosGrid({
     forceFullDisplay,
     otherGridStreams,
     updateOtherGridStreams,
-    updateMiniCardsGrid,
-    customVideoCard,
-    customAudioCard,
-    customMiniCard,
+  updateMiniCardsGrid,
+  customVideoCard,
+  customMiniCard,
+    videoCardComponent,
+    audioCardComponent,
+    miniCardComponent,
   } = parameters;
+
+  // Create component overrides with fallbacks
+  const VideoCardComponentToUse = videoCardComponent ?? VideoCard;
+  const AudioCardComponentToUse = audioCardComponent ?? AudioCard;
+  const MiniCardComponentToUse = miniCardComponent ?? MiniCard;
+
+  // Helper functions to build cards with proper override handling
+  const buildVideoCard = ({
+    key,
+    videoStream,
+    remoteProducerId = '',
+    eventType: cardEventType,
+    forceFullDisplay: cardForceFullDisplay = false,
+    customStyle,
+    participant: cardParticipant,
+    backgroundColor,
+    showControls = false,
+    showInfo = true,
+    name = '',
+    doMirror = false,
+  }: {
+    key: string;
+    videoStream: MediaStreamType | null;
+    remoteProducerId?: string;
+    eventType: EventType;
+    forceFullDisplay?: boolean;
+    customStyle?: any;
+    participant: Participant;
+    backgroundColor?: string;
+    showControls?: boolean;
+    showInfo?: boolean;
+    name?: string;
+    doMirror?: boolean;
+  }) => {
+    if (customVideoCard) {
+      return React.createElement(customVideoCard as any, {
+        key,
+        videoStream: videoStream || new MediaStream(),
+        remoteProducerId,
+        eventType: cardEventType,
+        forceFullDisplay: cardForceFullDisplay,
+        customStyle,
+        participant: cardParticipant,
+        backgroundColor,
+        showControls,
+        showInfo,
+        name,
+        doMirror,
+        parameters,
+      });
+    }
+
+    return (
+      <VideoCardComponentToUse
+        key={key}
+        videoStream={videoStream}
+        remoteProducerId={remoteProducerId}
+        eventType={cardEventType}
+        forceFullDisplay={cardForceFullDisplay}
+        customStyle={customStyle}
+        participant={cardParticipant}
+        backgroundColor={backgroundColor}
+        showControls={showControls}
+        showInfo={showInfo}
+        name={name}
+        doMirror={doMirror}
+        parameters={parameters}
+      />
+    );
+  };
+
+  const buildAudioCard = ({
+    key,
+    name,
+    barColor = 'red',
+    textColor = 'white',
+    customStyle,
+    roundedImage = true,
+    backgroundColor = 'transparent',
+    showControls = false,
+    participant: cardParticipant,
+  }: {
+    key: string;
+    name: string;
+    barColor?: string;
+    textColor?: string;
+    customStyle?: any;
+    roundedImage?: boolean;
+    backgroundColor?: string;
+    showControls?: boolean;
+    participant: Participant;
+  }) => {
+    return (
+      <AudioCardComponentToUse
+        key={key}
+        name={name}
+        barColor={barColor}
+        textColor={textColor}
+        customStyle={customStyle}
+        controlsPosition="topLeft"
+        infoPosition="topRight"
+        roundedImage={roundedImage}
+        parameters={parameters}
+        backgroundColor={backgroundColor}
+        showControls={showControls}
+        participant={cardParticipant}
+      />
+    );
+  };
+
+  const buildMiniCard = ({
+    key,
+    initials,
+    fontSize = 20,
+    customStyle,
+  }: {
+    key: string;
+    initials: string;
+    fontSize?: number;
+    customStyle?: any;
+  }) => {
+    if (customMiniCard) {
+      return React.createElement(customMiniCard as any, {
+        key,
+        initials,
+        fontSize: `${fontSize}px`,
+        name: initials,
+        showVideoIcon: false,
+        showAudioIcon: false,
+        imageSource: '',
+        roundedImage: true,
+        imageStyle: {},
+        parameters,
+      });
+    }
+
+    return (
+      <MiniCardComponentToUse
+        key={key}
+        initials={initials}
+        fontSize={fontSize}
+        customStyle={customStyle}
+      />
+    );
+  };
 
   const newComponents: JSX.Element[][] = [[], []];
   let participant: any;
@@ -170,41 +321,34 @@ export async function addVideosGrid({
 
       if (participant.audioID) {
         newComponents[0].push(
-          <AudioCard
-            key={`audio-${participant.id}`}
-            name={participant.name || ''}
-            barColor="red"
-            textColor="white"
-            customStyle={{
+          buildAudioCard({
+            key: `audio-${participant.id}`,
+            name: participant.name || '',
+            barColor: 'red',
+            textColor: 'white',
+            customStyle: {
               backgroundColor: 'transparent',
               borderWidth: eventType !== 'broadcast' ? 2 : 0,
               borderColor: 'black',
-            }}
-            controlsPosition="topLeft"
-            infoPosition="topRight"
-            roundedImage
-            parameters={parameters}
-            backgroundColor="transparent"
-            showControls={eventType !== 'chat'}
-            participant={participant}
-            customAudioCard={customAudioCard}
-          />,
+            },
+            roundedImage: true,
+            backgroundColor: 'transparent',
+            showControls: eventType !== 'chat',
+            participant,
+          }),
         );
       } else {
         newComponents[0].push(
-          <MiniCard
-            key={`mini-card-${participant.id}`}
-            initials={participant.name}
-            fontSize={20}
-            customStyle={{
+          buildMiniCard({
+            key: `mini-${participant.id}`,
+            initials: participant.name,
+            fontSize: 20,
+            customStyle: {
               backgroundColor: 'transparent',
-              borderRadius: 0,
-              borderWidth: 2,
+              borderWidth: eventType !== 'broadcast' ? 2 : 0,
               borderColor: 'black',
-            }}
-            name={participant.name}
-            customMiniCard={customMiniCard}
-          />,
+            },
+          }),
         );
       }
     } else if (remoteProducerId === 'youyou' || remoteProducerId === 'youyouyou') {
@@ -215,17 +359,16 @@ export async function addVideosGrid({
 
       if (!videoAlreadyOn) {
         newComponents[0].push(
-          <MiniCard
-            key="mini-you"
-            initials={name}
-            fontSize={20}
-            customStyle={{
+          buildMiniCard({
+            key: 'mini-you',
+            initials: name,
+            fontSize: 20,
+            customStyle: {
               backgroundColor: 'transparent',
               borderWidth: eventType !== 'broadcast' ? 2 : 0,
               borderColor: 'black',
-            }}
-            customMiniCard={customMiniCard}
-          />,
+            },
+          }),
         );
       } else {
         participant = {
@@ -238,27 +381,23 @@ export async function addVideosGrid({
         };
 
         newComponents[0].push(
-          <VideoCard
-            key="video-you"
-            videoStream={participant.stream || new MediaStream()}
-            remoteProducerId={participant.stream?.id || ''}
-            eventType={eventType}
-            forceFullDisplay={
-                eventType === 'webinar' ? false : forceFullDisplay
-              }
-            customStyle={{
+          buildVideoCard({
+            key: 'video-you',
+            videoStream: participant.stream,
+            remoteProducerId: participant.stream?.id || '',
+            eventType: eventType,
+            forceFullDisplay: eventType === 'webinar' ? false : forceFullDisplay,
+            customStyle: {
               borderWidth: eventType !== 'broadcast' ? 2 : 0,
               borderColor: 'black',
-            }}
-            participant={participant}
-            backgroundColor="transparent"
-            showControls={false}
-            showInfo={false}
-            name={participant.name}
-            doMirror
-            parameters={parameters}
-            customVideoCard={customVideoCard}
-          />,
+            },
+            participant: participant,
+            backgroundColor: 'transparent',
+            showControls: false,
+            showInfo: false,
+            name: participant.name,
+            doMirror: true,
+          }),
         );
       }
     } else {
@@ -267,25 +406,23 @@ export async function addVideosGrid({
       );
       if (participant_) {
         newComponents[0].push(
-          <VideoCard
-            key={`video-${participant_.id}`}
-            videoStream={participant.stream || new MediaStream()}
-            remoteProducerId={remoteProducerId || ''}
-            eventType={eventType}
-            forceFullDisplay={forceFullDisplay}
-            customStyle={{
+          buildVideoCard({
+            key: `video-${participant_.id}`,
+            videoStream: participant.stream,
+            remoteProducerId: remoteProducerId || '',
+            eventType: eventType,
+            forceFullDisplay: forceFullDisplay,
+            customStyle: {
               borderWidth: eventType !== 'broadcast' ? 2 : 0,
               borderColor: 'black',
-            }}
-            participant={participant_}
-            backgroundColor="transparent"
-            showControls={eventType !== 'chat'}
-            showInfo
-            name={participant_.name || ''}
-            doMirror={false}
-            parameters={parameters}
-            customVideoCard={customVideoCard}
-          />,
+            },
+            participant: participant_,
+            backgroundColor: 'transparent',
+            showControls: eventType !== 'chat',
+            showInfo: true,
+            name: participant_.name || '',
+            doMirror: false,
+          }),
         );
       }
     }
@@ -324,40 +461,34 @@ export async function addVideosGrid({
       if (pseudoName) {
         if (participant.audioID) {
           newComponents[1].push(
-            <AudioCard
-              key={`audio-alt-${participant.id}`}
-              name={participant.name}
-              barColor="red"
-              textColor="white"
-              customStyle={{
+            buildAudioCard({
+              key: `audio-alt-${participant.id}`,
+              name: participant.name,
+              barColor: 'red',
+              textColor: 'white',
+              customStyle: {
                 backgroundColor: 'transparent',
                 borderWidth: eventType !== 'broadcast' ? 2 : 0,
                 borderColor: 'black',
-              }}
-              controlsPosition="topLeft"
-              infoPosition="topRight"
-              roundedImage
-              parameters={parameters}
-              backgroundColor="transparent"
-              showControls={eventType !== 'chat'}
-              participant={participant}
-              customAudioCard={customAudioCard}
-            />,
+              },
+              roundedImage: true,
+              backgroundColor: 'transparent',
+              showControls: eventType !== 'chat',
+              participant,
+            }),
           );
         } else {
           newComponents[1].push(
-            <MiniCard
-              key={`mini-alt-${participant.id}`}
-              initials={participant.name}
-              fontSize={20}
-              customStyle={{
+            buildMiniCard({
+              key: `mini-alt-${participant.id}`,
+              initials: participant.name,
+              fontSize: 20,
+              customStyle: {
                 backgroundColor: 'transparent',
                 borderWidth: eventType !== 'broadcast' ? 2 : 0,
                 borderColor: 'black',
-              }}
-              name={participant.name}
-              customMiniCard={customMiniCard}
-            />,
+              },
+            }),
           );
         }
       } else {
@@ -366,25 +497,23 @@ export async function addVideosGrid({
         );
         if (participant_) {
           newComponents[1].push(
-            <VideoCard
-              key={`video-alt-${participant_.id}`}
-              videoStream={participant.stream || new MediaStream()}
-              remoteProducerId={remoteProducerId || ''}
-              eventType={eventType}
-              forceFullDisplay={forceFullDisplay}
-              customStyle={{
+            buildVideoCard({
+              key: `video-alt-${participant_.id}`,
+              videoStream: participant.stream,
+              remoteProducerId: remoteProducerId || '',
+              eventType: eventType,
+              forceFullDisplay: forceFullDisplay,
+              customStyle: {
                 borderWidth: eventType !== 'broadcast' ? 2 : 0,
                 borderColor: 'black',
-              }}
-              participant={participant_}
-              backgroundColor="transparent"
-              showControls={eventType !== 'chat'}
-              showInfo
-              name={participant.name}
-              doMirror={false}
-              parameters={parameters}
-              customVideoCard={customVideoCard}
-            />,
+              },
+              participant: participant_,
+              backgroundColor: 'transparent',
+              showControls: eventType !== 'chat',
+              showInfo: true,
+              name: participant.name,
+              doMirror: false,
+            }),
           );
         }
       }

@@ -8,6 +8,8 @@ import {
   Pressable,
   StyleSheet,
   Dimensions,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import RNPickerSelect from 'react-native-picker-select'; // Install using: npm install react-native-picker-select
@@ -17,152 +19,152 @@ import { modifySettings, ModifySettingsOptions } from '../../methods/settingsMet
 import { getModalPosition } from '../../methods/utils/getModalPosition';
 
 /**
- * Interface defining the parameters required by the EventSettingsModal component.
+ * Parameters supplied to `EventSettingsModal` for contextual state and server communication.
+ *
+ * @interface EventSettingsModalParameters
+ *
+ * **Display Preferences:**
+ * @property {string} meetingDisplayType Current display mode selection (`'video' | 'media' | 'all'`).
+ * @property {boolean} autoWave Whether auto-wave (audiograph) animations are enabled.
+ * @property {boolean} forceFullDisplay Forces full-grid display regardless of active speaker.
+ * @property {boolean} meetingVideoOptimized Indicates if video layout is optimized for performance.
+ *
+ * **Session Context:**
+ * @property {string} roomName Active room identifier.
+ * @property {Socket} socket Socket connection used when persisting settings.
+ * @property {ShowAlert} [showAlert] Optional alert helper for user feedback.
  */
 export interface EventSettingsModalParameters {
   meetingDisplayType: string;
   autoWave: boolean;
   forceFullDisplay: boolean;
   meetingVideoOptimized: boolean;
-
-  // Additional parameters inherited from ModifySettingsParameters
   roomName: string;
   socket: Socket;
   showAlert?: ShowAlert;
 }
 
 /**
- * Interface defining the options (props) for the EventSettingsModal component.
+ * Configuration options for the `EventSettingsModal` component.
+ *
+ * @interface EventSettingsModalOptions
+ *
+ * **Modal Control:**
+ * @property {boolean} isEventSettingsModalVisible Controls visibility state.
+ * @property {() => void} onEventSettingsClose Invoked when the modal should close.
+ *
+ * **Settings Actions:**
+ * @property {(options: ModifySettingsOptions) => Promise<void>} [onModifyEventSettings=modifySettings] Handler to persist updated settings.
+ *
+ * **Appearance:**
+ * @property {'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight'} [position='topRight'] Preferred anchor location.
+ * @property {string} [backgroundColor='#83c0e9'] Background color for the modal card.
+ * @property {StyleProp<ViewStyle>} [style] Additional styling for the modal container.
+ *
+ * **Permission Settings:**
+ * @property {string} audioSetting Initial audio participant rule.
+ * @property {string} videoSetting Initial video participant rule.
+ * @property {string} screenshareSetting Initial screenshare rule.
+ * @property {string} chatSetting Initial chat rule.
+ *
+ * **State Updaters:**
+ * @property {(setting: string) => void} updateAudioSetting Persists audio rule updates.
+ * @property {(setting: string) => void} updateVideoSetting Persists video rule updates.
+ * @property {(setting: string) => void} updateScreenshareSetting Persists screenshare rule updates.
+ * @property {(setting: string) => void} updateChatSetting Persists chat rule updates.
+ * @property {(isVisible: boolean) => void} updateIsSettingsModalVisible Updates visibility flag from external triggers.
+ *
+ * **Session Context:**
+ * @property {string} roomName Room identifier forwarded to the backend.
+ * @property {Socket} socket Active socket connection used for updates.
+ * @property {ShowAlert} [showAlert] Optional alert helper for in-modal feedback.
+ *
+ * **Advanced Render Overrides:**
+ * @property {(options: { defaultContent: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContent]
+ * Override for customizing the internal layout.
+ * @property {(options: { defaultContainer: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContainer]
+ * Override for swapping the modal container implementation.
  */
 export interface EventSettingsModalOptions {
-  /**
-   * Determines if the modal is visible.
-   */
   isEventSettingsModalVisible: boolean;
-
-  /**
-   * Callback function to close the modal.
-   */
   onEventSettingsClose: () => void;
-
-  /**
-   * Callback function to modify event settings.
-   * @default modifySettings
-   */
   onModifyEventSettings?: (options: ModifySettingsOptions) => Promise<void>;
-
-  /**
-   * Position of the modal on the screen.
-   * @default "topRight"
-   */
   position?: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
-
-  /**
-   * Background color of the modal.
-   * @default "#83c0e9"
-   */
   backgroundColor?: string;
-
-  /**
-   * Initial audio setting.
-   */
   audioSetting: string;
-
-  /**
-   * Initial video setting.
-   */
   videoSetting: string;
-
-  /**
-   * Initial screenshare setting.
-   */
   screenshareSetting: string;
-
-  /**
-   * Initial chat setting.
-   */
   chatSetting: string;
-
-  /**
-   * Callback function to update audio setting.
-   */
   updateAudioSetting: (setting: string) => void;
-
-  /**
-   * Callback function to update video setting.
-   */
   updateVideoSetting: (setting: string) => void;
-
-  /**
-   * Callback function to update screenshare setting.
-   */
   updateScreenshareSetting: (setting: string) => void;
-
-  /**
-   * Callback function to update chat setting.
-   */
   updateChatSetting: (setting: string) => void;
-
-  /**
-   * Callback function to update modal visibility.
-   */
   updateIsSettingsModalVisible: (isVisible: boolean) => void;
-
-  /**
-   * Name of the room.
-   */
   roomName: string;
-
-  /**
-   * Socket object for communication.
-   */
   socket: Socket;
-
-  /**
-   * Callback function to show alerts.
-   */
   showAlert?: ShowAlert;
+  style?: StyleProp<ViewStyle>;
+  renderContent?: (options: {
+    defaultContent: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
+  renderContainer?: (options: {
+    defaultContainer: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
 }
 
 export type EventSettingsModalType = (options: EventSettingsModalOptions) => JSX.Element;
 
 /**
- * EventSettingsModal provides an interface to configure event-related settings such as audio, video, screenshare, and chat permissions.
+ * EventSettingsModal enables hosts to adjust meeting-level permissions (audio, video, screenshare, chat)
+ * in real time. It synchronizes with socket-based updates and exposes override hooks for custom layouts
+ * or animated containers.
  *
- * @example
+ * ### Key Features
+ * - Maps participant permission rules to intuitive picker controls.
+ * - Persists changes using `modifySettings` by default, with override support.
+ * - Provides render overrides and style props for bespoke UI.
+ * - Leverages `updateIsSettingsModalVisible` for external state coordination.
+ * - Supports corner anchoring and color theming.
+ *
+ * ### Accessibility
+ * - Close button includes assistive labels for screen readers.
+ * - Picker controls support keyboard navigation and voiceover prompts.
+ *
+ * @param {EventSettingsModalOptions} props Modal configuration options.
+ * @returns {JSX.Element} Rendered event settings modal.
+ *
+ * @example Default configuration with host-managed settings.
  * ```tsx
- * import React, { useState } from 'react';
- * import { EventSettingsModal } from 'mediasfu-reactnative';
- * import { io } from 'socket.io-client';
+ * <EventSettingsModal
+ *   isEventSettingsModalVisible={visible}
+ *   onEventSettingsClose={hide}
+ *   audioSetting={audio}
+ *   videoSetting={video}
+ *   screenshareSetting={screen}
+ *   chatSetting={chat}
+ *   updateAudioSetting={setAudio}
+ *   updateVideoSetting={setVideo}
+ *   updateScreenshareSetting={setScreen}
+ *   updateChatSetting={setChat}
+ *   updateIsSettingsModalVisible={setVisible}
+ *   roomName={roomId}
+ *   socket={socket}
+ * />
+ * ```
  *
- * const socket = io('https://your-server-url.com');
- *
- * function App() {
- *   const [isModalVisible, setModalVisible] = useState(false);
- *
- *   return (
- *     <View>
- *       <Button title="Open Event Settings" onPress={() => setModalVisible(true)} />
- *       <EventSettingsModal
- *         isEventSettingsModalVisible={isModalVisible}
- *         onEventSettingsClose={() => setModalVisible(false)}
- *         audioSetting="allow"
- *         videoSetting="approval"
- *         screenshareSetting="disallow"
- *         chatSetting="allow"
- *         updateAudioSetting={(setting) => console.log('Audio setting updated:', setting)}
- *         updateVideoSetting={(setting) => console.log('Video setting updated:', setting)}
- *         updateScreenshareSetting={(setting) => console.log('Screenshare setting updated:', setting)}
- *         updateChatSetting={(setting) => console.log('Chat setting updated:', setting)}
- *         roomName="meeting-room"
- *         socket={socket}
- *         showAlert={(alert) => console.log('Alert:', alert)}
- *       />
- *     </View>
- *   );
- * }
- *
- * export default App;
+ * @example Customized handler with animated container.
+ * ```tsx
+ * <EventSettingsModal
+ *   {...props}
+ *   onModifyEventSettings={saveEventSettings}
+ *   backgroundColor="#0f172a"
+ *   style={{ borderRadius: 24 }}
+ *   renderContainer={({ defaultContainer }) => (
+ *     <FadeIn>{defaultContainer}</FadeIn>
+ *   )}
+ * />
  * ```
  */
 
@@ -184,6 +186,9 @@ const EventSettingsModal: React.FC<EventSettingsModalOptions> = ({
   roomName,
   socket,
   showAlert,
+  style,
+  renderContent,
+  renderContainer,
 }) => {
   const [audioState, setAudioState] = useState<string>(audioSetting);
   const [videoState, setVideoState] = useState<string>(videoSetting);
@@ -230,8 +235,136 @@ const EventSettingsModal: React.FC<EventSettingsModalOptions> = ({
     }
   };
 
+  const dimensions = { width: modalWidth, height: 0 };
 
-  return (
+  const defaultContent = (
+    <>
+      {/* Header */}
+      <View style={styles.modalHeader}>
+        <Text style={styles.modalTitle}>Event Settings</Text>
+        <Pressable
+          onPress={onEventSettingsClose}
+          style={styles.btnCloseSettings}
+          accessibilityRole="button"
+          accessibilityLabel="Close Event Settings Modal"
+        >
+          <FontAwesome name="times" style={styles.icon} />
+        </Pressable>
+      </View>
+
+      {/* Divider */}
+      <View style={styles.hr} />
+
+      {/* Body */}
+      <View style={styles.modalBody}>
+        {/* User Audio Setting */}
+        <View style={styles.formGroup}>
+          <Text style={styles.label}>User Audio:</Text>
+          <RNPickerSelect
+            onValueChange={(value: string) => {
+              setAudioState(value);
+              updateAudioSetting(value);
+            }}
+            items={[
+              { label: 'Disallow', value: 'disallow' },
+              { label: 'Allow', value: 'allow' },
+              { label: 'Upon approval', value: 'approval' },
+            ]}
+            value={audioState}
+            style={pickerSelectStyles}
+            placeholder={{}}
+            useNativeAndroidPickerStyle={false}
+          />
+        </View>
+
+        {/* Separator */}
+        <View style={styles.sep} />
+
+        {/* User Video Setting */}
+        <View style={styles.formGroup}>
+          <Text style={styles.label}>User Video:</Text>
+          <RNPickerSelect
+            onValueChange={(value: string) => {
+              setVideoState(value);
+              updateVideoSetting(value);
+            }}
+            items={[
+              { label: 'Disallow', value: 'disallow' },
+              { label: 'Allow', value: 'allow' },
+              { label: 'Upon approval', value: 'approval' },
+            ]}
+            value={videoState}
+            style={pickerSelectStyles}
+            placeholder={{}}
+            useNativeAndroidPickerStyle={false}
+          />
+        </View>
+
+        {/* Separator */}
+        <View style={styles.sep} />
+
+        {/* User Screenshare Setting */}
+        <View style={styles.formGroup}>
+          <Text style={styles.label}>User Screenshare:</Text>
+          <RNPickerSelect
+            onValueChange={(value: string) => {
+              setScreenshareState(value);
+              updateScreenshareSetting(value);
+            }}
+            items={[
+              { label: 'Disallow', value: 'disallow' },
+              { label: 'Allow', value: 'allow' },
+              { label: 'Upon approval', value: 'approval' },
+            ]}
+            value={screenshareState}
+            style={pickerSelectStyles}
+            placeholder={{}}
+            useNativeAndroidPickerStyle={false}
+          />
+        </View>
+
+        {/* Separator */}
+        <View style={styles.sep} />
+
+        {/* User Chat Setting */}
+        <View style={styles.formGroup}>
+          <Text style={styles.label}>User Chat:</Text>
+          <RNPickerSelect
+            onValueChange={(value: string) => {
+              setChatState(value);
+              updateChatSetting(value);
+            }}
+            items={[
+              { label: 'Disallow', value: 'disallow' },
+              { label: 'Allow', value: 'allow' },
+            ]}
+            value={chatState}
+            style={pickerSelectStyles}
+            placeholder={{}}
+            useNativeAndroidPickerStyle={false}
+          />
+        </View>
+      </View>
+
+      {/* Footer */}
+      <View style={styles.modalFooter}>
+        <Pressable
+          onPress={handleSaveSettings}
+          style={styles.btnApplySettings}
+          accessibilityRole="button"
+          accessibilityLabel="Save Event Settings"
+        >
+          <Text style={styles.btnText}>Save</Text>
+        </Pressable>
+      </View>
+    </>
+  );
+
+  const content = renderContent
+    ? renderContent({ defaultContent, dimensions })
+    : defaultContent;
+
+  const defaultContainer = (
     <Modal
       transparent
       animationType="fade"
@@ -239,129 +372,16 @@ const EventSettingsModal: React.FC<EventSettingsModalOptions> = ({
       onRequestClose={onEventSettingsClose}
     >
       <View style={[styles.modalContainer, getModalPosition({ position })]}>
-        <View style={[styles.modalContent, { backgroundColor, width: modalWidth }]}>
-          {/* Header */}
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Event Settings</Text>
-            <Pressable
-              onPress={onEventSettingsClose}
-              style={styles.btnCloseSettings}
-              accessibilityRole="button"
-              accessibilityLabel="Close Event Settings Modal"
-            >
-              <FontAwesome name="times" style={styles.icon} />
-            </Pressable>
-          </View>
-
-          {/* Divider */}
-          <View style={styles.hr} />
-
-          {/* Body */}
-          <View style={styles.modalBody}>
-            {/* User Audio Setting */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>User Audio:</Text>
-              <RNPickerSelect
-                onValueChange={(value: string) => {
-                  setAudioState(value);
-                  updateAudioSetting(value);
-                }}
-                items={[
-                  { label: 'Disallow', value: 'disallow' },
-                  { label: 'Allow', value: 'allow' },
-                  { label: 'Upon approval', value: 'approval' },
-                ]}
-                value={audioState}
-                style={pickerSelectStyles}
-                placeholder={{}}
-                useNativeAndroidPickerStyle={false}
-              />
-            </View>
-
-            {/* Separator */}
-            <View style={styles.sep} />
-
-            {/* User Video Setting */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>User Video:</Text>
-              <RNPickerSelect
-                onValueChange={(value: string) => {
-                  setVideoState(value);
-                  updateVideoSetting(value);
-                }}
-                items={[
-                  { label: 'Disallow', value: 'disallow' },
-                  { label: 'Allow', value: 'allow' },
-                  { label: 'Upon approval', value: 'approval' },
-                ]}
-                value={videoState}
-                style={pickerSelectStyles}
-                placeholder={{}}
-                useNativeAndroidPickerStyle={false}
-              />
-            </View>
-
-            {/* Separator */}
-            <View style={styles.sep} />
-
-            {/* User Screenshare Setting */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>User Screenshare:</Text>
-              <RNPickerSelect
-                onValueChange={(value: string) => {
-                  setScreenshareState(value);
-                  updateScreenshareSetting(value);
-                }}
-                items={[
-                  { label: 'Disallow', value: 'disallow' },
-                  { label: 'Allow', value: 'allow' },
-                  { label: 'Upon approval', value: 'approval' },
-                ]}
-                value={screenshareState}
-                style={pickerSelectStyles}
-                placeholder={{}}
-                useNativeAndroidPickerStyle={false}
-              />
-            </View>
-
-            {/* Separator */}
-            <View style={styles.sep} />
-
-            {/* User Chat Setting */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>User Chat:</Text>
-              <RNPickerSelect
-                onValueChange={(value: string) => {
-                  setChatState(value);
-                  updateChatSetting(value);
-                }}
-                items={[
-                  { label: 'Disallow', value: 'disallow' },
-                  { label: 'Allow', value: 'allow' },
-                ]}
-                value={chatState}
-                style={pickerSelectStyles}
-                placeholder={{}}
-                useNativeAndroidPickerStyle={false}
-              />
-            </View>
-          </View>
-
-          {/* Footer */}
-          <View style={styles.modalFooter}>
-            <Pressable
-              onPress={handleSaveSettings}
-              style={styles.btnApplySettings}
-              accessibilityRole="button"
-              accessibilityLabel="Save Event Settings"
-            >
-              <Text style={styles.btnText}>Save</Text>
-            </Pressable>
-          </View>
+        <View style={[styles.modalContent, { backgroundColor, width: modalWidth }, style]}>
+          {content}
         </View>
       </View>
     </Modal>
   );
+
+  return renderContainer
+    ? (renderContainer({ defaultContainer, dimensions }) as JSX.Element)
+    : defaultContainer;
 };
 
 export default EventSettingsModal;

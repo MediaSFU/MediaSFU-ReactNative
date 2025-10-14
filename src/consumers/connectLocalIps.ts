@@ -30,7 +30,7 @@ export type ConnectLocalIpsType = (options: ConnectLocalIpsOptions) => Promise<v
 
 /**
  * Connects to remote IPs and manages socket connections.
- * 
+ *
  * @param {ConnectLocalIpsOptions} options - The options for connecting IPs.
  * @param {Socket} options.socket - The socket to connect to.
  * @param {Function} [options.newProducerMethod=newPipeProducer] - The method to handle new pipe producer events.
@@ -39,11 +39,11 @@ export type ConnectLocalIpsType = (options: ConnectLocalIpsOptions) => Promise<v
  * @param {Function} options.parameters.reorderStreams - The function to reorder streams.
  * @param {Function} options.parameters.getUpdatedAllParams - The function to get updated parameters.
  * @param {Socket} options.parameters.socket - The socket to connect to.
- * 
+ *
  * @returns {Promise<void>} A promise that resolves when the connection is established.
- * 
+ *
  * @throws Will throw an error if required parameters are missing or if there is an issue connecting to a remote IP.
- * 
+ *
  * @example
  * ```typescript
  * const options = {
@@ -52,7 +52,7 @@ export type ConnectLocalIpsType = (options: ConnectLocalIpsOptions) => Promise<v
  * closedProducerMethod: producerClosed,
  * parameters: connectLocalIpsParameters,
  * };
- * 
+ *
  * connectLocalIps(options)
  *  .then(() => {
  *   console.log('Connected to local IPs');

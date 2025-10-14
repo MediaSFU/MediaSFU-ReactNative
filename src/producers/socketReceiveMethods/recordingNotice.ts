@@ -125,7 +125,7 @@ export type RecordingNoticeType = (options: RecordingNoticeOptions) => Promise<v
  *   },
  *   pauseCount: 2,
  *   timeDone: 3600,
- *   parameters: { 
+ *   parameters: {
  *     islevel: "2",
  *     userRecordingParams: { },
  *     recordElapsedTime: 0,

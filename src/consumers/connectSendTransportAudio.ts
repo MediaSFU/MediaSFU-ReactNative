@@ -28,7 +28,7 @@ export type ConnectSendTransportAudioType = (options: ConnectSendTransportAudioO
 
 const connectLocalSendTransportAudio = async ({
   parameters,
-  audioParams
+  audioParams,
 }: ConnectSendTransportAudioOptions): Promise<void> => {
   try {
     let {
@@ -69,7 +69,7 @@ export const updateMicLevel = async (audioProducer: Producer, updateAudioLevel: 
   } catch {
     // Handle error
   }
-}
+};
 
 
 /**

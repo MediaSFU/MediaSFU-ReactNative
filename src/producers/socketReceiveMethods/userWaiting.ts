@@ -28,7 +28,7 @@ export type UserWaitingType = (options: UserWaitingOptions) => Promise<void>;
  *   totalReqWait: 3,
  *   updateTotalReqWait: (total) => console.log("Updated total:", total),
  * };
- * 
+ *
  * userWaiting(options)
  *   .then(() => console.log("User waiting handled"))
  *   .catch((error) => console.error("Error:", error));

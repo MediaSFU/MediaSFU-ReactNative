@@ -11,7 +11,7 @@ export type LaunchDisplaySettingsType = (options: LaunchDisplaySettingsOptions) 
  *
  * @param updateIsDisplaySettingsModalVisible - Function to update the visibility state of the display settings modal.
  * @param isDisplaySettingsModalVisible - Current visibility state of the display settings modal.
- * 
+ *
  * @example
  * ```typescript
  * const options: LaunchDisplaySettingsOptions = {

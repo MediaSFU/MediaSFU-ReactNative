@@ -19,13 +19,13 @@ export type StartMeetingProgressTimerType = (options: StartMeetingProgressTimerO
 
 /**
  * Starts a timer to track the progress of a meeting.
- * 
+ *
  * @param {StartMeetingProgressTimerOptions} options - The options for starting the meeting progress timer.
  * @param {number} options.startTime - The custom start time for the meeting progress timer.
  * @param {StartMeetingProgressTimerParameters} options.parameters - The parameters required for updating the meeting progress.
  * @param {Function} options.parameters.updateMeetingProgressTime - Function to update the meeting progress time.
  * @param {Function} options.parameters.getUpdatedAllParams - Function to get updated parameters.
- * 
+ *
  * @example
  * ```typescript
  * startMeetingProgressTimer({

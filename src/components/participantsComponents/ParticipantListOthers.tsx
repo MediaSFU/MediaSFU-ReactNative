@@ -29,13 +29,13 @@ export type ParticipantListOthersType = (
  * ```tsx
  * import React from 'react';
  * import { ParticipantListOthers } from 'mediasfu-reactnative';
- * 
+ *
  * function App() {
  *   const participants = [
  *     { id: '1', name: 'Alice' },
  *     { id: '2', name: 'Bob' },
  *   ];
- *   
+ *
  *   return (
  *     <ParticipantListOthers
  *       participants={participants}
@@ -44,7 +44,7 @@ export type ParticipantListOthersType = (
  *     />
  *   );
  * }
- * 
+ *
  * export default App;
  * ```
  */

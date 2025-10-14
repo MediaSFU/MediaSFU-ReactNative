@@ -20,7 +20,7 @@ export type DisconnectUserSelfType = (options: DisconnectUserSelfOptions) => Pro
  * @param {Socket} options.socket - The socket instance used to emit the disconnection request.
  * @param {Socket} [options.localSocket] - The local socket instance used to emit the disconnection request.
  * @returns {Promise<void>} A promise that resolves when the disconnection request has been emitted.
- * 
+ *
  * @example
  * ```typescript
  * await disconnectUserSelf({

@@ -36,6 +36,8 @@ import WelcomePage, {
 
 import FlexibleVideo from '../../components/displayComponents/FlexibleVideo';
 import AudioGrid from '../../components/displayComponents/AudioGrid';
+import MiniAudio from '../../components/displayComponents/MiniAudio';
+import MiniAudioPlayer from '../../methods/utils/MiniAudioPlayer/MiniAudioPlayer';
 
 // import methods for control (samples)
 import { launchRecording } from '../../methods/recordingMethods/launchRecording';
@@ -120,6 +122,7 @@ import { receiveRoomMessages } from '../../consumers/receiveRoomMessages';
 import { formatNumber } from '../../methods/utils/formatNumber';
 import { connectIps } from '../../consumers/connectIps';
 import { connectLocalIps } from '../../consumers/connectLocalIps';
+import { withOverride, withFunctionOverride } from '../mediasfuComponents/overrideHelpers';
 
 import { startMeetingProgressTimer } from '../../methods/utils/meetingTimer/startMeetingProgressTimer';
 import { updateRecording } from '../../methods/recordingMethods/updateRecording';
@@ -229,73 +232,108 @@ export type MediasfuBroadcastOptions = {
   customAudioCard?: CustomAudioCardType;
   customMiniCard?: CustomMiniCardType;
   customComponent?: React.FC<{ parameters: any }>;
+  containerStyle?: object;
+  uiOverrides?: import('../../@types/types').MediasfuUICustomOverrides;
 };
 
 /**
- * MediasfuBroadcast component optimizes the media experience for broadcasting events.
- * Only the host can share media (audio, video, *no screen share support*) with participants.
- * Participants can view the host's media and chat with each other.
- * It manages various states and references related to the media session, including
- * user credentials, room details, participants, and recording parameters.
+ * MediasfuBroadcast component provides a one-to-many streaming solution where only the host
+ * can broadcast audio/video to a large audience. Ideal for live streams, announcements, and
+ * one-way presentations.
  *
- * @typedef {Object} MediasfuBroadcastOptions
- * @property {function} [PrejoinPage=WelcomePage] - Function to render the prejoin page.
- * @property {string} [localLink=''] - Local link for the media server (if using Community Edition).
- * @property {boolean} [connectMediaSFU=true] - Flag to connect to the MediaSFU server (if using Community Edition and still need to connect to the server)
- * @property {Object} [credentials={ apiUserName: '', apiKey: '' }] - API credentials.
- * @property {boolean} [useLocalUIMode=false] - Flag to use local UI mode.
- * @property {Object} [seedData={}] - Seed data for initial state.
- * @property {boolean} [useSeed=false] - Flag to use seed data.
- * @property {string} [imgSrc='https://mediasfu.com/images/logo192.png'] - Image source URL.
- * @property {Object} [sourceParameters={}] - Source parameters.
- * @property {function} [updateSourceParameters] - Function to update source parameters.
- * @property {boolean} [returnUI=true] - Flag to return the UI.
- * @property {CreateMediaSFURoomOptions | JoinMediaSFURoomOptions} [noUIPreJoinOptions] - Options for the prejoin page.
- * @property {JoinRoomOnMediaSFUType} [joinMediaSFURoom] - Function to join a room on MediaSFU.
- * @property {CreateRoomOnMediaSFUType} [createMediaSFURoom] - Function to create a room on MediaSFU.
+ * ### Key Features
+ * - **One-to-Many**: Only host can share audio/video (no screen share)
+ * - **Full Screen Host**: Host takes 100% of screen real estate
+ * - **View-Only Audience**: Participants can watch and chat but not broadcast
+ * - **High Scalability**: Optimized for large viewer counts
+ * - **Chat & Polls**: Audience engagement through text chat and polls
+ * - **Recording**: Capture broadcast for replay
+ * - **Custom Branding**: Override UI components and host card
  *
- * @typedef {Object} SeedData - Data structure to populate initial state in the MediasfuBroadcast.
- * @property {string} [member] - The member name.
- * @property {string} [host] - The host name.
- * @property {EventType} [eventType] - The type of event.
- * @property {Participant[]} [participants] - The list of participants.
- * @property {Message[]} [messages] - The list of messages.
- * @property {Poll[]} [polls] - The list of polls.
- * @property {BreakoutParticipant[][]} [breakoutRooms] - The list of breakout rooms.
- * @property {Request[]} [requests] - The list of requests.
- * @property {WaitingRoomParticipant[]} [waitingList] - The list of waiting room participants.
- * @property {WhiteboardUser[]} [whiteboardUsers] - The list of whiteboard users.
+ * ### Layout Characteristics
+ * - Host video: 100% fullscreen
+ * - No participant grid (view-only mode)
+ * - Chat overlay optional
+ * - No screen sharing support
+ *
+ * ### Event Type
+ * Automatically sets `eventType: 'broadcast'` for one-to-many streaming mode.
+ *
+ * ### Use Cases
+ * - Live announcements
+ * - Concert/performance streaming
+ * - Company-wide broadcasts
+ * - Educational lectures (one-way)
  *
  * @component
- * @param {MediasfuBroadcastOptions} props - Component properties.
- * @returns {React.ReactNode} The rendered component.
+ * @param {MediasfuBroadcastOptions} props - Component properties
+ * @returns {React.ReactNode} MediaSFU Broadcast component
  *
  * @example
  * ```tsx
- * <MediasfuBroadcast
- *   PrejoinPage={WelcomePage}
- *   credentials={{ apiUserName: 'username', apiKey: 'apikey' }}
- *   useLocalUIMode={false}
- *   seedData={{}}
- *   useSeed={false}
- *   imgSrc='https://mediasfu.com/images/logo192.png'
- *   sourceParameters={{ key: value }}
- *   updateSourceParameters={updateSourceParameters}
- *   returnUI={true}
- *   noUIPreJoinOptions={customPreJoinOptions}
- *   joinMediaSFURoom={joinRoomOnMediaSFU}
- *   createMediaSFURoom={createRoomOnMediaSFU}
- * />
+ * // Basic live broadcast
+ * import { MediasfuBroadcast } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   return (
+ *     <MediasfuBroadcast
+ *       credentials={{
+ *         apiUserName: 'your-api-username',
+ *         apiKey: 'your-api-key'
+ *       }}
+ *     />
+ *   );
+ * }
  * ```
  *
- * @description
- * This component handles the broadcast functionalities for MediaSFU, including joining rooms,
- * managing participants, and handling media streams. It uses various hooks and methods to
- * manage state and perform actions such as joining a room, updating initial values, and
- * handling media streams.
+ * @example
+ * ```tsx
+ * // Branded broadcast with custom host card
+ * import { MediasfuBroadcast } from 'mediasfu-reactnative';
+ * import { BroadcastHostCard } from './BroadcastHostCard';
  *
+ * function App() {
+ *   return (
+ *     <MediasfuBroadcast
+ *       credentials={{
+ *         apiUserName: 'your-api-username',
+ *         apiKey: 'your-api-key'
+ *       }}
+ *       customVideoCard={(props) => (
+ *         <BroadcastHostCard {...props} showViewerCount showLiveIndicator />
+ *       )}
+ *       imgSrc="https://example.com/broadcast-logo.png"
+ *       containerStyle={{
+ *         backgroundColor: '#000'
+ *       }}
+ *     />
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Broadcast with custom controls and chat overlay
+ * import { MediasfuBroadcast } from 'mediasfu-reactnative';
+ * import { BroadcastControls } from './BroadcastControls';
+ * import { ChatOverlay } from './ChatOverlay';
+ *
+ * function App() {
+ *   return (
+ *     <MediasfuBroadcast
+ *       credentials={{
+ *         apiUserName: 'your-api-username',
+ *         apiKey: 'your-api-key'
+ *       }}
+ *       uiOverrides={{
+ *         controlButtons: BroadcastControls,
+ *         messagesModal: ChatOverlay
+ *       }}
+ *     />
+ *   );
+ * }
+ * ```
  */
-
 const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
   PrejoinPage = WelcomePage,
   localLink = '',
@@ -315,7 +353,92 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
   customAudioCard,
   customMiniCard,
   customComponent,
+  containerStyle,
+  uiOverrides,
 }) => {
+  // ========== UI Override Components ==========
+  // Apply overrides to all customizable components
+  const MainContainer = React.useMemo(
+    () => withOverride(uiOverrides?.mainContainer, MainContainerComponent),
+    [uiOverrides?.mainContainer],
+  );
+  const MainAspect = React.useMemo(
+    () => withOverride(uiOverrides?.mainAspect, MainAspectComponent),
+    [uiOverrides?.mainAspect],
+  );
+  const MainScreen = React.useMemo(
+    () => withOverride(uiOverrides?.mainScreen, MainScreenComponent),
+    [uiOverrides?.mainScreen],
+  );
+  const MainGrid = React.useMemo(
+    () => withOverride(uiOverrides?.mainGrid, MainGridComponent),
+    [uiOverrides?.mainGrid],
+  );
+  const FlexibleVideoComponent = React.useMemo(
+    () => withOverride(uiOverrides?.flexibleVideo, FlexibleVideo),
+    [uiOverrides?.flexibleVideo],
+  );
+  const AudioGridComponent = React.useMemo(
+    () => withOverride(uiOverrides?.audioGrid, AudioGrid),
+    [uiOverrides?.audioGrid],
+  );
+  const ControlButtonsTouch = React.useMemo(
+    () => withOverride(uiOverrides?.controlButtonsTouch, ControlButtonsComponentTouch),
+    [uiOverrides?.controlButtonsTouch],
+  );
+  const LoadingModalComponent = React.useMemo(
+    () => withOverride(uiOverrides?.loadingModal, LoadingModal),
+    [uiOverrides?.loadingModal],
+  );
+  const AlertComponentOverride = React.useMemo(
+    () => withOverride(uiOverrides?.alert, AlertComponent),
+    [uiOverrides?.alert],
+  );
+  const RecordingModalComponent = React.useMemo(
+    () => withOverride(uiOverrides?.recordingModal, RecordingModal),
+    [uiOverrides?.recordingModal],
+  );
+  const ParticipantsModalComponent = React.useMemo(
+    () => withOverride(uiOverrides?.participantsModal, ParticipantsModal),
+    [uiOverrides?.participantsModal],
+  );
+  const MessagesModalComponent = React.useMemo(
+    () => withOverride(uiOverrides?.messagesModal, MessagesModal),
+    [uiOverrides?.messagesModal],
+  );
+  const ConfirmExitModalComponent = React.useMemo(
+    () => withOverride(uiOverrides?.confirmExitModal, ConfirmExitModal),
+    [uiOverrides?.confirmExitModal],
+  );
+  const ConfirmHereModalComponent = React.useMemo(
+    () => withOverride(uiOverrides?.confirmHereModal, ConfirmHereModal),
+    [uiOverrides?.confirmHereModal],
+  );
+  const ShareEventModalComponent = React.useMemo(
+    () => withOverride(uiOverrides?.shareEventModal, ShareEventModal),
+    [uiOverrides?.shareEventModal],
+  );
+
+  // ========== UI Override Functions ==========
+  const consumerResumeFn = React.useMemo(
+    () => withFunctionOverride(uiOverrides?.consumerResume, consumerResume),
+    [uiOverrides?.consumerResume],
+  );
+  const addVideosGridFn = React.useMemo(
+    () => withFunctionOverride(uiOverrides?.addVideosGrid, addVideosGrid),
+    [uiOverrides?.addVideosGrid],
+  );
+
+  // Additional component overrides for MiniAudio and MiniAudioPlayer
+  const MiniAudioComponentOverride = React.useMemo(
+    () => withOverride(uiOverrides?.miniAudio, MiniAudio),
+    [uiOverrides?.miniAudio],
+  );
+  const MiniAudioPlayerComponent = React.useMemo(
+    () => withOverride(uiOverrides?.miniAudioPlayer, MiniAudioPlayer),
+    [uiOverrides?.miniAudioPlayer],
+  );
+
   const updateStatesToInitialValues = async () => {
     const initialValues = initialValuesState as { [key: string]: any };
     const updateFunctions = getAllParams() as unknown as {
@@ -2316,7 +2439,7 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
       getVideos,
       rePort,
       trigger,
-      consumerResume,
+      consumerResume: consumerResumeFn,
       connectSendTransport,
       connectSendTransportAudio,
       connectSendTransportVideo,
@@ -2327,7 +2450,7 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
       checkGrid,
       getEstimate,
       calculateRowsAndColumns,
-      addVideosGrid,
+      addVideosGrid: addVideosGridFn,
       onScreenChanges,
       sleep,
       changeVids,
@@ -3137,6 +3260,8 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
       customVideoCard,
       customAudioCard,
       customMiniCard,
+      miniAudioComponent: MiniAudioComponentOverride,
+      miniAudioPlayerComponent: MiniAudioPlayerComponent,
     };
   };
 
@@ -4392,9 +4517,9 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
       ) : customComponent ? (
         React.createElement(customComponent, { parameters: { ...getAllParams(), ...mediaSFUFunctions() } })
       ) : returnUI ? (
-        <MainContainerComponent>
+        <MainContainer style={containerStyle}>
           {/* Main aspect component containsa ll but the control buttons (as used for webinar and conference) */}
-          <MainAspectComponent
+          <MainAspect
             backgroundColor="rgba(217, 227, 234, 0.99)"
             defaultFraction={1 - controlHeight}
             updateIsWideScreen={updateIsWideScreen}
@@ -4406,7 +4531,7 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
             }
           >
             {/* MainScreenComponent contains the main grid view and the minor grid view */}
-            <MainScreenComponent
+            <MainScreen
               doStack={true}
               mainSize={mainHeightWidth}
               updateComponentSizes={updateComponentSizes}
@@ -4421,7 +4546,7 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
               {/* MainGridComponent becomes the dominant grid view in broadcast and webinar event types */}
               {/* MainGridComponent becomes the dominant grid view in conference event type when screenshare is active */}
 
-              <MainGridComponent
+              <MainGrid
                 height={componentSizes.current.mainHeight}
                 width={componentSizes.current.mainWidth}
                 backgroundColor="rgba(217, 227, 234, 0.99)"
@@ -4429,7 +4554,7 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
                 timeBackgroundColor={recordState}
                 meetingProgressTime={meetingProgressTime}
               >
-                <FlexibleVideo
+                <FlexibleVideoComponent
                   customWidth={componentSizes.current.mainWidth}
                   customHeight={componentSizes.current.mainHeight}
                   rows={1}
@@ -4443,7 +4568,7 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
                   }
                 />
 
-                <ControlButtonsComponentTouch
+                <ControlButtonsTouch
                   buttons={controlBroadcastButtons}
                   position={'right'}
                   location={'bottom'}
@@ -4452,7 +4577,7 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
                 />
 
                 {/* Button to launch recording modal */}
-                <ControlButtonsComponentTouch
+                <ControlButtonsTouch
                   buttons={recordButton}
                   direction={'horizontal'}
                   showAspect={
@@ -4465,7 +4590,7 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
                 />
 
                 {/* Buttons to control recording */}
-                <ControlButtonsComponentTouch
+                <ControlButtonsTouch
                   buttons={recordButtons}
                   direction={'horizontal'}
                   showAspect={
@@ -4476,26 +4601,26 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
                   location="bottom"
                   position="middle"
                 />
-              </MainGridComponent>
+              </MainGrid>
 
               {/* AudioGrid contains all the audio only streams */}
               {/* If broadcasting and there are audio only streams (just one), the audio only streams are displayed in the main grid view */}
               {/* If webinar and you are the host, the audio only streams (just one), are displayed in the main grid view */}
-              <AudioGrid
+              <AudioGridComponent
                 componentsToRender={
                   audioOnlyStreams.current ? audioOnlyStreams.current : []
                 }
               />
-            </MainScreenComponent>
-          </MainAspectComponent>
-        </MainContainerComponent>
+            </MainScreen>
+          </MainAspect>
+        </MainContainer>
       ) : (
         <></>
       )}
 
       {returnUI && (
         <>
-          <ParticipantsModal
+          <ParticipantsModalComponent
             backgroundColor="rgba(217, 227, 234, 0.99)"
             isParticipantsModalVisible={isParticipantsModalVisible}
             onParticipantsClose={() => updateIsParticipantsModalVisible(false)}
@@ -4529,7 +4654,7 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
             }}
           />
 
-          <RecordingModal
+          <RecordingModalComponent
             backgroundColor="rgba(217, 227, 234, 0.99)"
             isRecordingModalVisible={isRecordingModalVisible}
             onClose={() => updateIsRecordingModalVisible(false)}
@@ -4541,7 +4666,7 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
             }}
           />
 
-          <MessagesModal
+          <MessagesModalComponent
             backgroundColor={
               eventType.current === 'webinar' ||
               eventType.current === 'conference'
@@ -4566,7 +4691,7 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
             chatSetting={chatSetting.current}
           />
 
-          <ConfirmExitModal
+          <ConfirmExitModalComponent
             backgroundColor="rgba(181, 233, 229, 0.97)"
             isConfirmExitModalVisible={isConfirmExitModalVisible}
             onConfirmExitClose={() => updateIsConfirmExitModalVisible(false)}
@@ -4576,7 +4701,7 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
             islevel={islevel.current}
           />
 
-          <ConfirmHereModal
+          <ConfirmHereModalComponent
             backgroundColor="rgba(181, 233, 229, 0.97)"
             isConfirmHereModalVisible={isConfirmHereModalVisible}
             onConfirmHereClose={() => updateIsConfirmHereModalVisible(false)}
@@ -4585,7 +4710,7 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
             socket={socket.current}
           />
 
-          <ShareEventModal
+          <ShareEventModalComponent
             isShareEventModalVisible={isShareEventModalVisible}
             onShareEventClose={() => updateIsShareEventModalVisible(false)}
             roomName={roomName.current}
@@ -4595,7 +4720,7 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
             localLink={localLink}
           />
 
-          <AlertComponent
+          <AlertComponentOverride
             visible={alertVisible}
             message={alertMessage}
             type={alertType}
@@ -4604,7 +4729,7 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
             textColor={'#ffffff'}
           />
 
-          <LoadingModal
+          <LoadingModalComponent
             isVisible={isLoadingModalVisible}
             backgroundColor="rgba(217, 227, 234, 0.99)"
             displayColor="black"

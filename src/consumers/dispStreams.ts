@@ -164,7 +164,7 @@ export type DispStreamsType = (options: DispStreamsOptions) => Promise<void>;
  *   breakRoom: 1,
  *   inBreakRoom: false,
  * };
- * 
+ *
  * dispStreams(options)
  *   .then(() => {
  *     console.log('Streams displayed successfully');

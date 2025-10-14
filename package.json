@@ -1,6 +1,6 @@
 {
   "name": "mediasfu-reactnative",
-  "version": "2.3.4",
+  "version": "2.3.5",
   "private": false,
   "main": "dist/main.js",
   "module": "dist/main.js",
@@ -37,6 +37,8 @@
     "buildnpm": "npm run build:clean && npm run build:ts",
     "lint": "eslint src/**/*.ts src/**/*.tsx",
     "lint:fix": "eslint src/**/*.ts src/**/*.tsx --fix",
+    "lint:all": "eslint \"src/**/*.{ts,tsx}\" \"*.tsx\" --no-error-on-unmatched-pattern",
+    "lint:all:fix": "eslint \"src/**/*.{ts,tsx}\" \"*.tsx\" --fix --no-error-on-unmatched-pattern",
     "build-docs": "typedoc"
   },
   "peerDependencies": {
@@ -165,5 +167,6 @@
     "mediasfu-reactnative",
     "mediasfu-reactnative-sdk",
     "mediasfu-reactnative-prebuilt"
-  ]
+  ],
+  "type": "module"
 }

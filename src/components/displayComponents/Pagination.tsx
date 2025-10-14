@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   FlatList,
   View,
@@ -7,6 +7,7 @@ import {
   StyleSheet,
   StyleProp,
   ViewStyle,
+  ListRenderItemInfo,
 } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { Socket } from 'socket.io-client';
@@ -130,6 +131,7 @@ const Pagination: React.FC<PaginationOptions> = ({
   position = 'middle',
   location = 'middle',
   direction = 'horizontal',
+  buttonsContainerStyle,
   activePageStyle = { backgroundColor: '#2c678f' },
   inactivePageStyle,
   backgroundColor = '#ffffff',
@@ -155,17 +157,20 @@ const Pagination: React.FC<PaginationOptions> = ({
   } = updatedParameters;
 
   // Generate data for FlatList
-  const data: PageItem[] = Array.from({ length: totalPages + 1 }, (_, index) => ({
-    id: `${index}`,
-    number: index,
-  }));
+  const data: PageItem[] = useMemo(
+    () => Array.from({ length: totalPages + 1 }, (_, index) => ({
+      id: `${index}`,
+      number: index,
+    })),
+    [totalPages],
+  );
 
   /**
    * Handles the page button click.
    *
    * @param {number} page - The page number that was clicked.
    */
-  const onPagePress = async (page: number) => {
+  const onPagePress = async (page: number): Promise<void> => {
     if (page === currentUserPage) {
       return;
     }
@@ -243,14 +248,17 @@ const Pagination: React.FC<PaginationOptions> = ({
   /**
    * Renders each page item.
    *
-   * @param {PageItem} item - The page item to render.
+   * @param {ListRenderItemInfo<PageItem>} info - The item information returned by `FlatList`.
    * @returns {JSX.Element} The rendered page button.
    */
-  const renderItem = ({ item }: { item: PageItem }) => {
+  const renderItem = (info: ListRenderItemInfo<PageItem>) => {
+    const { item } = info;
     const isActive = item.number === currentUserPage;
     const pageStyle = isActive ? [styles.activePage, activePageStyle] : [styles.inactivePage, inactivePageStyle];
 
-    let displayItem: React.ReactNode = item.number;
+    let displayItem: React.ReactNode = (
+      <Text style={styles.pageText}>{item.number}</Text>
+    );
     const targetPage = memberRoom;
 
     if (breakOutRoomStarted && !breakOutRoomEnded && item.number >= mainRoomsLength) {
@@ -279,10 +287,7 @@ const Pagination: React.FC<PaginationOptions> = ({
           </Text>
         );
       }
-    } else {
-      // Wrap item.number in a Text component to avoid the error
-      displayItem = <Text style={styles.pageText}>{item.number}</Text>;
-  }
+    }
 
     return (
       <Pressable
@@ -304,10 +309,10 @@ const Pagination: React.FC<PaginationOptions> = ({
   /**
    * Determines the alignment styles based on position and location props.
    *
-   * @returns StyleProp<ViewStyle> - The alignment style object.
+   * @returns {ViewStyle} The computed alignment style object.
    */
-  const getAlignmentStyle = (): StyleProp<ViewStyle> => {
-    const alignmentStyle: StyleProp<ViewStyle> = {};
+  const getAlignmentStyle = (): ViewStyle => {
+    const alignmentStyle: ViewStyle = {};
 
     switch (position) {
       case 'left':
@@ -339,33 +344,32 @@ const Pagination: React.FC<PaginationOptions> = ({
   };
 
   return (
-
-      <FlatList
-        data={data}
-        keyExtractor={(item) => item.id}
-        horizontal={direction === 'horizontal'}
-        renderItem={renderItem}
-        contentContainerStyle={[
-          styles.paginationContainer,
-          { backgroundColor },
-            getAlignmentStyle(),
-          { flexDirection: direction === 'vertical' ? 'column' : 'row' },
-          { justifyContent: 'space-evenly' },
-        ]}
-        showsHorizontalScrollIndicator={false}
-        showsVerticalScrollIndicator={false}
-        style={{
-          display: showAspect ? 'flex' : 'none',
-          padding: 0,
-          margin: 0,
-          width: direction === 'horizontal' ? '100%' : paginationHeight,
-          height: direction === 'horizontal' ? paginationHeight : '100%',
-          maxHeight: direction === 'horizontal' ? paginationHeight : '100%',
-          maxWidth: direction === 'horizontal' ? '100%' : paginationHeight,
-         }}
-      />
+    <FlatList
+      data={data}
+      keyExtractor={(item) => item.id}
+      horizontal={direction === 'horizontal'}
+      renderItem={renderItem}
+      contentContainerStyle={[
+        styles.paginationContainer,
+        getAlignmentStyle(),
+  { flexDirection: direction === 'vertical' ? 'column' : 'row' },
+  { justifyContent: 'space-evenly' },
+  { backgroundColor },
+        buttonsContainerStyle,
+      ]}
+      showsHorizontalScrollIndicator={false}
+      showsVerticalScrollIndicator={false}
+      style={{
+        display: showAspect ? 'flex' : 'none',
+        padding: 0,
+        margin: 0,
+        width: direction === 'horizontal' ? '100%' : paginationHeight,
+        height: direction === 'horizontal' ? paginationHeight : '100%',
+        maxHeight: direction === 'horizontal' ? paginationHeight : '100%',
+        maxWidth: direction === 'horizontal' ? '100%' : paginationHeight,
+      }}
+    />
   );
-
 };
 
 export default Pagination;

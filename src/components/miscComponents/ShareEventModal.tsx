@@ -7,6 +7,8 @@ import {
   Pressable,
   ScrollView,
   Dimensions,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { getModalPosition } from '../../methods/utils/getModalPosition';
@@ -16,100 +18,96 @@ import ShareButtonsComponent from '../menuComponents/ShareButtonsComponent';
 import { EventType } from '../../@types/types';
 
 /**
- * Interface defining the options for the ShareEventModal component.
+ * Options for configuring `ShareEventModal`.
+ *
+ * @interface ShareEventModalOptions
+ *
+ * **Modal Control:**
+ * @property {boolean} isShareEventModalVisible Controls modal visibility.
+ * @property {() => void} onShareEventClose Callback fired when closing the modal.
+ *
+ * **Appearance:**
+ * @property {string} [backgroundColor='rgba(255, 255, 255, 0.25)'] Card background color.
+ * @property {'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' | 'center'} [position='topRight']
+ * Anchor location for the modal.
+ * @property {StyleProp<ViewStyle>} [style] Additional container styling.
+ *
+ * **Share Content:**
+ * @property {boolean} [shareButtons=true] Determines if share buttons are displayed.
+ * @property {string} roomName Meeting identifier displayed in the modal.
+ * @property {string} [adminPasscode] Optional admin passcode.
+ * @property {string} [islevel] Current user level (e.g., `'2'` for admins).
+ * @property {EventType} eventType Meeting type used by share buttons.
+ * @property {string} [localLink] Optional vanity link for local deployments.
+ *
+ * **Advanced Render Overrides:**
+ * @property {(options: { defaultContent: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContent]
+ * Overrides the inner modal layout.
+ * @property {(options: { defaultContainer: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContainer]
+ * Overrides the surrounding container implementation.
  */
 export interface ShareEventModalOptions {
-  /**
-   * Background color of the modal content.
-   * Defaults to 'rgba(255, 255, 255, 0.25)'.
-   */
   backgroundColor?: string;
-
-  /**
-   * Flag to control the visibility of the modal.
-   */
   isShareEventModalVisible: boolean;
-
-  /**
-   * Callback function to handle the closing of the modal.
-   */
   onShareEventClose: () => void;
-
-  /**
-   * Flag to control the visibility of share buttons.
-   * Defaults to true.
-   */
   shareButtons?: boolean;
-
-  /**
-   * Position of the modal on the screen.
-   * Possible values: 'topLeft', 'topRight', 'bottomLeft', 'bottomRight', 'center'.
-   * Defaults to 'topRight'.
-   */
   position?: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' | 'center';
-
-  /**
-   * The name of the room to be shared.
-   */
   roomName: string;
-
-  /**
-   * The admin passcode for the meeting.
-   */
   adminPasscode?: string;
-
-  /**
-   * The level of the user.
-   */
   islevel?: string;
-
-  /**
-   * The type of the event.
-   */
   eventType: EventType;
-
-  /**
-   * The link to the local server.
-   */
   localLink?: string;
+  style?: StyleProp<ViewStyle>;
+  renderContent?: (options: {
+    defaultContent: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
+  renderContainer?: (options: {
+    defaultContainer: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
 }
 
 export type ShareEventModalType = (options: ShareEventModalOptions) => JSX.Element;
 
 /**
- * ShareEventModal component displays a modal that allows users to share event details,
- * including the room name and an optional admin passcode, with other participants.
- * This modal provides customizable options for positioning, appearance, and shared content.
+ * ShareEventModal exposes room identifiers, admin passcodes, and share buttons so hosts can
+ * distribute join details quickly. It supports corner positioning, theming, and override hooks
+ * for custom layouts.
  *
- * @component
- * @param {ShareEventModalOptions} props - The properties for the ShareEventModal component.
- * @returns {JSX.Element} The rendered ShareEventModal component.
+ * ### Key Features
+ * - Displays meeting ID and optional admin passcode.
+ * - Integrates share shortcuts tailored to `eventType`.
+ * - Supports compact corner placement with scrollable content.
+ * - Offers render overrides and `StyleProp`-driven styling for complete control.
  *
- * @example
+ * ### Accessibility
+ * - Close button includes assistive label for screen readers.
+ * - ScrollView content remains keyboard accessible.
+ *
+ * @param {ShareEventModalOptions} props Modal configuration options.
+ * @returns {JSX.Element} Rendered share modal.
+ *
+ * @example Basic usage with share buttons enabled.
  * ```tsx
- * import React, { useState } from 'react';
- * import { ShareEventModal } from 'mediasfu-reactnative';
+ * <ShareEventModal
+ *   isShareEventModalVisible={visible}
+ *   onShareEventClose={hide}
+ *   roomName={roomId}
+ *   adminPasscode={adminCode}
+ *   eventType="conference"
+ *   islevel="2"
+ * />
+ * ```
  *
- * function App() {
- *   const [modalVisible, setModalVisible] = useState(true);
- *
- *   return (
- *     <ShareEventModal
- *       isShareEventModalVisible={modalVisible}
- *       onShareEventClose={() => setModalVisible(false)}
- *       roomName="Room123"
- *       adminPasscode="Passcode456"
- *       islevel="2"
- *       eventType="conference"
- *       backgroundColor="rgba(255, 255, 255, 0.8)"
- *       shareButtons={true}
- *       position="topRight"
- *       localLink="https://example.com"
- *     />
- *   );
- * }
- *
- * export default App;
+ * @example Custom container with animation.
+ * ```tsx
+ * <ShareEventModal
+ *   {...props}
+ *   renderContainer={({ defaultContainer }) => (
+ *     <FadeIn>{defaultContainer}</FadeIn>
+ *   )}
+ * />
  * ```
  */
 
@@ -124,6 +122,9 @@ const ShareEventModal: React.FC<ShareEventModalOptions> = ({
   islevel,
   eventType,
   localLink,
+  style,
+  renderContent,
+  renderContainer,
 }) => {
   const screenWidth = Dimensions.get('window').width;
   let modalWidth = 0.8 * screenWidth;
@@ -131,7 +132,53 @@ const ShareEventModal: React.FC<ShareEventModalOptions> = ({
     modalWidth = 350;
   }
 
-  return (
+  const dimensions = { width: modalWidth, height: 0 };
+
+  const defaultContent = (
+    <>
+      <View style={styles.modalHeader}>
+        <Pressable onPress={onShareEventClose} style={styles.closeButton}>
+          <FontAwesome name="times" style={styles.icon} />
+        </Pressable>
+      </View>
+
+      <View style={styles.separator} />
+
+      {/* Modal Body */}
+      <View style={styles.modalBody}>
+        <ScrollView contentContainerStyle={styles.bodyContainer}>
+          {/* Conditionally render MeetingPasscodeComponent based on islevel */}
+          {islevel === '2' && adminPasscode && (
+            <View style={styles.componentContainer}>
+              <MeetingPasscodeComponent meetingPasscode={adminPasscode} />
+            </View>
+          )}
+
+          {/* Meeting ID */}
+          <View style={styles.componentContainer}>
+            <MeetingIdComponent meetingID={roomName} />
+          </View>
+
+          {/* Share Buttons */}
+          {shareButtons && (
+            <View style={styles.componentContainer}>
+              <ShareButtonsComponent
+                meetingID={roomName}
+                eventType={eventType}
+                localLink={localLink}
+              />
+            </View>
+          )}
+        </ScrollView>
+      </View>
+    </>
+  );
+
+  const content = renderContent
+    ? renderContent({ defaultContent, dimensions })
+    : defaultContent;
+
+  const defaultContainer = (
     <Modal
       transparent
       animationType="fade"
@@ -140,47 +187,17 @@ const ShareEventModal: React.FC<ShareEventModalOptions> = ({
     >
       <View style={[styles.modalContainer, getModalPosition({ position })]}>
         <View
-          style={[styles.modalContent, { backgroundColor, width: modalWidth }]}
+          style={[styles.modalContent, { backgroundColor, width: modalWidth }, style]}
         >
-          <View style={styles.modalHeader}>
-            <Pressable onPress={onShareEventClose} style={styles.closeButton}>
-              <FontAwesome name="times" style={styles.icon} />
-            </Pressable>
-          </View>
-
-          <View style={styles.separator} />
-
-          {/* Modal Body */}
-          <View style={styles.modalBody}>
-            <ScrollView contentContainerStyle={styles.bodyContainer}>
-              {/* Conditionally render MeetingPasscodeComponent based on islevel */}
-              {islevel === '2' && adminPasscode && (
-                <View style={styles.componentContainer}>
-                  <MeetingPasscodeComponent meetingPasscode={adminPasscode} />
-                </View>
-              )}
-
-              {/* Meeting ID */}
-              <View style={styles.componentContainer}>
-                <MeetingIdComponent meetingID={roomName} />
-              </View>
-
-              {/* Share Buttons */}
-              {shareButtons && (
-                <View style={styles.componentContainer}>
-                  <ShareButtonsComponent
-                    meetingID={roomName}
-                    eventType={eventType}
-                    localLink={localLink}
-                  />
-                </View>
-              )}
-            </ScrollView>
-          </View>
+          {content}
         </View>
       </View>
     </Modal>
   );
+
+  return renderContainer
+    ? renderContainer({ defaultContainer, dimensions })
+    : defaultContainer;
 };
 
 export default ShareEventModal;

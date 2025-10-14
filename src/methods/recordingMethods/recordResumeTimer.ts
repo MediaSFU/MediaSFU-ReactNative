@@ -26,7 +26,7 @@ export type RecordResumeTimerType = (options: RecordResumeTimerOptions) => Promi
 
 /**
  * Resumes the recording timer if it is not already running and can be paused/resumed.
- * 
+ *
  * @param {RecordResumeTimerOptions} options - The options for resuming the recording timer.
  * @param {Object} options.parameters - The parameters for the recording timer.
  * @param {Function} options.parameters.getUpdatedAllParams - Function to get updated parameters.
@@ -40,9 +40,9 @@ export type RecordResumeTimerType = (options: RecordResumeTimerOptions) => Promi
  * @param {Function} options.parameters.updateRecordTimerInterval - Function to update the recording timer interval.
  * @param {Function} options.parameters.updateIsTimerRunning - Function to update the timer running status.
  * @param {Function} options.parameters.updateCanPauseResume - Function to update the pause/resume status.
- * 
+ *
  * @returns {Promise<boolean>} - Returns a promise that resolves to true if the timer was successfully resumed, otherwise false.
- * 
+ *
  * @example
  * ```typescript
  * recordResumeTimer({

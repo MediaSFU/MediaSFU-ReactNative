@@ -34,7 +34,7 @@ export type JoinConRoomType = (options: JoinConRoomOptions) => Promise<JoinConRo
  * @param {string} options.member - The member identifier.
  * @param {string} options.sec - The security token.
  * @param {string} options.apiUserName - The API username.
- * 
+ *
  * @returns {Promise<JoinConRoomResponse>} A promise that resolves with the response of the join operation.
  *
  * @example

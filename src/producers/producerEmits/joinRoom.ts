@@ -31,9 +31,9 @@ export type JoinRoomType = (
  * @param {string} options.member - The member identifier.
  * @param {string} options.sec - The security token.
  * @param {string} options.apiUserName - The API username of the user.
- * 
+ *
  * @returns {Promise<object>} A promise that resolves with the data received from the 'joinRoom' event or rejects with a validation error.
- * 
+ *
  * @example
  * ```typescript
  * const options = {

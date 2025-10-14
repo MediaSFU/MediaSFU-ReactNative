@@ -38,7 +38,7 @@ export type CompareScreenStatesType = (options: CompareScreenStatesOptions) => P
  * @returns {Promise<void>} A promise that resolves when the comparison and any triggered actions are complete.
  *
  * @throws Will log an error message if an error occurs during the comparison process.
- * 
+ *
  * @example
  * const options = {
  *   restart: false,
@@ -52,7 +52,7 @@ export type CompareScreenStatesType = (options: CompareScreenStatesOptions) => P
  *     trigger: triggerFunction,
  *   },
  * };
- * 
+ *
  * compareScreenStates(options)
  *   .then(() => {
  *     console.log('Screen states compared successfully');

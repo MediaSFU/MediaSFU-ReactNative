@@ -82,9 +82,9 @@ export type StreamSuccessScreenType = (options: StreamSuccessScreenOptions) => P
  * @param {Function} options.parameters.rePort - Function to reinitialize ports.
  *
  * @returns {Promise<void>} A promise that resolves when the screen sharing setup is complete.
- * 
+ *
  * @throws Will throw an error if there is an issue with screen sharing.
- *  
+ *
  * @example
  * ```typescript
  * await streamSuccessScreen({

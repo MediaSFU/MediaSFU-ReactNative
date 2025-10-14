@@ -1,6 +1,6 @@
 // AudioCard.tsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
   StyleProp,
   ViewStyle,
   ImageStyle,
+  LayoutChangeEvent,
 } from 'react-native';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { Socket } from 'socket.io-client';
@@ -29,6 +30,28 @@ import {
   CustomAudioCardType,
 } from '../../@types/types';
 
+/**
+ * Parameters consumed by `AudioCard` to reflect live meeting state and permissions.
+ *
+ * @interface AudioCardParameters
+ *
+ * **Telemetry & Participants:**
+ * @property {AudioDecibels[]} audioDecibels Live loudness metrics per participant.
+ * @property {Participant[]} participants Current participant roster.
+ *
+ * **Session Context:**
+ * @property {Socket} socket Socket instance for media control events.
+ * @property {CoHostResponsibility[]} coHostResponsibility Active co-host capabilities.
+ * @property {string} roomName Active room identifier.
+ * @property {ShowAlert} [showAlert] Optional alert helper.
+ * @property {string} coHost Current co-host identifier.
+ * @property {string} islevel Member privilege level.
+ * @property {string} member Local member identifier.
+ * @property {string} eventType Meeting event type (e.g., `conference`).
+ *
+ * **Helpers:**
+ * @property {() => AudioCardParameters} getUpdatedAllParams Refreshes parameters before invoking side effects.
+ */
 export interface AudioCardParameters {
   audioDecibels: AudioDecibels[];
   participants: Participant[];
@@ -40,11 +63,46 @@ export interface AudioCardParameters {
   islevel: string;
   member: string;
   eventType: string;
-
-  // mediasfu functions
   getUpdatedAllParams(): AudioCardParameters;
 }
 
+/**
+ * Configuration options for rendering an `AudioCard`.
+ *
+ * @interface AudioCardOptions
+ *
+ * **Appearance:**
+ * @property {StyleProp<ViewStyle>} [customStyle] Additional card styling.
+ * @property {StyleProp<ViewStyle>} [style] Style override applied to the container wrapper.
+ * @property {string} name Participant display name.
+ * @property {string} [barColor='red'] Waveform bar color.
+ * @property {string} [textColor='white'] Participant label color.
+ * @property {string} [imageSource] Optional avatar URL.
+ * @property {boolean} [roundedImage=false] Rounds avatar corners.
+ * @property {StyleProp<ImageStyle>} [imageStyle] Additional avatar styling.
+ * @property {string} [backgroundColor] Card background color.
+ *
+ * **Controls & Info:**
+ * @property {boolean} [showControls=true] Toggles media controls visibility.
+ * @property {boolean} [showInfo=true] Toggles participant info display.
+ * @property {React.ReactNode} [videoInfoComponent] Replacement component for info overlay.
+ * @property {React.ReactNode} [videoControlsComponent] Replacement component for controls overlay.
+ * @property {ControlsPosition} [controlsPosition='topLeft'] Overlay placement for controls.
+ * @property {InfoPosition} [infoPosition='bottomLeft'] Overlay placement for info.
+ *
+ * **Behaviour:**
+ * @property {(options: ControlMediaOptions) => Promise<void>} [controlUserMedia=controlMedia] Handler for toggling media.
+ * @property {Participant} participant Participant metadata used in controls.
+ * @property {AudioDecibels} [audioDecibels] Loudness metrics for the participant.
+ * @property {AudioCardParameters} parameters Shared meeting parameters.
+ * @property {CustomAudioCardType} [customAudioCard] Custom renderer to replace the default card body.
+ *
+ * **Advanced Render Overrides:**
+ * @property {(options: { defaultContent: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContent]
+ * Override for the internal layout.
+ * @property {(options: { defaultContainer: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContainer]
+ * Override for the outer container implementation.
+ */
 export interface AudioCardOptions {
   controlUserMedia?: (options: ControlMediaOptions) => Promise<void>;
   customStyle?: StyleProp<ViewStyle>;
@@ -65,75 +123,54 @@ export interface AudioCardOptions {
   audioDecibels?: AudioDecibels;
   parameters: AudioCardParameters;
   customAudioCard?: CustomAudioCardType;
+  style?: StyleProp<ViewStyle>;
+  renderContent?: (options: {
+    defaultContent: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
+  renderContainer?: (options: {
+    defaultContainer: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
 }
 
 export type AudioCardType = (options: AudioCardOptions) => JSX.Element;
 
 /**
- * AudioCard component displays participant information, audio waveform, and media control buttons.
+ * AudioCard renders participant avatars, animated audio waveforms, and media controls within a
+ * customizable card. It reacts to live audio telemetry, exposes override hooks, and integrates with
+ * `controlMedia` for host-driven moderation.
  *
- * This component provides an animated waveform for audio activity, control buttons to toggle audio and video,
- * and options for customization of appearance, layout, and media controls. It leverages WebSocket for
- * real-time updates and accommodates custom styling and control component integrations.
+ * ### Key Features
+ * - Animated waveform tied to decibel telemetry.
+ * - Toggle buttons for audio/video with default or custom renderers.
+ * - Supports image avatars or fallback initials via `MiniCard`.
+ * - Aligns overlays via `controlsPosition` and `infoPosition` helpers.
  *
- * @component
- * @param {Function} [controlUserMedia=controlMedia] - Function to control user media settings.
- * @param {StyleProp<ViewStyle>} [customStyle] - Custom styles for the card container.
- * @param {string} name - Name of the participant displayed in the card.
- * @param {string} [barColor='red'] - Color for the waveform bars.
- * @param {string} [textColor='white'] - Color for participant name text.
- * @param {string} [imageSource] - URL for participant image.
- * @param {boolean} [roundedImage=false] - Flag to display the image with rounded corners.
- * @param {StyleProp<ImageStyle>} [imageStyle] - Custom styles for participant image.
- * @param {boolean} [showControls=true] - Flag to toggle the visibility of media control buttons.
- * @param {boolean} [showInfo=true] - Flag to toggle the visibility of participant info.
- * @param {React.ReactNode} [videoInfoComponent] - Custom component to replace default participant info.
- * @param {React.ReactNode} [videoControlsComponent] - Custom component to replace default control buttons.
- * @param {ControlsPosition} [controlsPosition='topLeft'] - Position for media control buttons overlay.
- * @param {InfoPosition} [infoPosition='bottomLeft'] - Position for participant info overlay.
- * @param {Participant} participant - Participant information.
- * @param {string} [backgroundColor='#2c678f'] - Background color for the card.
- * @param {AudioDecibels} [audioDecibels] - Audio decibels data for the waveform.
- * @param {AudioCardParameters} parameters - Parameters with media and event settings.
+ * ### Accessibility
+ * - Control buttons include iconography and can be wrapped in accessible containers.
+ * - Text labels use high-contrast defaults for readability.
  *
- * @returns {JSX.Element} The AudioCard component.
+ * @param {AudioCardOptions} props Audio card configuration.
+ * @returns {JSX.Element} Rendered audio card.
  *
- * @example
+ * @example Standard host-controlled audio card.
  * ```tsx
- * import React from 'react';
- * import { AudioCard } from 'mediasfu-reactnative';
- * import { io } from 'socket.io-client';
+ * <AudioCard
+ *   name={participant.name}
+ *   participant={participant}
+ *   parameters={parameters}
+ * />
+ * ```
  *
- * function App() {
- *   const socket = io('http://localhost:3000');
- *   
- *   return (
- *     <AudioCard
- *       name="John Doe"
- *       barColor="blue"
- *       textColor="white"
- *       imageSource="https://example.com/image.jpg"
- *       showControls={true}
- *       showInfo={true}
- *       participant={{ name: "John Doe", muted: false, videoOn: true }}
- *       parameters={{
- *         audioDecibels: [{ name: "John Doe", averageLoudness: 128 }],
- *         participants: [{ name: "John Doe" }],
- *         socket,
- *         coHostResponsibility: [],
- *         roomName: "Room 1",
- *         coHost: "Admin",
- *         islevel: "1",
- *         member: "12345",
- *         eventType: "meeting",
- *         showAlert: ({ message, type }) => console.log(message, type),
- *         getUpdatedAllParams: () => ({}),
- *       }}
- *     />
- *   );
- * }
- *
- * export default App;
+ * @example Custom container with fade animation.
+ * ```tsx
+ * <AudioCard
+ *   {...props}
+ *   renderContainer={({ defaultContainer }) => (
+ *     <FadeIn>{defaultContainer}</FadeIn>
+ *   )}
+ * />
  * ```
  */
 
@@ -154,56 +191,31 @@ const AudioCard: React.FC<AudioCardOptions> = ({
   infoPosition = 'bottomLeft',
   participant,
   backgroundColor,
-  audioDecibels,
+  audioDecibels: _audioDecibels,
   parameters,
   customAudioCard,
+  style,
+  renderContent,
+  renderContainer,
 }) => {
-  // State for animated waveform bars
+  const { getUpdatedAllParams } = parameters;
+
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
   const [waveformAnimations] = useState<Animated.Value[]>(
     Array.from({ length: 9 }, () => new Animated.Value(0)),
   );
 
   const [showWaveform, setShowWaveform] = useState<boolean>(true);
-  const { getUpdatedAllParams } = parameters;
-  parameters = getUpdatedAllParams();
 
-  useEffect(() => {
-    // Interval to check audio decibels and participant status every second
-    const interval = setInterval(() => {
-      const { audioDecibels, participants } = parameters;
+  const latestParameters = useCallback(() => getUpdatedAllParams(), [getUpdatedAllParams]);
 
-      const existingEntry = audioDecibels?.find((entry) => entry.name === name);
-      const updatedParticipant = participants?.find((p) => p.name === name);
+  const getAnimationDuration = useCallback((index: number): number => {
+    const durations = [474, 433, 407, 458, 400, 427, 441, 419, 487];
+    return durations[index] || 500;
+  }, []);
 
-      // Conditions to animate or reset waveform
-      if (
-        existingEntry &&
-        existingEntry.averageLoudness > 127.5 &&
-        updatedParticipant &&
-        !updatedParticipant.muted
-      ) {
-        animateWaveform();
-      } else {
-        resetWaveform();
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [audioDecibels]);
-
-  useEffect(() => {
-    if (participant?.muted) {
-      setShowWaveform(false);
-      resetWaveform();
-    } else {
-      setShowWaveform(true);
-    }
-  }, [participant?.muted]);
-
-  /**
-   * animateWaveform - Starts the animation for each waveform bar.
-   */
-  const animateWaveform = () => {
+  const animateWaveform = useCallback(() => {
     const animations = waveformAnimations.map((animation, index) =>
       Animated.loop(
         Animated.sequence([
@@ -222,85 +234,134 @@ const AudioCard: React.FC<AudioCardOptions> = ({
     );
 
     Animated.parallel(animations).start();
-  };
+  }, [getAnimationDuration, waveformAnimations]);
 
-  /**
-   * resetWaveform - Resets all waveform animations.
-   */
-  const resetWaveform = () => {
-    waveformAnimations.forEach((animation) => animation.stopAnimation());
-    waveformAnimations.forEach((animation) => animation.setValue(0));
-  };
+  const resetWaveform = useCallback(() => {
+    waveformAnimations.forEach((animation) => {
+      animation.stopAnimation();
+      animation.setValue(0);
+    });
+  }, [waveformAnimations]);
 
-  /**
-   * getAnimationDuration - Returns the duration for a given waveform bar index.
-   * @param index - The index of the waveform bar.
-   * @returns The duration in milliseconds.
-   */
-  const getAnimationDuration = (index: number): number => {
-    const durations = [474, 433, 407, 458, 400, 427, 441, 419, 487];
-    return durations[index] || 500;
-  };
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const { audioDecibels: liveDecibels, participants: liveParticipants } = latestParameters();
 
-  /**
-   * toggleAudio - Toggles the audio state of the participant.
-   */
-  const toggleAudio = async () => {
+      const existingEntry = liveDecibels?.find((entry) => entry.name === name);
+      const updatedParticipant = liveParticipants?.find((p) => p.name === name);
+
+      if (existingEntry && existingEntry.averageLoudness > 127.5 && updatedParticipant && !updatedParticipant.muted) {
+        animateWaveform();
+      } else {
+        resetWaveform();
+      }
+    }, 1000);
+
+    return () => {
+      clearInterval(interval);
+      resetWaveform();
+    };
+  }, [animateWaveform, latestParameters, name, resetWaveform]);
+
+  useEffect(() => {
+    if (participant?.muted) {
+      setShowWaveform(false);
+      resetWaveform();
+    } else {
+      setShowWaveform(true);
+      animateWaveform();
+    }
+
+    return () => {
+      resetWaveform();
+    };
+  }, [animateWaveform, participant?.muted, resetWaveform]);
+
+  const handleLayout = useCallback((event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout;
+    setDimensions((current) => {
+      if (current.width === width && current.height === height) {
+        return current;
+      }
+      return { width, height };
+    });
+  }, []);
+
+  const accessibilityLabel = useMemo(() => {
+    const statusParts: string[] = [];
+    if (participant?.muted) {
+      statusParts.push('audio muted');
+    } else {
+      statusParts.push('audio active');
+    }
+    statusParts.push(participant?.videoOn ? 'video on' : 'video off');
+    if (showWaveform) {
+      statusParts.push('waveform visible');
+    }
+    return `${name} (${statusParts.join(', ')})`;
+  }, [name, participant?.muted, participant?.videoOn, showWaveform]);
+
+  const toggleAudio = useCallback(async () => {
     if (!participant?.muted) {
+      const updatedParams = latestParameters();
       await controlUserMedia({
-        participantId: participant.id || '',
-        participantName: participant.name,
+        participantId: participant?.id || '',
+        participantName: participant?.name || name,
         type: 'audio',
-        socket: parameters.socket,
-        coHostResponsibility: parameters.coHostResponsibility,
-        roomName: parameters.roomName,
-        showAlert: parameters.showAlert,
-        coHost: parameters.coHost,
-        islevel: parameters.islevel,
-        member: parameters.member,
-        participants: parameters.participants,
+        socket: updatedParams.socket,
+        coHostResponsibility: updatedParams.coHostResponsibility,
+        roomName: updatedParams.roomName,
+        showAlert: updatedParams.showAlert,
+        coHost: updatedParams.coHost,
+        islevel: updatedParams.islevel,
+        member: updatedParams.member,
+        participants: updatedParams.participants,
       });
     }
-  };
+  }, [controlUserMedia, latestParameters, name, participant?.id, participant?.muted, participant?.name]);
 
-  /**
-   * toggleVideo - Toggles the video state of the participant.
-   */
-  const toggleVideo = async () => {
+  const toggleVideo = useCallback(async () => {
     if (participant?.videoOn) {
+      const updatedParams = latestParameters();
       await controlUserMedia({
-        participantId: participant.id || '',
-        participantName: participant.name,
+        participantId: participant?.id || '',
+        participantName: participant?.name || name,
         type: 'video',
-        socket: parameters.socket,
-        coHostResponsibility: parameters.coHostResponsibility,
-        roomName: parameters.roomName,
-        showAlert: parameters.showAlert,
-        coHost: parameters.coHost,
-        islevel: parameters.islevel,
-        member: parameters.member,
-        participants: parameters.participants,
+        socket: updatedParams.socket,
+        coHostResponsibility: updatedParams.coHostResponsibility,
+        roomName: updatedParams.roomName,
+        showAlert: updatedParams.showAlert,
+        coHost: updatedParams.coHost,
+        islevel: updatedParams.islevel,
+        member: updatedParams.member,
+        participants: updatedParams.participants,
       });
     }
-  };
+  }, [controlUserMedia, latestParameters, name, participant?.id, participant?.name, participant?.videoOn]);
 
-  /**
-   * renderControls - Renders the control buttons for audio and video.
-   * @returns The control buttons JSX.Element or a custom component.
-   */
-  const renderControls = (): JSX.Element | null => {
+  const currentParameters = latestParameters();
+
+  const fallbackMiniCardBorder = useMemo(() => ({
+    borderWidth: currentParameters.eventType !== 'broadcast' ? 2 : 0,
+    borderColor: currentParameters.eventType !== 'broadcast' ? 'black' : 'transparent',
+  }), [currentParameters.eventType]);
+
+  const controlsContent = useMemo(() => {
     if (!showControls) {
       return null;
     }
 
-    // Use custom videoControlsComponent if provided
     if (videoControlsComponent) {
       return <>{videoControlsComponent}</>;
     }
 
-    // Default controls
     return (
-      <View style={styles.overlayControls}>
+      <View
+        style={[
+          styles.overlayControls,
+          getOverlayPosition({ position: controlsPosition }),
+        ]}
+      >
         <Pressable style={styles.controlButton} onPress={toggleAudio}>
           <FontAwesome5
             name={participant?.muted ? 'microphone-slash' : 'microphone'}
@@ -318,9 +379,75 @@ const AudioCard: React.FC<AudioCardOptions> = ({
         </Pressable>
       </View>
     );
-  };
+  }, [controlsPosition, participant?.muted, participant?.videoOn, showControls, toggleAudio, toggleVideo, videoControlsComponent]);
 
-  return (
+  const infoContent = useMemo(() => {
+    if (videoInfoComponent) {
+      return <>{videoInfoComponent}</>;
+    }
+
+    if (!showInfo) {
+      return null;
+    }
+
+    return (
+      <View
+        style={[
+          getOverlayPosition({ position: infoPosition }),
+          Platform.OS === 'web'
+            ? showControls
+              ? styles.overlayWeb
+              : styles.overlayWebAlt
+            : styles.overlayMobile,
+        ]}
+      >
+        <View style={styles.nameColumn}>
+          <Text style={[styles.nameText, { color: textColor }]}>
+            {participant?.name || name}
+          </Text>
+        </View>
+        {showWaveform && (
+          <View
+            style={
+              Platform.OS === 'web'
+                ? styles.waveformWeb
+                : styles.waveformMobile
+            }
+          >
+            {waveformAnimations.map((animation, index) => (
+              <Animated.View
+                key={index}
+                style={[
+                  styles.bar,
+                  {
+                    height: animation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [1, 14],
+                    }),
+                    backgroundColor: barColor,
+                  },
+                ]}
+              />
+            ))}
+          </View>
+        )}
+      </View>
+    );
+  }, [
+    barColor,
+    controlsContent,
+    infoPosition,
+    name,
+    participant?.name,
+    showControls,
+    showInfo,
+    showWaveform,
+    textColor,
+    videoInfoComponent,
+    waveformAnimations,
+  ]);
+
+  const defaultContent = useMemo(() => (
     <>
       {customAudioCard ? (
         customAudioCard({
@@ -330,16 +457,10 @@ const AudioCard: React.FC<AudioCardOptions> = ({
           imageSource,
           roundedImage,
           imageStyle,
-          parameters,
+          parameters: currentParameters,
         })
       ) : (
-        <View
-          style={[
-            styles.card,
-            customStyle,
-            { backgroundColor: backgroundColor || '#2c678f' },
-          ]}
-        >
+        <>
           {imageSource ? (
             <Image
               source={{ uri: imageSource }}
@@ -354,76 +475,49 @@ const AudioCard: React.FC<AudioCardOptions> = ({
             <MiniCard
               initials={name}
               fontSize={20}
-              customStyle={{
-                borderWidth: parameters.eventType !== 'broadcast' ? 2 : 0,
-                borderColor:
-                  parameters.eventType !== 'broadcast' ? 'black' : 'transparent',
-              }}
+              customStyle={fallbackMiniCardBorder}
             />
           )}
 
-          {/* Participant Info and Waveform */}
-          {videoInfoComponent ||
-            (showInfo && (
-              <View
-                style={[
-                  getOverlayPosition({ position: infoPosition }),
-                  Platform.OS === 'web'
-                    ? showControls
-                      ? styles.overlayWeb
-                      : styles.overlayWebAlt
-                    : styles.overlayMobile,
-                ]}
-              >
-                <View style={styles.nameColumn}>
-                  <Text style={[styles.nameText, { color: textColor }]}>
-                    {name}
-                  </Text>
-                </View>
-                {showWaveform && (
-                  <View
-                    style={
-                      Platform.OS === 'web'
-                        ? styles.waveformWeb
-                        : styles.waveformMobile
-                    }
-                  >
-                    {waveformAnimations.map((animation, index) => (
-                      <Animated.View
-                        key={index}
-                        style={[
-                          styles.bar,
-                          {
-                            height: animation.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [1, 14],
-                            }),
-                            backgroundColor: barColor,
-                          },
-                        ]}
-                      />
-                    ))}
-                  </View>
-                )}
-              </View>
-            ))}
+          {infoContent}
 
-          {/* Control Buttons */}
-          {videoControlsComponent ||
-            (showControls && (
-              <View
-                style={[
-                  styles.overlayControls,
-                  getOverlayPosition({ position: controlsPosition }),
-                ]}
-              >
-                {renderControls()}
-              </View>
-            ))}
-        </View>
+          {controlsContent}
+        </>
       )}
     </>
+  ), [
+    barColor,
+    controlsContent,
+    customAudioCard,
+    fallbackMiniCardBorder,
+    imageSource,
+    imageStyle,
+    infoContent,
+    name,
+    roundedImage,
+    textColor,
+    currentParameters,
+  ]);
+
+  const content = useMemo(
+    () => (renderContent ? renderContent({ defaultContent, dimensions }) : defaultContent),
+    [defaultContent, dimensions, renderContent],
   );
+
+  const defaultContainer = (
+    <View
+      style={[styles.card, customStyle, style, backgroundColor ? { backgroundColor } : null]}
+      onLayout={handleLayout}
+      accessibilityRole="image"
+      accessibilityLabel={accessibilityLabel}
+    >
+      {content}
+    </View>
+  );
+
+  return renderContainer
+    ? renderContainer({ defaultContainer, dimensions })
+    : defaultContainer;
 };
 
 export default AudioCard;

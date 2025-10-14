@@ -10,10 +10,27 @@ import {
 } from 'react-native';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
+/**
+ * Compact button descriptor for alternate (stage-adjacent) controls.
+ *
+ * @interface AltButton
+ * @property {string} [name] Optional short label displayed near the icon.
+ * @property {string} [icon] Default FontAwesome5 icon name when inactive.
+ * @property {string} [alternateIcon] Icon displayed when the button is `active`.
+ * @property {() => void} [onPress] Handler invoked when the button is pressed.
+ * @property {{ default?: string; pressed?: string }} [backgroundColor] Background colors for idle and pressed states.
+ * @property {boolean} [active=false] Toggles alternate icon display.
+ * @property {JSX.Element} [alternateIconComponent] Custom component rendered when active.
+ * @property {JSX.Element} [iconComponent] Custom component rendered when inactive.
+ * @property {JSX.Element} [customComponent] Full override replacing icon and label.
+ * @property {string} [color] Label color for the button text.
+ * @property {string} [inActiveColor] Icon color used for both active and inactive states.
+ * @property {boolean} [show=true] Toggle to hide the button entirely when false.
+ */
 export interface AltButton {
   name?: string;
-  icon?: string; // FontAwesome5 icon name
-  alternateIcon?: string; // FontAwesome5 alternate icon name
+  icon?: string;
+  alternateIcon?: string;
   onPress?: () => void;
   backgroundColor?: {
     default?: string;
@@ -28,6 +45,32 @@ export interface AltButton {
   show?: boolean;
 }
 
+/**
+ * Options for rendering `ControlButtonsAltComponent`.
+ *
+ * @interface ControlButtonsAltComponentOptions
+ *
+ * **Buttons & Visibility:**
+ * @property {AltButton[]} buttons Collection of compact control descriptors to display.
+ * @property {boolean} [showAspect=false] Toggles visibility of the entire button group.
+ *
+ * **Layout & Positioning:**
+ * @property {'left' | 'right' | 'middle'} [position='left'] Horizontal anchor within the container.
+ * @property {'top' | 'bottom' | 'center'} [location='top'] Vertical anchor within the container.
+ * @property {'horizontal' | 'vertical'} [direction='horizontal'] Axis along which buttons are arranged.
+ *
+ * **Appearance:**
+ * @property {StyleProp<ViewStyle>} [buttonsContainerStyle] Additional styles for the internal buttons wrapper.
+ * @property {StyleProp<ViewStyle>} [style] Extra styles for the outer container.
+ * @property {JSX.Element} [alternateIconComponent] Shared alternate icon used when buttons are active.
+ * @property {JSX.Element} [iconComponent] Shared default icon used when buttons are inactive.
+ *
+ * **Advanced Render Overrides:**
+ * @property {(options: { defaultContent: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContent]
+ * Wrap or replace the default button rendering while receiving layout dimensions.
+ * @property {(options: { defaultContainer: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContainer]
+ * Override the top-level container element to integrate with external layout systems.
+ */
 export interface ControlButtonsAltComponentOptions {
   buttons: AltButton[];
   position?: 'left' | 'right' | 'middle';
@@ -37,6 +80,15 @@ export interface ControlButtonsAltComponentOptions {
   alternateIconComponent?: JSX.Element;
   iconComponent?: JSX.Element;
   showAspect?: boolean;
+  style?: StyleProp<ViewStyle>;
+  renderContent?: (options: {
+    defaultContent: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
+  renderContainer?: (options: {
+    defaultContainer: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
 }
 
 export type ControlButtonsAltComponentType = (
@@ -44,48 +96,34 @@ export type ControlButtonsAltComponentType = (
 ) => React.ReactNode;
 
 /**
- * ControlButtonsAltComponent renders a set of customizable control buttons with adjustable layout, styling, and alignment options.
+ * Renders compact control badges typically shown near the stage presenter or pinned video card.
+ * Supports anchored positioning, shared icon overrides, and render hooks for integration with
+ * custom shells or animated wrappers.
  *
- * This component displays a collection of control buttons that can be horizontally or vertically aligned, with additional options
- * to define icon behavior, active states, and color schemes. Each button can have an icon, alternate icon, or custom component.
+ * ### Key Features
+ * - Anchor buttons to any corner/edge of the stage via `position` and `location`.
+ * - Arrange buttons horizontally or vertically with `direction`.
+ * - Provide shared icon overrides for all buttons or per-button custom components.
+ * - Toggle visibility globally with `showAspect` prop.
  *
- * @component
- * @param {ControlButtonsAltComponentOptions} props - Configuration options for the control buttons.
- * @param {AltButton[]} props.buttons - Array of button options, each with properties for icon, label, and behavior.
- * @param {'left' | 'right' | 'middle'} [props.position='left'] - Horizontal alignment of the button group.
- * @param {'top' | 'bottom' | 'center'} [props.location='top'] - Vertical alignment of the button group.
- * @param {'horizontal' | 'vertical'} [props.direction='horizontal'] - Layout direction for the buttons.
- * @param {StyleProp<ViewStyle>} [props.buttonsContainerStyle] - Custom styles for the container.
- * @param {boolean} [props.showAspect=false] - Controls the visibility of the button group.
- *
- * @returns {JSX.Element} The rendered ControlButtonsAltComponent.
+ * ### Accessibility
+ * - Each button uses `Pressable`, exposing default press feedback.
+ * - Descriptive labels should be provided via `name` or injected within `customComponent`.
  *
  * @example
  * ```tsx
- * import React from 'react';
- * import { ControlButtonsAltComponent } from 'mediasfu-reactnative';
- *
- * function App() {
- *   const buttons = [
- *     { name: 'Play', icon: 'play', onPress: () => console.log('Play pressed'), active: true },
- *     { name: 'Stop', icon: 'stop', onPress: () => console.log('Stop pressed') }
- *   ];
- *
- *   return (
- *     <ControlButtonsAltComponent
- *       buttons={buttons}
- *       position="middle"
- *       location="bottom"
- *       direction="horizontal"
- *       showAspect={true}
- *     />
- *   );
- * }
- *
- * export default App;
+ * <ControlButtonsAltComponent
+ *   buttons={[
+ *     { icon: 'microphone', alternateIcon: 'microphone-slash', active: isMuted, onPress: toggleMute },
+ *     { icon: 'expand', onPress: expandStage },
+ *   ]}
+ *   position="right"
+ *   location="top"
+ *   direction="horizontal"
+ *   showAspect
+ * />
  * ```
  */
-
 const ControlButtonsAltComponent: React.FC<ControlButtonsAltComponentOptions> = ({
   buttons,
   position = 'left',
@@ -93,6 +131,9 @@ const ControlButtonsAltComponent: React.FC<ControlButtonsAltComponentOptions> = 
   direction = 'horizontal',
   buttonsContainerStyle,
   showAspect = false,
+  style,
+  renderContent,
+  renderContainer,
 }) => {
   /**
    * getAlignmentStyle - Computes alignment styles based on position, location, and direction.
@@ -121,61 +162,103 @@ const ControlButtonsAltComponent: React.FC<ControlButtonsAltComponentOptions> = 
     return alignmentStyle;
   };
 
-  return (
+  const dimensions = { width: 0, height: 0 };
+
+  const defaultContent = (
+    <>
+      {buttons.map((button, index) => {
+        if (button.show === false) {
+          return null;
+        }
+
+        const resolvedBackgroundDefault =
+          button.backgroundColor?.default ?? 'transparent';
+        const resolvedBackgroundPressed =
+          button.backgroundColor?.pressed ?? button.backgroundColor?.default ?? '#444';
+        const resolvedLabelColor = button.color ?? '#ffffff';
+        const resolvedIconColor = button.inActiveColor ?? '#ffffff';
+        const inactiveIcon = button.iconComponent;
+        const activeIcon = button.alternateIconComponent;
+
+        return (
+          <Pressable
+            key={index}
+            style={({ pressed }) => [
+              styles.buttonContainer,
+              {
+                backgroundColor: pressed
+                  ? resolvedBackgroundPressed
+                  : resolvedBackgroundDefault,
+              },
+              direction === 'vertical' && styles.verticalButton,
+            ]}
+            onPress={button.onPress}
+            accessibilityRole="button"
+            accessibilityLabel={button.name ?? button.icon ?? 'alt control button'}
+          >
+            {button.customComponent ? (
+              button.customComponent
+            ) : button.active ? (
+              activeIcon ? (
+                activeIcon
+              ) : button.alternateIcon ? (
+                <FontAwesome5
+                  name={button.alternateIcon}
+                  size={14}
+                  color={resolvedIconColor}
+                />
+              ) : inactiveIcon ? (
+                inactiveIcon
+              ) : button.icon ? (
+                <FontAwesome5
+                  name={button.icon}
+                  size={14}
+                  color={resolvedIconColor}
+                />
+              ) : null
+            ) : inactiveIcon ? (
+              inactiveIcon
+            ) : button.icon ? (
+              <FontAwesome5
+                name={button.icon}
+                size={14}
+                color={resolvedIconColor}
+              />
+            ) : activeIcon ? (
+              activeIcon
+            ) : null}
+            {button.name && (
+              <Text style={[styles.buttonText, { color: resolvedLabelColor }]} numberOfLines={1}>
+                {button.name}
+              </Text>
+            )}
+          </Pressable>
+        );
+      })}
+    </>
+  );
+
+  const content = renderContent
+    ? renderContent({ defaultContent, dimensions })
+    : defaultContent;
+
+  const defaultContainer = (
     <View
       style={[
         styles.container,
         getAlignmentStyle(),
         buttonsContainerStyle,
         { display: showAspect ? 'flex' : 'none' },
+        style,
       ]}
     >
-      {buttons.map((button, index) => (
-        <Pressable
-          key={index}
-          style={({ pressed }) => [
-            styles.buttonContainer,
-            {
-              backgroundColor: pressed
-                ? button.backgroundColor?.pressed || '#444'
-                : button.backgroundColor?.default || 'transparent',
-            },
-            direction === 'vertical' && styles.verticalButton,
-          ]}
-          onPress={button.onPress}
-        >
-          {button.icon ? (
-            button.active ? (
-              button.alternateIconComponent ? (
-                button.alternateIconComponent
-              ) : button.alternateIcon ? (
-                <FontAwesome5
-                  name={button.alternateIcon}
-                  size={14}
-                  color={button.inActiveColor || '#ffffff'}
-                />
-              ) : null
-            ) : button.iconComponent ? (
-              button.iconComponent
-            ) : button.icon ? (
-              <FontAwesome5
-                name={button.icon}
-                size={14}
-                color={button.inActiveColor || '#ffffff'}
-              />
-            ) : null
-          ) : (
-            button.customComponent
-          )}
-          {button.name && (
-            <Text style={[styles.buttonText, { color: button.color || '#ffffff' }]}>
-              {button.name}
-            </Text>
-          )}
-        </Pressable>
-      ))}
+      {content}
     </View>
   );
+
+  return renderContainer
+    ? renderContainer({ defaultContainer, dimensions })
+    : defaultContainer;
 };
 
 const styles = StyleSheet.create({

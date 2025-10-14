@@ -32,7 +32,7 @@ export type SwitchVideoType = (options: SwitchVideoOptions) => Promise<void>;
 
 /**
  * Switches the user's video device based on the provided video preference.
- * 
+ *
  * @param {SwitchVideoOptions} options - The function parameters.
  * @returns {Promise<void>}
  *

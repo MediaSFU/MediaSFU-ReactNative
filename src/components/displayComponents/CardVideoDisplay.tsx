@@ -1,10 +1,32 @@
-import { View, StyleSheet, Platform } from 'react-native';
+import { View, StyleSheet, Platform, StyleProp, ViewStyle } from 'react-native';
 import {
   RTCView,
 } from '../../methods/utils/webrtc/webrtc';
 import { EventType, MediaStream } from '../../@types/types';
 
 // Define the CardVideoDisplayOptions interface
+/**
+ * Options for displaying a video stream inside `CardVideoDisplay`.
+ *
+ * @interface CardVideoDisplayOptions
+ *
+ * **Video Source:**
+ * @property {string} remoteProducerId Identifier for the remote video producer.
+ * @property {EventType} eventType Event flavour (meeting, webinar, etc.).
+ * @property {boolean} forceFullDisplay Forces `RTCView` to fill the container.
+ * @property {MediaStream | null} videoStream Stream instance to render.
+ * @property {boolean} [doMirror=false] Mirrors the video output.
+ *
+ * **Appearance:**
+ * @property {string} [backgroundColor='transparent'] Background fill for the container.
+ * @property {StyleProp<ViewStyle>} [style] Additional styling for the wrapping view.
+ *
+ * **Advanced Render Overrides:**
+ * @property {(options: { defaultContent: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContent]
+ * Override for the `RTCView` content.
+ * @property {(options: { defaultContainer: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContainer]
+ * Override for the containing view.
+ */
 export interface CardVideoDisplayOptions {
   remoteProducerId: string;
   eventType: EventType;
@@ -12,59 +34,79 @@ export interface CardVideoDisplayOptions {
   videoStream: MediaStream | null;
   backgroundColor?: string;
   doMirror?: boolean;
+  style?: StyleProp<ViewStyle>;
+  renderContent?: (options: {
+    defaultContent: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
+  renderContainer?: (options: {
+    defaultContainer: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
 }
 
 // Define the CardVideoDisplayType
 export type CardVideoDisplayType = (
   options: CardVideoDisplayOptions
-) => React.ReactNode;
+) => JSX.Element;
 
 /**
- * CardVideoDisplay displays a video stream within a card layout, with support for customizable styling and mirroring.
+ * CardVideoDisplay is a lightweight wrapper around `RTCView` that respects platform-specific rendering
+ * differences while exposing override hooks for advanced layouts.
  *
- * This component uses `RTCView` to render a video stream with options to mirror the video, set full display, and apply platform-specific styles.
+ * ### Key Features
+ * - Mirrors video automatically when requested (self-view scenarios)
+ * - Matches Expo web behaviour by configuring `objectFit`/`transform` for browsers
+ * - Supports render overrides to integrate with animation or custom frames
+ * - Platform-specific optimizations for iOS, Android, and web
  *
- * @component
- * @param {CardVideoDisplayOptions} props - Properties for the CardVideoDisplay component.
- * @param {string} props.remoteProducerId - The ID of the remote producer for identification.
- * @param {EventType} props.eventType - The type of event, e.g., meeting or webinar.
- * @param {boolean} props.forceFullDisplay - Whether to force the video to fill the container.
- * @param {MediaStream | null} props.videoStream - The video stream to display.
- * @param {string} [props.backgroundColor='transparent'] - Optional background color for the video container.
- * @param {boolean} [props.doMirror=false] - Option to mirror the video.
- *
- * @returns {JSX.Element} The CardVideoDisplay component.
+ * ### Accessibility
+ * - RTCView provides native video accessibility
+ * - Consumers should add descriptive labels to the container
  *
  * @example
  * ```tsx
- * import React from 'react';
- * import { CardVideoDisplay } from 'mediasfu-reactnative';
- * import { MediaStream } from 'mediasfu-reactnative/dist/types/src/@types/types';
+ * // Basic remote video display
+ * <CardVideoDisplay
+ *   videoStream={remoteStream}
+ *   remoteProducerId="producer-123"
+ *   eventType="conference"
+ *   forceFullDisplay
+ *   backgroundColor="#000"
+ * />
+ * ```
  *
- * function App() {
- *   const videoStream: MediaStream = getVideoStream(); // Assume a MediaStream object is available
- *
- *   return (
- *     <CardVideoDisplay
- *       remoteProducerId="producer123"
- *       eventType="meeting"
- *       forceFullDisplay={true}
- *       videoStream={videoStream}
- *       backgroundColor="black"
- *       doMirror={true}
- *     />
- *   );
- * }
- *
- * export default App;
+ * @example
+ * ```tsx
+ * // Mirrored self-view with custom container
+ * <CardVideoDisplay
+ *   videoStream={localStream}
+ *   remoteProducerId="local"
+ *   eventType="broadcast"
+ *   forceFullDisplay
+ *   doMirror
+ *   renderContainer={({ defaultContainer, dimensions }) => (
+ *     <Animated.View
+ *       style={{
+ *         transform: [{ scale: scaleAnim }],
+ *         borderRadius: 12,
+ *         overflow: 'hidden',
+ *       }}
+ *     >
+ *       {defaultContainer}
+ *     </Animated.View>
+ *   )}
+ * />
  * ```
  */
-
 const CardVideoDisplay: React.FC<CardVideoDisplayOptions> = ({
   forceFullDisplay,
   videoStream,
   backgroundColor = 'transparent',
   doMirror = false,
+  style,
+  renderContent,
+  renderContainer,
 }) => {
   /**
    * getRTCViewStyle - Helper function to get styles for RTCView based on platform.
@@ -97,9 +139,10 @@ const CardVideoDisplay: React.FC<CardVideoDisplayOptions> = ({
     return {};
   };
 
-  return (
-    <View style={[styles.videoContainer, { backgroundColor }]}>
-      {/* Conditionally render RTCView based on the platform */}
+  const dimensions = { width: 0, height: 0 }; // Video fills container
+
+  const defaultContent = (
+    <>
       {Platform.OS === 'web' ? (
         <RTCView stream={videoStream} style={getRTCViewStyle()} />
       ) : (
@@ -110,8 +153,22 @@ const CardVideoDisplay: React.FC<CardVideoDisplayOptions> = ({
           style={styles.video}
         />
       )}
+    </>
+  );
+
+  const content = renderContent
+    ? renderContent({ defaultContent, dimensions })
+    : defaultContent;
+
+  const defaultContainer = (
+    <View style={[styles.videoContainer, { backgroundColor }, style]}>
+      {content}
     </View>
   );
+
+  return renderContainer
+    ? renderContainer({ defaultContainer, dimensions })
+    : defaultContainer;
 };
 
 const styles = StyleSheet.create({

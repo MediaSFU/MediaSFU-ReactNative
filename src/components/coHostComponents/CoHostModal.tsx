@@ -9,6 +9,8 @@ import {
   Switch,
   TextInput,
   ScrollView,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import RNPickerSelect from 'react-native-picker-select';
@@ -22,12 +24,46 @@ import {
 } from '../../@types/types';
 import { Socket } from 'socket.io-client';
 
+/**
+ * Options for configuring the `CoHostModal` component.
+ *
+ * @interface CoHostModalOptions
+ *
+ * **Modal Control:**
+ * @property {boolean} isCoHostModalVisible Determines modal visibility.
+ * @property {() => void} onCoHostClose Handler invoked when closing the modal.
+ * @property {(isVisible: boolean) => void} updateIsCoHostModalVisible External setter for visibility.
+ *
+ * **Co-host State:**
+ * @property {string} [currentCohost='No coHost'] Current co-host label.
+ * @property {Participant[]} participants List of available participants.
+ * @property {CoHostResponsibility[]} coHostResponsibility Responsibility matrix for co-host role.
+ * @property {(coHostResponsibility: CoHostResponsibility[]) => void} updateCoHostResponsibility Persists responsibility changes.
+ * @property {(coHost: string) => void} updateCoHost Updates the active co-host value.
+ *
+ * **Session Context:**
+ * @property {string} roomName Current room identifier.
+ * @property {Socket} socket Socket instance for backend updates.
+ * @property {ShowAlert} [showAlert] Optional alert helper.
+ * @property {(settings: ModifyCoHostSettingsOptions) => void} [onModifyEventSettings=modifyCoHostSettings] Callback invoked when saving settings.
+ *
+ * **Appearance:**
+ * @property {'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight'} [position='topRight'] Anchor location.
+ * @property {string} [backgroundColor='#83c0e9'] Background color.
+ * @property {StyleProp<ViewStyle>} [style] Additional styling for the modal container.
+ *
+ * **Advanced Render Overrides:**
+ * @property {(options: { defaultContent: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContent]
+ * Override for the modal content layout.
+ * @property {(options: { defaultContainer: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContainer]
+ * Override for the outer container implementation.
+ */
 export interface CoHostModalOptions {
   isCoHostModalVisible: boolean;
   currentCohost?: string;
   participants: Participant[];
   coHostResponsibility: CoHostResponsibility[];
-  position?: string;
+  position?: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
   backgroundColor?: string;
   roomName: string;
   showAlert?: ShowAlert;
@@ -39,70 +75,66 @@ export interface CoHostModalOptions {
   socket: Socket;
   onCoHostClose: () => void;
   onModifyEventSettings?: (settings: ModifyCoHostSettingsOptions) => void;
+  style?: StyleProp<ViewStyle>;
+  renderContent?: (options: {
+    defaultContent: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
+  renderContainer?: (options: {
+    defaultContainer: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
 }
 
 export type CoHostModalType = (options: CoHostModalOptions) => JSX.Element;
 
 
 /**
- * CoHostModal component allows users to manage co-host settings in a virtual event.
+ * CoHostModal assigns and configures co-hosts for an event. It surfaces participant selection,
+ * responsibility toggles, and communicates updates through socket calls, while supporting custom
+ * theming and render overrides.
  *
- * This component renders a modal interface where users can assign a new co-host from the list of participants,
- * set responsibilities, and save the updated settings. It leverages a Socket instance for real-time updates
- * and offers customizable modal position and styling options.
+ * ### Key Features
+ * - Presents participant picker excluding admins and current co-host.
+ * - Toggles responsibility and "dedicated" flags with live preview.
+ * - Persists changes via `modifyCoHostSettings` by default.
+ * - Supports render overrides for bespoke layouts and animated containers.
  *
- * @component
- * @param {boolean} isCoHostModalVisible - Flag to control the visibility of the modal.
- * @param {() => void} onCoHostClose - Callback to close the modal.
- * @param {Function} [onModifyEventSettings=modifyCoHostSettings] - Callback to handle changes to event settings, defaulting to `modifyCoHostSettings`.
- * @param {string} [currentCohost='No coHost'] - Name of the current co-host.
- * @param {Participant[]} participants - List of event participants.
- * @param {CoHostResponsibility[]} coHostResponsibility - List of co-host responsibilities and their statuses.
- * @param {string} [position='topRight'] - Screen position of the modal.
- * @param {string} [backgroundColor='#83c0e9'] - Background color for the modal.
- * @param {string} roomName - Room identifier for the event.
- * @param {ShowAlert} [showAlert] - Function to display alerts.
- * @param {Function} updateCoHostResponsibility - Function to update co-host responsibility statuses.
- * @param {Function} updateCoHost - Function to set a new co-host.
- * @param {Function} updateIsCoHostModalVisible - Function to toggle modal visibility.
- * @param {Socket} socket - Socket instance for real-time communication.
+ * ### Accessibility
+ * - Switch components include visual and state feedback.
+ * - Close button and save action expose accessibility roles and labels implicitly.
  *
- * @returns {JSX.Element} The CoHostModal component.
+ * @param {CoHostModalOptions} props Modal configuration and callbacks.
+ * @returns {JSX.Element} Rendered co-host management modal.
  *
- * @example
+ * @example Basic usage with default handlers.
  * ```tsx
- * import React from 'react';
- * import { CoHostModal } from 'mediasfu-reactnative';
- * import { io } from 'socket.io-client';
+ * <CoHostModal
+ *   isCoHostModalVisible={visible}
+ *   onCoHostClose={hide}
+ *   participants={participants}
+ *   coHostResponsibility={responsibilities}
+ *   roomName={roomId}
+ *   socket={socket}
+ *   updateCoHost={setCoHost}
+ *   updateCoHostResponsibility={setResponsibilities}
+ *   updateIsCoHostModalVisible={setVisible}
+ * />
+ * ```
  *
- * function App() {
- *   const socket = io('http://localhost:3000');
- *   
- *   return (
- *     <CoHostModal
- *       isCoHostModalVisible={true}
- *       onCoHostClose={() => console.log('Modal closed')}
- *       currentCohost="John Doe"
- *       participants={[
- *         { name: 'John Doe', islevel: '1' },
- *         { name: 'Jane Doe', islevel: '0' }
- *       ]}
- *       coHostResponsibility={[
- *         { name: 'manageParticipants', value: true, dedicated: false }
- *       ]}
- *       position="topRight"
- *       backgroundColor="#83c0e9"
- *       roomName="Room 1"
- *       showAlert={({ message, type }) => console.log(message, type)}
- *       updateCoHostResponsibility={(responsibilities) => console.log(responsibilities)}
- *       updateCoHost={(coHost) => console.log(coHost)}
- *       updateIsCoHostModalVisible={(visible) => console.log(visible)}
- *       socket={socket}
- *     />
- *   );
- * }
- *
- * export default App;
+ * @example Custom content with animated container.
+ * ```tsx
+ * <CoHostModal
+ *   {...props}
+ *   renderContent={({ defaultContent }) => (
+ *     <ScrollView showsVerticalScrollIndicator={false}>
+ *       {defaultContent}
+ *     </ScrollView>
+ *   )}
+ *   renderContainer={({ defaultContainer }) => (
+ *     <FadeIn>{defaultContainer}</FadeIn>
+ *   )}
+ * />
  * ```
  */
 
@@ -122,6 +154,9 @@ const CoHostModal: React.FC<CoHostModalOptions> = ({
   updateCoHost,
   updateIsCoHostModalVisible,
   socket,
+  style,
+  renderContent,
+  renderContainer,
 }) => {
   const [selectedCohost, setSelectedCohost] = useState<string>(currentCohost);
 
@@ -230,7 +265,125 @@ const CoHostModal: React.FC<CoHostModalOptions> = ({
     });
   };
 
-  return (
+  const dimensions = { width: modalWidth, height: 0 };
+
+  const defaultContent = (
+    <>
+      <ScrollView>
+        <View style={styles.modalHeader}>
+          <Text style={styles.modalTitle}>Manage Co-Host</Text>
+          <Pressable
+            onPress={onCoHostClose}
+            style={styles.btnCloseSettings}
+          >
+            <FontAwesome name="times" style={styles.icon} />
+          </Pressable>
+        </View>
+        <View style={styles.hr} />
+        <View style={styles.modalBody}>
+          <View style={styles.formGroup}>
+            <Text style={[styles.label, { fontWeight: 'bold' }]}>
+              Current Co-host:
+            </Text>
+            <TextInput
+              style={[styles.input, styles.disabledInput]}
+              value={currentCohost}
+              editable={false}
+            />
+          </View>
+
+          <View style={styles.sep} />
+          <View style={styles.formGroup}>
+            <Text style={[styles.label, { fontWeight: 'bold' }]}>
+              Select New Co-host:
+            </Text>
+            <RNPickerSelect
+              style={pickerSelectStyles}
+              value={selectedCohost}
+              onValueChange={(value: string) => setSelectedCohost(value)}
+              items={
+                filteredParticipants
+                  ? filteredParticipants.map((participant) => ({
+                      label: participant.name,
+                      value: participant.name,
+                    }))
+                  : []
+              }
+              placeholder={{ label: 'Select a participant', value: '' }}
+              useNativeAndroidPickerStyle={false}
+            />
+          </View>
+          <View style={styles.sep} />
+          <View style={styles.row}>
+            <View style={styles.col5}>
+              <Text style={[styles.label, { fontWeight: 'bold' }]}>
+                Responsibility
+              </Text>
+            </View>
+            <View style={styles.col3}>
+              <Text style={[styles.label, { fontWeight: 'bold' }]}>
+                Select
+              </Text>
+            </View>
+            <View style={styles.col4}>
+              <Text style={[styles.label, { fontWeight: 'bold' }]}>
+                Dedicated
+              </Text>
+            </View>
+          </View>
+          {responsibilityItems.map((item) => (
+            <View style={styles.row} key={item.name}>
+              <View style={styles.col5}>
+                <Text style={styles.label}>{item.label}</Text>
+              </View>
+              <View style={styles.col3}>
+                <Switch
+                  trackColor={{ false: '#767577', true: '#81b0ff' }}
+                  thumbColor={
+                    responsibilities[item.name] ? '#f5dd4b' : '#f4f3f4'
+                  }
+                  ios_backgroundColor="#3e3e3e"
+                  onValueChange={() => handleToggleSwitch(item.name)}
+                  value={responsibilities[item.name]}
+                />
+              </View>
+              <View style={styles.col4}>
+                <Switch
+                  trackColor={{ false: '#767577', true: '#81b0ff' }}
+                  thumbColor={
+                    responsibilities[item.name] &&
+                    responsibilities[`dedicateTo${item.name}`]
+                      ? '#f5dd4b'
+                      : '#f4f3f4'
+                  }
+                  ios_backgroundColor="#3e3e3e"
+                  onValueChange={() =>
+                    handleToggleSwitch(`dedicateTo${item.name}`)
+                  }
+                  value={
+                    responsibilities[`dedicateTo${item.name}`] &&
+                    responsibilities[item.name]
+                  }
+                  disabled={!responsibilities[item.name]}
+                />
+              </View>
+            </View>
+          ))}
+        </View>
+        <View style={styles.modalFooter}>
+          <Pressable onPress={handleSave} style={styles.btnApplySettings}>
+            <Text style={styles.btnText}>Save</Text>
+          </Pressable>
+        </View>
+      </ScrollView>
+    </>
+  );
+
+  const content = renderContent
+    ? renderContent({ defaultContent, dimensions })
+    : defaultContent;
+
+  const defaultContainer = (
     <Modal
       transparent
       animationType="slide"
@@ -242,119 +395,18 @@ const CoHostModal: React.FC<CoHostModalOptions> = ({
           style={[
             styles.modalContent,
             { width: modalWidth, backgroundColor: backgroundColor },
+            style,
           ]}
         >
-          <ScrollView>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Manage Co-Host</Text>
-              <Pressable
-                onPress={onCoHostClose}
-                style={styles.btnCloseSettings}
-              >
-                <FontAwesome name="times" style={styles.icon} />
-              </Pressable>
-            </View>
-            <View style={styles.hr} />
-            <View style={styles.modalBody}>
-              <View style={styles.formGroup}>
-                <Text style={[styles.label, { fontWeight: 'bold' }]}>
-                  Current Co-host:
-                </Text>
-                <TextInput
-                  style={[styles.input, styles.disabledInput]}
-                  value={currentCohost}
-                  editable={false}
-                />
-              </View>
-
-              <View style={styles.sep} />
-              <View style={styles.formGroup}>
-                <Text style={[styles.label, { fontWeight: 'bold' }]}>
-                  Select New Co-host:
-                </Text>
-                <RNPickerSelect
-                  style={pickerSelectStyles}
-                  value={selectedCohost}
-                  onValueChange={(value: string) => setSelectedCohost(value)}
-                  items={
-                    filteredParticipants
-                      ? filteredParticipants.map((participant) => ({
-                          label: participant.name,
-                          value: participant.name,
-                        }))
-                      : []
-                  }
-                  placeholder={{ label: 'Select a participant', value: '' }}
-                  useNativeAndroidPickerStyle={false}
-                />
-              </View>
-              <View style={styles.sep} />
-              <View style={styles.row}>
-                <View style={styles.col5}>
-                  <Text style={[styles.label, { fontWeight: 'bold' }]}>
-                    Responsibility
-                  </Text>
-                </View>
-                <View style={styles.col3}>
-                  <Text style={[styles.label, { fontWeight: 'bold' }]}>
-                    Select
-                  </Text>
-                </View>
-                <View style={styles.col4}>
-                  <Text style={[styles.label, { fontWeight: 'bold' }]}>
-                    Dedicated
-                  </Text>
-                </View>
-              </View>
-              {responsibilityItems.map((item) => (
-                <View style={styles.row} key={item.name}>
-                  <View style={styles.col5}>
-                    <Text style={styles.label}>{item.label}</Text>
-                  </View>
-                  <View style={styles.col3}>
-                    <Switch
-                      trackColor={{ false: '#767577', true: '#81b0ff' }}
-                      thumbColor={
-                        responsibilities[item.name] ? '#f5dd4b' : '#f4f3f4'
-                      }
-                      ios_backgroundColor="#3e3e3e"
-                      onValueChange={() => handleToggleSwitch(item.name)}
-                      value={responsibilities[item.name]}
-                    />
-                  </View>
-                  <View style={styles.col4}>
-                    <Switch
-                      trackColor={{ false: '#767577', true: '#81b0ff' }}
-                      thumbColor={
-                        responsibilities[item.name] &&
-                        responsibilities[`dedicateTo${item.name}`]
-                          ? '#f5dd4b'
-                          : '#f4f3f4'
-                      }
-                      ios_backgroundColor="#3e3e3e"
-                      onValueChange={() =>
-                        handleToggleSwitch(`dedicateTo${item.name}`)
-                      }
-                      value={
-                        responsibilities[`dedicateTo${item.name}`] &&
-                        responsibilities[item.name]
-                      }
-                      disabled={!responsibilities[item.name]}
-                    />
-                  </View>
-                </View>
-              ))}
-            </View>
-            <View style={styles.modalFooter}>
-              <Pressable onPress={handleSave} style={styles.btnApplySettings}>
-                <Text style={styles.btnText}>Save</Text>
-              </Pressable>
-            </View>
-          </ScrollView>
+          {content}
         </View>
       </View>
     </Modal>
   );
+
+  return renderContainer
+    ? renderContainer({ defaultContainer, dimensions })
+    : defaultContainer;
 };
 
 export default CoHostModal;

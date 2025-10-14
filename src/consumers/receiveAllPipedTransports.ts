@@ -49,7 +49,7 @@ export type ReceiveAllPipedTransportsType = (options: ReceiveAllPipedTransportsO
  * ```
  */
 
-export const receiveAllPipedTransports = async ({ nsock, community=false, parameters }: ReceiveAllPipedTransportsOptions): Promise<void> => {
+export const receiveAllPipedTransports = async ({ nsock, community = false, parameters }: ReceiveAllPipedTransportsOptions): Promise<void> => {
   try {
     // Destructure parameters
     const { roomName, member, getPipedProducersAlt } = parameters;
@@ -69,7 +69,7 @@ export const receiveAllPipedTransports = async ({ nsock, community=false, parame
             await getPipedProducersAlt({ nsock, community, islevel, parameters });
           }
         }
-      }
+      },
     );
   } catch (error) {
     console.log('receiveAllPipedTransports error', error);

@@ -41,6 +41,304 @@ MediaSFU React Native SDK provides a comprehensive solution for building real-ti
 
 ---
 
+## Quick Reference: Component Props & UI Overrides
+
+> **New:** UI override parity now extends across Webinar and Chat layouts, unifying customization for every MediaSFU interface.
+
+Every primary MediaSFU UI export—`MediasfuGeneric`, `MediasfuBroadcast`, `MediasfuConference`, `MediasfuWebinar`, and `MediasfuChat`—now ships with a consistent prop surface and a powerful `uiOverrides` map, so you can bend the bundled experience to match your product without losing MediaSFU's hardened real-time logic.
+
+### Shared component props (applies to every MediaSFU UI component)
+
+| Prop | Type | Default | What it does |
+| --- | --- | --- | --- |
+| `PrejoinPage` | `(options) => React.ReactNode` | `WelcomePage` | Swap in a custom pre-join experience. Receives unified pre-join options so you can add branding, legal copy, or warm-up flows. |
+| `localLink` | `string` | `""` | Point the SDK at your self-hosted MediaSFU server. Leave empty when using MediaSFU Cloud. |
+| `connectMediaSFU` | `boolean` | `true` | Toggle automatic socket/WebRTC connections. Set to `false` when you only need the UI shell. |
+| `credentials` | `{ apiUserName: string; apiKey: string }` | `{ apiUserName: "", apiKey: "" }` | Supply cloud credentials without hard-coding them elsewhere. |
+| `useLocalUIMode` | `boolean` | `false` | Run the interface in local/demo mode with no remote signaling. |
+| `seedData`, `useSeed` | `SeedData`, `boolean` | `{}`, `false` | Pre-populate the UI for demos, snapshot tests, or onboarding tours. |
+| `imgSrc` | `string` | `https://mediasfu.com/images/logo192.png` | Default artwork used across pre-join and modal flows. |
+| `sourceParameters` | `Record<string, unknown>` | `undefined` | Shared helper bag (media devices, participant helpers, layout handlers). Pair with `updateSourceParameters` to mirror the SDK's internal utilities. |
+| `updateSourceParameters` | `(helpers) => void` | `undefined` | Receive the latest helper bundle so you can bridge MediaSFU logic into your own components. |
+| `returnUI` | `boolean` | `true` | When `false`, mount the logic only—a perfect stepping stone to a fully bespoke interface. |
+| `noUIPreJoinOptions` | `CreateMediaSFURoomOptions \| JoinMediaSFURoomOptions` | `undefined` | Feed pre-join data when `returnUI` is `false` and you want to bypass the on-screen wizard. |
+| `joinMediaSFURoom`, `createMediaSFURoom` | Functions | `undefined` | Inject your own networking layers for joining or creating rooms. |
+| `customComponent` | `CustomComponentType` | `undefined` | Replace the entire UI while retaining transports, sockets, and helpers. |
+| `customVideoCard`, `customAudioCard`, `customMiniCard` | Factories | `undefined` | Override participant card renders to add metadata, CTAs, or badges. |
+| `containerStyle` | `React.CSSProperties` | `undefined` | Apply inline styles to the root wrapper (dashboards, split views, etc.). |
+| `uiOverrides` | `MediasfuUICustomOverrides` | `undefined` | Targeted component/function overrides described below. |
+
+> **Power combo:** Set `returnUI={false}` to run MediaSFU logic headless, capture helpers via `updateSourceParameters`, and selectively bring UI pieces back with `uiOverrides`. That gives you progressive migration with minimal code churn.
+
+```ts
+import type { MediasfuUICustomOverrides } from "mediasfu-reactnative";
+
+const overrides: MediasfuUICustomOverrides = { /* ... */ };
+```
+
+Bring the types into your project to unlock full IntelliSense for every override slot.
+
+### Custom UI Playbook
+
+Use a toggle-driven "playbook" component to experiment with MediaSFU's customization layers. Flip a couple of booleans and you can watch the SDK jump between prebuilt layouts, headless logic, or a fully bespoke workspace driven by `customComponent`.
+
+#### What the playbook demonstrates
+
+- **Connection presets**: toggle `connectionScenario` between `cloud`, `hybrid`, or `ce` to swap credentials, local links, and connection modes in one place.
+- **Experience selector**: the `selectedExperience` switch renders `MediasfuGeneric`, `MediasfuBroadcast`, `MediasfuWebinar`, `MediasfuConference`, or `MediasfuChat` without touching the rest of your stack.
+- **UI strategy flags**: booleans like `showPrebuiltUI`, `enableFullCustomUI`, and `enableNoUIPreJoin` demonstrate how to run the MediaSFU logic with or without the bundled UI.
+- **Layered overrides**: toggles enable the custom video/audio/mini cards, drop-in `uiOverrides` for layout and modal surfaces, container styling, and backend proxy helpers.
+- **Custom workspace demo**: a `customComponent` receives live MediaSFU helpers so you can build dashboards, CRM surfaces, or any bespoke host interface.
+- **Debug panel & helpers**: optional JSON panel exposes the `updateSourceParameters` payload so you can see exactly what to wire into your own components.
+
+#### Try it quickly
+
+```tsx
+const connectionScenario: "cloud" | "hybrid" | "ce" = "cloud";
+const selectedExperience = "generic" as const;
+const showPrebuiltUI = true;
+const enableFullCustomUI = false;
+
+const connectionPresets = {
+  cloud: { credentials: { apiUserName: "demo", apiKey: "demo" }, localLink: "", connectMediaSFU: true },
+  hybrid: { credentials: { apiUserName: "demo", apiKey: "demo" }, localLink: "http://localhost:3000", connectMediaSFU: true },
+  ce: { credentials: undefined, localLink: "http://localhost:3000", connectMediaSFU: false },
+};
+
+const Experience = {
+  generic: MediasfuGeneric,
+  broadcast: MediasfuBroadcast,
+  webinar: MediasfuWebinar,
+  conference: MediasfuConference,
+  chat: MediasfuChat,
+}[selectedExperience];
+
+export const CustomUIPlaybook = () => {
+  const overrides = useMemo(() => ({
+    mainContainer: enableFullCustomUI
+      ? {
+          render: (props) => (
+            <View style={{ borderWidth: 4, borderColor: 'purple', borderRadius: 24, padding: 16 }}>
+              <MainContainerComponent {...props} />
+            </View>
+          ),
+        }
+      : undefined,
+  }), [enableFullCustomUI]);
+
+  const current = connectionPresets[connectionScenario];
+
+  return (
+    <Experience
+      {...current}
+      showPrebuiltUI={showPrebuiltUI}
+      uiOverrides={overrides}
+      containerStyle={{ background: "linear-gradient(135deg, #0f172a, #1e3a8a)", minHeight: "100%" }}
+    />
+  );
+};
+```
+
+Toggle the configuration values at the top of the playbook and watch the UI reconfigure instantly. It's the fastest path to understand MediaSFU's override surface before you fold the patterns into your production entrypoint.
+
+#### Passing custom props and UI overrides
+
+Use the same playbook to validate bespoke cards, override bundles, and fully custom workspaces before you move them into production code:
+
+```tsx
+const videoCard: CustomVideoCardType = (props) => (
+  <VideoCard
+    {...props}
+    customStyle={{
+      borderRadius: 20,
+      border: "3px solid #4c1d95",
+      boxShadow: "0 28px 65px rgba(76,29,149,0.35)",
+      background: "linear-gradient(140deg, rgba(15,23,42,0.78), rgba(30,64,175,0.45))",
+      ...(props.customStyle ?? {}),
+    }}
+  />
+);
+
+const audioCard: CustomAudioCardType = (props) => (
+  <AudioCard
+    {...props}
+    barColor="#22c55e"
+    customStyle={{ borderRadius: 22, background: "rgba(34,197,94,0.1)" }}
+  />
+);
+
+const miniCard: CustomMiniCardType = (props) => (
+  <MiniCard
+    {...props}
+    renderContainer={({ defaultContainer }) => (
+      <View style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
+        {defaultContainer}
+      </View>
+    )}
+  />
+);
+
+const uiOverrides = useMemo<MediasfuUICustomOverrides>(() => ({
+  mainContainer: {
+    render: (props) => (
+      <View style={{ borderWidth: 4, borderColor: 'rgba(139,92,246,0.8)', borderRadius: 28, padding: 16 }}>
+        <MainContainerComponent {...props} />
+      </View>
+    ),
+  },
+  menuModal: {
+    component: (modalProps) => <MenuModal {...modalProps} variant="glass" />,
+  },
+  consumerResume: {
+    wrap: (original) => async (params) => {
+      const startedAt = performance.now();
+      const result = await original(params);
+      analytics.track("consumer_resume", {
+        durationMs: performance.now() - startedAt,
+        consumerId: params?.consumer?.id,
+      });
+      return result;
+    },
+  },
+}), []);
+
+return (
+  <Experience
+    {...current}
+    customVideoCard={videoCard}
+    customAudioCard={audioCard}
+    customMiniCard={miniCard}
+    customComponent={enableFullCustomUI ? CustomWorkspace : undefined}
+    containerStyle={{ background: "#0f172a", borderRadius: 32, overflow: "hidden" }}
+    uiOverrides={uiOverrides}
+  />
+);
+```
+
+Because the playbook surfaces `updateSourceParameters`, you can also log or snapshot the helper bundle (`getParticipantMedia`, `toggleMenuModal`, `showAlert`, and more) to ensure your custom UI always receives the hooks it expects.
+
+### `uiOverrides` map — override keys at a glance
+
+Each key accepts a `CustomComponentOverride<Props>` object with optional `component` and `render` fields. You can fully replace the default implementation or wrap it while forwarding props.
+
+#### Layout & control surfaces
+
+| Key | Default component | Typical use |
+| --- | --- | --- |
+| `mainContainer` | `MainContainerComponent` | Inject theming providers or dashboard layouts. |
+| `mainAspect` | `MainAspectComponent` | Tune how the main region splits space. |
+| `mainScreen` | `MainScreenComponent` | Orchestrate hero video + gallery interplay. |
+| `mainGrid` | `MainGridComponent` | Modify layout or layering of primary participants. |
+| `subAspect` | `SubAspectComponent` | Restyle fixed control strips in webinar/conference modes. |
+| `otherGrid` | `OtherGridComponent` | Change presentation of off-stage attendees. |
+| `flexibleGrid`, `flexibleGridAlt` | `FlexibleGrid` | Implement AI-driven or branded array layouts. |
+| `flexibleVideo` | `FlexibleVideo` | Add captions, watermarks, or overlays to highlighted speakers. |
+| `audioGrid` | `AudioGrid` | Customise audio-only attendee presentation. |
+| `pagination` | `Pagination` | Introduce infinite scroll or auto-cycling carousels. |
+| `controlButtons` | `ControlButtonsComponent` | Rebrand the primary action bar. |
+| `controlButtonsAlt` | `ControlButtonsAltComponent` | Control secondary button clusters. |
+| `controlButtonsTouch` | `ControlButtonsComponentTouch` | Deliver mobile-first controls (used heavily by `MediasfuChat`). |
+
+#### Participant cards & widgets
+
+| Key | Default component | Typical use |
+| --- | --- | --- |
+| `videoCard` | `VideoCard` | Add host badges, reactions, or CRM overlays. |
+| `audioCard` | `AudioCard` | Swap avatars or expose spoken-language info. |
+| `miniCard` | `MiniCard` | Customize thumbnails in picture-in-picture modes. |
+| `miniAudio` | `MiniAudio` | Re-style the audio-only mini indicators. |
+| `meetingProgressTimer` | `MeetingProgressTimer` | Replace the elapsed-time widget with countdowns or milestones. |
+| `miniAudioPlayer` | `MiniAudioPlayer` | Provide alternative UI for recorded clip playback. |
+
+#### Modals, dialogs, and collaboration surfaces
+
+| Key | Default component | Typical use |
+| --- | --- | --- |
+| `loadingModal` | `LoadingModal` | Show branded skeletons while connecting. |
+| `alert` | `AlertComponent` | Route alerts through your notification system. |
+| `menuModal` | `MenuModal` | Redesign quick-action trays. |
+| `eventSettingsModal` | `EventSettingsModal` | Extend host tools with your own settings. |
+| `requestsModal` | `RequestsModal` | Build moderation queues tailored to your workflows. |
+| `waitingRoomModal` | `WaitingRoomModal` | Deliver custom waiting-room experiences. |
+| `coHostModal` | `CoHostModal` | Manage co-hosts with bespoke UX. |
+| `mediaSettingsModal` | `MediaSettingsModal` | Embed device tests or instructions. |
+| `participantsModal` | `ParticipantsModal` | Introduce advanced filters, search, or notes. |
+| `messagesModal` | `MessagesModal` | Drop in your full-featured chat module. |
+| `displaySettingsModal` | `DisplaySettingsModal` | Let users pick layouts, themes, or captions. |
+| `confirmExitModal` | `ConfirmExitModal` | Meet compliance wording requirements. |
+| `confirmHereModal` | `ConfirmHereModal` | Customize attendance confirmations for webinars. |
+| `shareEventModal` | `ShareEventModal` | Add referral codes or QR sharing. |
+| `recordingModal` | `RecordingModal` | Tailor recording confirmation flows. |
+| `pollModal` | `PollModal` | Integrate your polling/quiz engine. |
+| `backgroundModal` | `BackgroundModal` | Hook AI background replacement or brand presets. |
+| `breakoutRoomsModal` | `BreakoutRoomsModal` | Implement drag-and-drop or AI room suggestions. |
+| `configureWhiteboardModal` | `ConfigureWhiteboardModal` | Adjust collaboration permissions before launch. |
+| `whiteboard` | `Whiteboard` | Replace with your whiteboard provider. |
+| `screenboard` | `Screenboard` | Modify shared-screen annotation layers. |
+| `screenboardModal` | `ScreenboardModal` | Reimagine how users enable shared annotations. |
+
+#### Entry flows & custom renderers
+
+| Key | Default component | Typical use |
+| --- | --- | --- |
+| `welcomePage` | `WelcomePage` | Provide a fully branded welcome/marketing splash. |
+| `preJoinPage` | `PrejoinPage` | Override the wizard used before joining live sessions. |
+| `customMenuButtonsRenderer` | `ControlButtonsAltComponent` | Supply a bespoke renderer for menu button groups without overriding each button. |
+
+#### Function overrides
+
+| Key | Default function | Typical use |
+| --- | --- | --- |
+| `consumerResume` | `consumerResume` | Wrap errors, capture analytics, or rate-limit consumer resume behavior. |
+| `addVideosGrid` | `addVideosGrid` | Replace participant ordering or layout heuristics on the fly. |
+
+> Function overrides support `{ implementation, wrap }`. Provide `implementation` for a full replacement, or `wrap` to intercept the default behavior before/after it runs.
+
+### Example: swap the chat modal and theme the controls
+
+```tsx
+import { MediasfuGeneric } from "mediasfu-reactnative";
+import { MyChatModal } from "./ui/MyChatModal";
+import { MyControls } from "./ui/MyControls";
+
+const uiOverrides = {
+  messagesModal: {
+    component: MyChatModal,
+  },
+  controlButtons: {
+    render: (props) => <MyControls {...props} variant="glass" />,
+  },
+};
+
+export const MyMeeting = () => (
+  <MediasfuGeneric credentials={credentials} uiOverrides={uiOverrides} />
+);
+```
+
+### Example: wrap a MediaSFU helper instead of replacing it
+
+```tsx
+const uiOverrides = {
+  consumerResume: {
+    wrap: (original) => async (params) => {
+      const startedAt = performance.now();
+      const result = await original(params);
+      analytics.track("consumer_resume", {
+        durationMs: performance.now() - startedAt,
+        consumerId: params?.consumer?.id,
+      });
+      return result;
+    },
+  },
+};
+
+<MediasfuConference uiOverrides={uiOverrides} />;
+```
+
+The same override hooks power the newly refreshed `MediasfuWebinar` and `MediasfuChat` layouts, so you can guarantee a unified experience across events, webinars, or chat-first rooms.
+
+---
+
 MediaSFU offers a cutting-edge streaming experience that empowers users to customize their recordings and engage their audience with high-quality streams. Whether you're a content creator, educator, or business professional, MediaSFU provides the tools you need to elevate your streaming game.
 
 <div style="text-align: center;">

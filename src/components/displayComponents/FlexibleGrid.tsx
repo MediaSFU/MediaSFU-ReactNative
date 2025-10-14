@@ -1,98 +1,106 @@
 // FlexibleGrid.tsx
 
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 
 /**
- * Interface defining the props for the FlexibleGrid component.
+ * Options for rendering `FlexibleGrid`.
+ *
+ * @interface FlexibleGridOptions
+ *
+ * **Metrics:**
+ * @property {number} customWidth Width applied to each cell.
+ * @property {number} customHeight Height applied to each cell.
+ * @property {number} rows Total rows to render.
+ * @property {number} columns Total columns to render.
+ *
+ * **Content:**
+ * @property {React.ReactNode[]} componentsToRender React children aligned to the grid order.
+ *
+ * **Appearance:**
+ * @property {boolean} [showAspect=false] Toggles a square aspect ratio wrapper.
+ * @property {string} [backgroundColor='transparent'] Cell background color.
+ * @property {StyleProp<ViewStyle>} [style] Additional styles for the outer container.
+ *
+ * **Advanced Render Overrides:**
+ * @property {(options: { defaultContent: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContent]
+ * Customize the inner grid markup.
+ * @property {(options: { defaultContainer: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContainer]
+ * Replace the entire wrapping container.
  */
 export interface FlexibleGridOptions {
-  /**
-   * Custom width for each grid item.
-   */
   customWidth: number;
-
-  /**
-   * Custom height for each grid item.
-   */
   customHeight: number;
-
-  /**
-   * Number of rows in the grid.
-   */
   rows: number;
-
-  /**
-   * Number of columns in the grid.
-   */
   columns: number;
-
-  /**
-   * Array of React components or elements to render in the grid.
-   */
   componentsToRender: React.ReactNode[];
-
-  /**
-   * Flag indicating whether to show the aspect ratio.
-   */
   showAspect?: boolean;
-
-  /**
-   * Background color for each grid item.
-   * @default 'transparent'
-   */
   backgroundColor?: string;
+  style?: StyleProp<ViewStyle>;
+  renderContent?: (options: {
+    defaultContent: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
+  renderContainer?: (options: {
+    defaultContainer: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
 }
 
 export type FlexibleGridType = (options: FlexibleGridOptions) => JSX.Element;
 
 /**
- * FlexibleGrid is a React Native component that renders a customizable grid layout.
+ * FlexibleGrid arranges arbitrary children into a fixed row/column matrix. It is primarily used for media tiles
+ * that need explicit sizing while still allowing consumers to override either the content or the wrapper container.
  *
- * This component arranges an array of components or elements in a grid defined by specified rows and columns.
- * Each grid item can have custom dimensions and background color, with optional aspect ratio settings.
+ * ### Key Features
+ * - Automatically arranges children into rows and columns with fixed cell dimensions
+ * - Supports optional square aspect ratio wrapper
+ * - Re-renders when column count changes
+ * - Exposes render overrides for custom layouts
  *
- * @component
- * @param {FlexibleGridOptions} props - Properties for configuring the FlexibleGrid component.
- * @param {number} props.customWidth - Custom width for each grid item.
- * @param {number} props.customHeight - Custom height for each grid item.
- * @param {number} props.rows - Number of rows in the grid.
- * @param {number} props.columns - Number of columns in the grid.
- * @param {React.ReactNode[]} props.componentsToRender - Array of components or elements to render in the grid.
- * @param {boolean} [props.showAspect=false] - Flag to enable aspect ratio for the grid.
- * @param {string} [props.backgroundColor='transparent'] - Background color for each grid item.
- *
- * @returns {JSX.Element} The rendered FlexibleGrid component.
+ * ### Accessibility
+ * - Grid structure provides logical navigation order for screen readers
+ * - Each cell can receive its own accessibility properties via children
  *
  * @example
  * ```tsx
- * import React from 'react';
- * import { FlexibleGrid } from 'mediasfu-reactnative';
+ * // Basic grid with video tiles
+ * <FlexibleGrid
+ *   customWidth={200}
+ *   customHeight={150}
+ *   rows={2}
+ *   columns={3}
+ *   componentsToRender={[
+ *     <VideoTile key="1" participantId="user1" />,
+ *     <VideoTile key="2" participantId="user2" />,
+ *     <VideoTile key="3" participantId="user3" />,
+ *     <VideoTile key="4" participantId="user4" />,
+ *     <VideoTile key="5" participantId="user5" />,
+ *     <VideoTile key="6" participantId="user6" />,
+ *   ]}
+ *   backgroundColor="#1a1a1a"
+ * />
+ * ```
  *
- * function App() {
- *   const components = [
- *     <Text key={1}>Item 1</Text>,
- *     <Text key={2}>Item 2</Text>,
- *     <Text key={3}>Item 3</Text>
- *   ];
- *
- *   return (
- *     <FlexibleGrid
- *       customWidth={100}
- *       customHeight={100}
- *       rows={2}
- *       columns={2}
- *       componentsToRender={components}
- *       showAspect={true}
- *       backgroundColor="lightgray"
- *     />
- *   );
- * }
- *
- * export default App;
+ * @example
+ * ```tsx
+ * // Square aspect grid with custom container
+ * <FlexibleGrid
+ *   customWidth={100}
+ *   customHeight={100}
+ *   rows={3}
+ *   columns={3}
+ *   componentsToRender={audienceCards}
+ *   showAspect
+ *   renderContainer={({ defaultContainer, dimensions }) => (
+ *     <Animated.View style={{ opacity: fadeAnim }}>
+ *       {defaultContainer}
+ *     </Animated.View>
+ *   )}
+ * />
  * ```
  */
-
 const FlexibleGrid: React.FC<FlexibleGridOptions> = ({
   customWidth,
   customHeight,
@@ -101,6 +109,9 @@ const FlexibleGrid: React.FC<FlexibleGridOptions> = ({
   componentsToRender,
   showAspect = false,
   backgroundColor = 'transparent',
+  style,
+  renderContent,
+  renderContainer,
 }) => {
   const [key, setKey] = useState<number>(0);
 
@@ -150,11 +161,26 @@ const FlexibleGrid: React.FC<FlexibleGridOptions> = ({
     return grid;
   };
 
-  return (
-    <View key={key} style={[styles.gridContainer, showAspect && styles.aspectContainer]}>
-      {renderGrid()}
+  const dimensions = {
+    width: customWidth * columns,
+    height: customHeight * rows,
+  };
+
+  const renderedGrid = renderGrid();
+  const defaultContent = <>{renderedGrid}</>;
+  const content = renderContent
+    ? renderContent({ defaultContent, dimensions })
+    : defaultContent;
+
+  const defaultContainer = (
+    <View key={key} style={[styles.gridContainer, showAspect && styles.aspectContainer, style]}>
+      {content}
     </View>
   );
+
+  return renderContainer
+    ? renderContainer({ defaultContainer, dimensions })
+    : defaultContainer;
 };
 
 export default FlexibleGrid;

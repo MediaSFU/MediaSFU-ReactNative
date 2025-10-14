@@ -39,7 +39,7 @@ export interface StandardPanelParameters {
  * ```tsx
  * import React from 'react';
  * import { StandardPanelComponent } from 'mediasfu-reactnative';
- * 
+ *
  * const standardParameters = {
  *   recordingMediaOptions: 'video',
  *   recordingAudioOptions: 'all',
@@ -57,7 +57,7 @@ export interface StandardPanelParameters {
  *     <StandardPanelComponent parameters={standardParameters} />
  *   );
  * }
- * 
+ *
  * export default App;
  * ```
  */

@@ -20,7 +20,7 @@ export type UpdateParticipantAudioDecibelsType = (options: UpdateParticipantAudi
  * @param {Function} options.updateAudioDecibels - The function to update the audio decibels array.
  *
  * @returns {void}
- * 
+ *
  * @example
  * const options = {
  *   name: 'participant1',
@@ -28,7 +28,7 @@ export type UpdateParticipantAudioDecibelsType = (options: UpdateParticipantAudi
  *   audioDecibels: [{ name: 'participant1', averageLoudness: 50 }],
  *   updateAudioDecibels: updateAudioDecibelsFunction,
  * };
- * 
+ *
  * updateParticipantAudioDecibels(options);
  */
 

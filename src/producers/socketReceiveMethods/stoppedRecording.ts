@@ -26,7 +26,7 @@ export type StoppedRecordingType = (options: StoppedRecordingOptions) => Promise
  *   reason: "The session ended.",
  *   showAlert: (alert) => console.log(alert.message),
  * };
- * 
+ *
  * stoppedRecording(options);
  * // Output: "The recording has stopped - The session ended."
  * ```

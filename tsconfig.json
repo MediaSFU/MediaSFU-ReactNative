@@ -35,8 +35,8 @@
       ]
       }
     },
-    "include": ["src/**/*","**/*.d.ts","**/*.ts","**/*.tsx"],
-    "exclude": ["node_modules","build","dist"],
+  "include": ["src/**/*","**/*.d.ts","**/*.ts","**/*.tsx"],
+  "exclude": ["node_modules","build","dist"],
     "types": ["react", "react-native"],
     "typeRoots": ["node_modules/@types","src/@types"]
   }

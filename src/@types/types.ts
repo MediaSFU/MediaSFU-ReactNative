@@ -849,4 +849,96 @@ export type CustomPreJoinPageType = (options: CustomPreJoinPageOptions) => JSX.E
 // Custom Full UI Component Type
 export type CustomComponentType = React.FC<{ parameters: any }>;
 
+// Override helper types (from overrideHelpers.tsx)
+export type { CustomComponentOverride, CustomFunctionOverride } from '../components/mediasfuComponents/overrideHelpers';
+
+/**
+ * MediasfuUICustomOverrides interface
+ *
+ * Comprehensive UI override map for all MediaSFU components and helper functions.
+ * Each key accepts a CustomComponentOverride<Props> or CustomFunctionOverride<Fn>
+ * allowing you to fully replace or wrap default implementations.
+ *
+ * @example
+ * ```tsx
+ * import { MediasfuUICustomOverrides } from './types';
+ *
+ * const uiOverrides: MediasfuUICustomOverrides = {
+ *   mainContainer: {
+ *     render: (props) => (
+ *       <View style={{ borderWidth: 4, borderColor: 'purple' }}>
+ *         <MainContainerComponent {...props} />
+ *       </View>
+ *     )
+ *   },
+ *   consumerResume: {
+ *     wrap: (original) => async (params) => {
+ *       const start = Date.now();
+ *       const result = await original(params);
+ *       console.log('Consumer resume took:', Date.now() - start, 'ms');
+ *       return result;
+ *     }
+ *   }
+ * };
+ * ```
+ */
+export interface MediasfuUICustomOverrides {
+  // Layout & control surfaces
+  mainContainer?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  mainAspect?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  mainScreen?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  mainGrid?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  subAspect?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  otherGrid?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  flexibleGrid?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  flexibleGridAlt?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  flexibleVideo?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  audioGrid?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  pagination?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  controlButtons?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  controlButtonsAlt?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  controlButtonsTouch?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+
+  // Participant cards & widgets
+  videoCard?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  audioCard?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  miniCard?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  miniAudio?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  meetingProgressTimer?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  miniAudioPlayer?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+
+  // Modals & dialogs
+  loadingModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  alert?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  menuModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  eventSettingsModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  requestsModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  waitingRoomModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  coHostModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  mediaSettingsModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  participantsModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  messagesModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  displaySettingsModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  confirmExitModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  confirmHereModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  shareEventModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  recordingModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  pollModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  backgroundModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  breakoutRoomsModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  configureWhiteboardModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  whiteboard?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  screenboard?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  screenboardModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+
+  // Entry flows
+  welcomePage?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  preJoinPage?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  customMenuButtonsRenderer?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+
+  // Function overrides
+  consumerResume?: import('../components/mediasfuComponents/overrideHelpers').CustomFunctionOverride<any>;
+  addVideosGrid?: import('../components/mediasfuComponents/overrideHelpers').CustomFunctionOverride<any>;
+}
+
 

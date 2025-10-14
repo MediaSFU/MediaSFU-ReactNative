@@ -7,10 +7,10 @@ export type FormatNumberType = (options: FormatNumberOptions) => Promise<string 
 
 /**
  * Formats a number into a string representation with appropriate suffixes (K, M, B).
- * 
+ *
  * @param number - The number to format.
  * @returns A promise that resolves to a formatted string or undefined if the input is falsy.
- * 
+ *
  * @example
  * ```typescript
  * formatNumber({ number: 500 }); // "500"

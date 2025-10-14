@@ -9,7 +9,7 @@ export type GetOverlayPositionType = (options: GetOverlayPositionOptions) => Ove
 
 /**
  * Gets the style for positioning an overlay based on the specified position.
- * 
+ *
  * @param {GetOverlayPositionOptions} options - Configuration specifying the overlay position.
  * @returns {OverlayPositionStyle} - The style object for positioning the overlay.
  *

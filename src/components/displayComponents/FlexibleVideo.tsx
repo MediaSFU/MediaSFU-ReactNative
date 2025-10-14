@@ -1,121 +1,119 @@
 // FlexibleVideo.tsx
 
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import { MediaStream } from '../../@types/types';
 
 /**
- * Interface defining the props for the FlexibleVideo component.
+ * Options for rendering `FlexibleVideo`.
+ *
+ * @interface FlexibleVideoOptions
+ *
+ * **Metrics:**
+ * @property {number} customWidth Width for each tile.
+ * @property {number} customHeight Height for each tile.
+ * @property {number} rows Row count for the grid.
+ * @property {number} columns Column count for the grid.
+ *
+ * **Content:**
+ * @property {React.ReactNode[]} componentsToRender Elements rendered within the grid cells.
+ * @property {React.ReactNode} [Screenboard] Optional overlay element drawn above the grid.
+ *
+ * **Appearance:**
+ * @property {boolean} [showAspect=false] Forces a square container wrapper when `true`.
+ * @property {string} [backgroundColor='transparent'] Background color for each cell.
+ * @property {StyleProp<ViewStyle>} [style] Additional styles for the outer grid container.
+ *
+ * **Annotation:**
+ * @property {boolean} [annotateScreenStream=false] Enables local screen annotation layout adjustments.
+ * @property {MediaStream} [localStreamScreen] Local screen stream used for measurements while annotating.
+ *
+ * **Advanced Render Overrides:**
+ * @property {(options: { defaultContent: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContent]
+ * Customize the inner grid markup or overlay composition.
+ * @property {(options: { defaultContainer: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContainer]
+ * Replace the entire outer container.
  */
 export interface FlexibleVideoOptions {
-  /**
-   * Custom width for each grid item.
-   */
   customWidth: number;
-
-  /**
-   * Custom height for each grid item.
-   */
   customHeight: number;
-
-  /**
-   * Number of rows in the grid.
-   */
   rows: number;
-
-  /**
-   * Number of columns in the grid.
-   */
   columns: number;
-
-  /**
-   * Array of React components or elements to render in the grid.
-   */
   componentsToRender: React.ReactNode[];
-
-  /**
-   * Flag indicating whether to show the aspect ratio.
-   */
-  showAspect: boolean;
-
-  /**
-   * Background color for each grid item.
-   * @default 'transparent'
-   */
+  showAspect?: boolean;
   backgroundColor?: string;
-
-  /**
-   * Screenboard component to overlay on the video grid.
-   */
   Screenboard?: React.ReactNode;
-
-  /**
-   * Flag to annotate the screen stream.
-   * @default false
-   */
   annotateScreenStream?: boolean;
-
-  /**
-   * The local screen stream to use for annotation.
-   */
   localStreamScreen?: MediaStream;
+  style?: StyleProp<ViewStyle>;
+  renderContent?: (options: {
+    defaultContent: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
+  renderContainer?: (options: {
+    defaultContainer: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
 }
 
-export type FlexibleVideoType = (options: FlexibleVideoOptions) => JSX.Element
+export type FlexibleVideoType = (options: FlexibleVideoOptions) => JSX.Element;
 
 /**
- * FlexibleVideo is a React Native component that renders a flexible video grid with optional screenboard overlay
- * and annotation capabilities.
+ * FlexibleVideo renders a matrix of media tiles with optional screenboard overlays and local annotation sizing. It
+ * mirrors the flexible layout used during screen-share sessions and supports override hooks for both content and
+ * container customization.
  *
- * This component arranges components in a grid layout with specified rows and columns. It supports custom item
- * dimensions, optional screenboard overlay, and video stream annotation.
+ * ### Key Features
+ * - Grid layout for video tiles with explicit dimensions
+ * - Optional Screenboard overlay for annotations or controls
+ * - Annotation mode adjusts layout for local screen stream measurements
+ * - Square aspect ratio wrapper available via `showAspect`
+ * - Re-renders when column count changes
  *
- * @component
- * @param {FlexibleVideoOptions} props - Options to configure the FlexibleVideo component.
- * @param {number} props.customWidth - Width of each grid item.
- * @param {number} props.customHeight - Height of each grid item.
- * @param {number} props.rows - Number of rows in the grid.
- * @param {number} props.columns - Number of columns in the grid.
- * @param {React.ReactNode[]} props.componentsToRender - Components or elements to display in the grid.
- * @param {boolean} [props.showAspect=false] - Controls whether the aspect ratio is enforced.
- * @param {string} [props.backgroundColor='transparent'] - Background color for each grid item.
- * @param {React.ReactNode} [props.Screenboard] - Overlay component for the video grid.
- * @param {boolean} [props.annotateScreenStream=false] - Enables screen stream annotation.
- * @param {MediaStream} [props.localStreamScreen] - Media stream for local screen annotation.
- *
- * @returns {JSX.Element} The rendered FlexibleVideo component.
+ * ### Accessibility
+ * - Maintains logical grid navigation order
+ * - Overlay elements should include appropriate ARIA labels
  *
  * @example
  * ```tsx
- * import React from 'react';
- * import { FlexibleVideo } from 'mediasfu-reactnative';
+ * // Basic video grid with screen share
+ * <FlexibleVideo
+ *   customWidth={320}
+ *   customHeight={180}
+ *   rows={2}
+ *   columns={2}
+ *   componentsToRender={[
+ *     <VideoCard key="1" participant={participant1} />,
+ *     <VideoCard key="2" participant={participant2} />,
+ *     <VideoCard key="3" participant={participant3} />,
+ *     <VideoCard key="4" participant={participant4} />,
+ *   ]}
+ *   Screenboard={<ScreenAnnotationOverlay />}
+ *   backgroundColor="#000"
+ * />
+ * ```
  *
- * function App() {
- *   const videoComponents = [
- *     <RTCView streamURL="stream1" />,
- *     <RTCView streamURL="stream2" />,
- *   ];
- *
- *   return (
- *     <FlexibleVideo
- *       customWidth={200}
- *       customHeight={150}
- *       rows={2}
- *       columns={2}
- *       componentsToRender={videoComponents}
- *       showAspect={true}
- *       backgroundColor="black"
- *       Screenboard={<Text>Overlay Component</Text>}
- *       annotateScreenStream={true}
- *       localStreamScreen={myLocalStream}
- *     />
- *   );
- * }
- *
- * export default App;
+ * @example
+ * ```tsx
+ * // Annotation mode with local screen stream
+ * <FlexibleVideo
+ *   customWidth={640}
+ *   customHeight={360}
+ *   rows={1}
+ *   columns={1}
+ *   componentsToRender={[<ScreenShareView stream={screenStream} />]}
+ *   annotateScreenStream
+ *   localStreamScreen={localScreenStream}
+ *   Screenboard={<DrawingToolbar />}
+ *   renderContent={({ defaultContent, dimensions }) => (
+ *     <View style={{ position: 'relative' }}>
+ *       {defaultContent}
+ *       <AnnotationCanvas width={dimensions.width} height={dimensions.height} />
+ *     </View>
+ *   )}
+ * />
  * ```
  */
-
 const FlexibleVideo: React.FC<FlexibleVideoOptions> = ({
   customWidth,
   customHeight,
@@ -127,6 +125,9 @@ const FlexibleVideo: React.FC<FlexibleVideoOptions> = ({
   Screenboard,
   annotateScreenStream = false,
   localStreamScreen,
+  style,
+  renderContent,
+  renderContainer,
 }) => {
   const [key, setKey] = useState<number>(0);
   const [cardWidth, setCardWidth] = useState<number>(customWidth);
@@ -212,23 +213,13 @@ const FlexibleVideo: React.FC<FlexibleVideoOptions> = ({
     return grid;
   };
 
-  return (
-    <View
-      key={key}
-      style={[
-        styles.gridContainer,
-        {
-          padding: 0,
-          flex: 1,
-          margin: 0,
-          position: 'relative',
-          display: showAspect ? 'flex' : 'none',
-          maxWidth: customWidth,
-          overflow: 'hidden',
-          left: cardLeft > 0 ? cardLeft : 0,
-        },
-      ]}
-    >
+  const dimensions = {
+    width: cardWidth * columns,
+    height: cardHeight * rows,
+  };
+
+  const defaultContent = (
+    <>
       {renderGrid()}
       {Screenboard && (
         <View
@@ -247,8 +238,38 @@ const FlexibleVideo: React.FC<FlexibleVideoOptions> = ({
           {Screenboard}
         </View>
       )}
+    </>
+  );
+
+  const content = renderContent
+    ? renderContent({ defaultContent, dimensions })
+    : defaultContent;
+
+  const defaultContainer = (
+    <View
+      key={key}
+      style={[
+        styles.gridContainer,
+        {
+          padding: 0,
+          flex: 1,
+          margin: 0,
+          position: 'relative',
+          display: showAspect ? 'flex' : 'none',
+          maxWidth: customWidth,
+          overflow: 'hidden',
+          left: cardLeft > 0 ? cardLeft : 0,
+        },
+        style,
+      ]}
+    >
+      {content}
     </View>
   );
+
+  return renderContainer
+    ? renderContainer({ defaultContainer, dimensions })
+    : defaultContainer;
 };
 
 export default FlexibleVideo;

@@ -57,7 +57,7 @@ export type CaptureCanvasStreamType = (options: CaptureCanvasStreamOptions) => P
  * @param {Function} options.parameters.disconnectSendTransportScreen - Function to disconnect the send transport for the screen.
  * @param {boolean} [start=true] - Flag indicating whether to start or stop the canvas stream.
  * @returns {Promise<void>} A promise that resolves when the operation is complete.
- * 
+ *
  * @example
  * ```typescript
  * const canvasElement = document.querySelector('#canvas') as HTMLCanvasElement;

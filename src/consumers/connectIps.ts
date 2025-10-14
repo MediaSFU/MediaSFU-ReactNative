@@ -55,7 +55,7 @@ export type ConnectIpsType = (options: ConnectIpsOptions) => Promise<[Record<str
  * @returns {Promise<[Record<string, any>[], string[]]>} A promise that resolves to an array containing the updated consume sockets and room received IPs.
  *
  * @throws Will throw an error if required parameters are missing or if there is an issue connecting to a remote IP.
- * 
+ *
  * @example
  * const options = {
  *   consume_sockets: [],
@@ -69,7 +69,7 @@ export type ConnectIpsType = (options: ConnectIpsOptions) => Promise<[Record<str
  *     updateConsume_sockets: updateConsumeSocketsFunction,
  *   },
  * };
- * 
+ *
  * connectIps(options)
  *   .then(([consume_sockets, roomRecvIPs]) => {
  *     console.log('Connected IPs:', consume_sockets);

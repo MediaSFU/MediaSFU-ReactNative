@@ -8,6 +8,8 @@ import {
   ScrollView,
   Dimensions,
   TextInput,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { Socket } from 'socket.io-client';
@@ -21,6 +23,15 @@ import {
 import { Request } from '../../@types/types';
 import { getModalPosition } from '../../methods/utils/getModalPosition';
 
+/**
+ * Configuration parameters used by `RequestsModal` to hydrate dynamic state.
+ *
+ * @interface RequestsModalParameters
+ *
+ * **Utility:**
+ * @property {() => { filteredRequestList: Request[] }} getUpdatedAllParams Fetches the latest filtered request list snapshot.
+ * @property {Record<string, any>} [key: string] Additional values exposed to modal consumers.
+ */
 export interface RequestsModalParameters {
   /**
    * Function to get updated parameters, particularly the filtered request list.
@@ -29,6 +40,41 @@ export interface RequestsModalParameters {
   [key: string]: any;
 }
 
+/**
+ * Configuration options for the `RequestsModal` component.
+ *
+ * @interface RequestsModalOptions
+ *
+ * **Modal Control:**
+ * @property {boolean} isRequestsModalVisible Toggles modal visibility.
+ * @property {() => void} onRequestClose Invoked when the modal should close.
+ *
+ * **Request Management:**
+ * @property {number} requestCounter Total pending requests displayed in the badge.
+ * @property {Request[]} requestList Complete list of requests to render.
+ * @property {(newRequestList: Request[]) => void} updateRequestList Updates persistent request state after actions.
+ * @property {(text: string) => void} onRequestFilterChange Tracks filter input changes.
+ * @property {RespondToRequestsType} [onRequestItemPress] Optional handler for accept/deny actions (defaults to `respondToRequests`).
+ *
+ * **Session Context:**
+ * @property {string} roomName Identifier for the active room used when responding.
+ * @property {Socket} socket Active socket.io connection enabling real-time updates.
+ *
+ * **State Parameters:**
+ * @property {RequestsModalParameters} parameters Encapsulated helpers that deliver filtered lists to the modal.
+ *
+ * **Customization:**
+ * @property {'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' | 'center'} [position='topRight'] Placement of the modal container.
+ * @property {string} [backgroundColor='#83c0e9'] Background color applied to the modal card.
+ * @property {StyleProp<ViewStyle>} [style] Additional styling injected into the modal container.
+ * @property {React.FC<RenderRequestComponentOptions>} [renderRequestComponent] Custom renderer for individual request items.
+ *
+ * **Advanced Render Overrides:**
+ * @property {(options: { defaultContent: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContent]
+ * Override for the default body layout.
+ * @property {(options: { defaultContainer: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContainer]
+ * Override for the modal container wrapper.
+ */
 export interface RequestsModalOptions {
   /**
    * Flag to control the visibility of the modal.
@@ -98,55 +144,106 @@ export interface RequestsModalOptions {
    * Additional parameters for the modal.
    */
   parameters: RequestsModalParameters;
+
+  /**
+   * Optional custom style for the modal container.
+   */
+  style?: StyleProp<ViewStyle>;
+
+  /**
+   * Custom render function for modal content.
+   */
+  renderContent?: (options: {
+    defaultContent: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
+
+  /**
+   * Custom render function for the modal container.
+   */
+  renderContainer?: (options: {
+    defaultContainer: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
 }
 
 export type RequestsModalType = (options: RequestsModalOptions) => JSX.Element;
 
 /**
- * RequestsModal component displays a modal that shows a list of participant requests with options to filter, accept, or reject requests.
+ * RequestsModal - Participant request management modal.
+ *
+ * Presents host/co-host controls for reviewing, filtering, and responding to
+ * participant requests (raise hand, mic access, etc.) in real time. Supports
+ * custom row renderers and override hooks for deeper UI customization.
+ *
+ * **Key Features:**
+ * - Real-time request badge that mirrors the incoming queue length.
+ * - Inline search/filtering to quickly find participants.
+ * - Default integration with `respondToRequests` for socket acknowledgements.
+ * - Configurable modal positioning and optional container styling.
+ * - Empty-state messaging when no results match the filter.
+ * - Override hooks (`renderContent`/`renderContainer`) for advanced layouts.
+ * - Custom request row support via `renderRequestComponent`.
+ * - Keyboard-friendly text input for quick filtering.
+ *
+ * **UI Customization:**
+ * Supply a replacement component through `uiOverrides.requestsModal` to swap
+ * the entire modal while reusing the provided action handlers.
  *
  * @component
- * @param {RequestsModalOptions} props - The properties for the RequestsModal component.
- * @returns {JSX.Element} The rendered RequestsModal component.
+ * @param {RequestsModalOptions} props Component properties.
+ * @returns {JSX.Element} Rendered request management modal.
  *
  * @example
  * ```tsx
- * import React from 'react';
- * import { RequestsModal } from 'mediasfu-reactnative';
+ * // Basic host usage
+ * <RequestsModal
+ *   isRequestsModalVisible={isOpen}
+ *   onRequestClose={closeModal}
+ *   requestCounter={requests.length}
+ *   onRequestFilterChange={setFilter}
+ *   requestList={requests}
+ *   updateRequestList={setRequests}
+ *   roomName={roomName}
+ *   socket={socket}
+ *   parameters={{ getUpdatedAllParams: () => ({ filteredRequestList: filtered }) }}
+ * />
+ * ```
  *
- * const requestList = [
- *   { id: 1, name: 'Request to share screen', icon: 'fa-desktop' },
- *   { id: 2, name: 'Request to unmute', icon: 'fa-microphone' },
- * ];
+ * @example
+ * ```tsx
+ * // Custom request renderer
+ * <RequestsModal
+ *   isRequestsModalVisible={visible}
+ *   onRequestClose={handleClose}
+ *   requestCounter={filtered.length}
+ *   onRequestFilterChange={handleFilter}
+ *   requestList={filtered}
+ *   updateRequestList={setRequests}
+ *   roomName="studio"
+ *   socket={socket}
+ *   renderRequestComponent={MyRequestRow}
+ *   parameters={{ getUpdatedAllParams: () => ({ filteredRequestList: filtered }) }}
+ * />
+ * ```
  *
- * function App() {
- *   const handleRequestAction = (params) => {
- *     console.log(`Request action taken: ${params.action}`);
- *   };
- * 
- *   return (
- *     <RequestsModal
- *       isRequestsModalVisible={true}
- *       onRequestClose={() => console.log('Modal closed')}
- *       requestCounter={requestList.length}
- *       onRequestFilterChange={(text) => console.log('Filter text:', text)}
- *       onRequestItemPress={handleRequestAction}
- *       requestList={requestList}
- *       updateRequestList={(newList) => console.log('Updated request list:', newList)}
- *       roomName="exampleRoom"
- *       socket={socketInstance}
- *       backgroundColor="#83c0e9"
- *       position="topRight"
- *       parameters={{
- *         getUpdatedAllParams: () => ({ filteredRequestList: requestList }),
- *       }}
- *     />
- *   );
- * }
- * export default App;
+ * @example
+ * ```tsx
+ * // uiOverrides integration
+ * const RequestsModalComponent = withOverride(uiOverrides.requestsModal, RequestsModal);
+ * <RequestsModalComponent
+ *   isRequestsModalVisible={isOpen}
+ *   onRequestClose={close}
+ *   requestCounter={count}
+ *   onRequestFilterChange={setFilter}
+ *   requestList={requests}
+ *   updateRequestList={setRequests}
+ *   roomName={roomId}
+ *   socket={socket}
+ *   parameters={params}
+ * />
  * ```
  */
-
 const RequestsModal: React.FC<RequestsModalOptions> = ({
   isRequestsModalVisible,
   onRequestClose,
@@ -161,6 +258,9 @@ const RequestsModal: React.FC<RequestsModalOptions> = ({
   backgroundColor = '#83c0e9',
   position = 'topRight',
   parameters,
+  style,
+  renderContent,
+  renderContainer,
 }) => {
   const [filteredRequestList, setFilteredRequestList] =
     useState<Request[]>(requestList);
@@ -175,7 +275,70 @@ const RequestsModal: React.FC<RequestsModalOptions> = ({
     setLocalRequestCounter(updatedParams.filteredRequestList.length);
   }, [requestList, parameters]);
 
-  return (
+  const modalWidth =
+    0.8 * Dimensions.get('window').width > 350
+      ? 350
+      : 0.8 * Dimensions.get('window').width;
+  const dimensions = { width: modalWidth, height: 0 };
+
+  const defaultContent = (
+    <>
+      {/* Header */}
+      <View style={styles.modalHeader}>
+        <Text style={styles.modalTitle}>
+          Requests <Text style={styles.badge}>{localRequestCounter}</Text>
+        </Text>
+        <Pressable onPress={onRequestClose} style={styles.closeButton}>
+          <FontAwesome name="times" size={20} color="black" />
+        </Pressable>
+      </View>
+
+      <View style={styles.separator} />
+
+      {/* Filter Input */}
+      <View style={styles.modalBody}>
+        <View style={styles.filterContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Search ..."
+            value={filterText}
+            onChangeText={(text) => {
+              setFilterText(text);
+              onRequestFilterChange(text);
+            }}
+          />
+        </View>
+      </View>
+
+      {/* Request List */}
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.requestList}>
+          {filteredRequestList && filteredRequestList.length > 0 ? (
+            filteredRequestList.map((requestItem, index) => (
+              <View key={index} style={styles.requestItem}>
+                {renderRequestComponent({
+                  request: requestItem,
+                  onRequestItemPress,
+                  requestList: filteredRequestList,
+                  updateRequestList,
+                  roomName,
+                  socket,
+                })}
+              </View>
+            ))
+          ) : (
+            <Text style={styles.noRequestsText}>No requests found.</Text>
+          )}
+        </View>
+      </ScrollView>
+    </>
+  );
+
+  const content = renderContent
+    ? renderContent({ defaultContent, dimensions })
+    : defaultContent;
+
+  const defaultContainer = (
     <Modal
       transparent
       animationType="fade"
@@ -186,67 +349,21 @@ const RequestsModal: React.FC<RequestsModalOptions> = ({
         <View
           style={[
             styles.modalContent,
-            {
-              backgroundColor,
-              width:
-                0.8 * Dimensions.get('window').width > 350
-                  ? 350
-                  : 0.8 * Dimensions.get('window').width,
-            },
+            { backgroundColor, width: modalWidth },
+            style,
           ]}
         >
-          {/* Header */}
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>
-              Requests <Text style={styles.badge}>{localRequestCounter}</Text>
-            </Text>
-            <Pressable onPress={onRequestClose} style={styles.closeButton}>
-              <FontAwesome name="times" size={20} color="black" />
-            </Pressable>
-          </View>
-
-          <View style={styles.separator} />
-
-          {/* Filter Input */}
-          <View style={styles.modalBody}>
-            <View style={styles.filterContainer}>
-              <TextInput
-                style={styles.input}
-                placeholder="Search ..."
-                value={filterText}
-                onChangeText={(text) => {
-                  setFilterText(text);
-                  onRequestFilterChange(text);
-                }}
-              />
-            </View>
-          </View>
-
-          {/* Request List */}
-          <ScrollView style={styles.scrollView}>
-            <View style={styles.requestList}>
-              {filteredRequestList && filteredRequestList.length > 0 ? (
-                filteredRequestList.map((requestItem, index) => (
-                  <View key={index} style={styles.requestItem}>
-                    {renderRequestComponent({
-                      request: requestItem,
-                      onRequestItemPress,
-                      requestList: filteredRequestList,
-                      updateRequestList,
-                      roomName,
-                      socket,
-                    })}
-                  </View>
-                ))
-              ) : (
-                <Text style={styles.noRequestsText}>No requests found.</Text>
-              )}
-            </View>
-          </ScrollView>
+          {content}
         </View>
       </View>
     </Modal>
   );
+
+  const container = renderContainer
+    ? renderContainer({ defaultContainer, dimensions })
+    : defaultContainer;
+
+  return <>{container}</>;
 };
 
 export default RequestsModal;

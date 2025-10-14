@@ -63,7 +63,7 @@ export type UpdateMiniCardsGridType = (options: UpdateMiniCardsGridOptions) => P
  *     getUpdatedAllParams: getUpdatedAllParamsFunction,
  *   },
  * };
- * 
+ *
  * await updateMiniCardsGrid(options);
  * ```
  */

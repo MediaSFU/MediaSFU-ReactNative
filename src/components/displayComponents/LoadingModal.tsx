@@ -12,58 +12,73 @@ import {
 } from 'react-native';
 
 /**
- * Interface defining the props for the LoadingModal component.
+ * Options for configuring `LoadingModal`.
+ *
+ * @interface LoadingModalOptions
+ *
+ * **Modal Control:**
+ * @property {boolean} isVisible Toggles the visibility of the loading overlay.
+ *
+ * **Appearance:**
+ * @property {string} [backgroundColor='rgba(0, 0, 0, 0.5)'] Backdrop color.
+ * @property {string} [displayColor='black'] Spinner and label color.
+ * @property {StyleProp<ViewStyle>} [style] Additional styling for the overlay container.
+ *
+ * **Advanced Render Overrides:**
+ * @property {(options: { defaultContent: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContent]
+ * Override the spinner/text content.
+ * @property {(options: { defaultContainer: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContainer]
+ * Override the surrounding container implementation.
  */
 export interface LoadingModalOptions {
-  /**
-   * Determines if the modal is visible.
-   */
   isVisible: boolean;
-
-  /**
-   * The background color of the modal overlay.
-   * @default 'rgba(0, 0, 0, 0.5)'
-   */
   backgroundColor?: string;
-
-  /**
-   * The color of the loading spinner and text.
-   * @default 'black'
-   */
   displayColor?: string;
+  style?: StyleProp<ViewStyle>;
+  renderContent?: (options: {
+    defaultContent: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
+  renderContainer?: (options: {
+    defaultContainer: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
 }
 
 export type LoadingModalType = (options: LoadingModalOptions) => JSX.Element;
 
 /**
- * LoadingModal component displays a centered loading spinner with text in a modal overlay.
+ * LoadingModal presents a centered activity indicator with optional status text. It is ideal for
+ * blocking interactions while asynchronous work completes and can be themed or overridden for
+ * custom visuals.
  *
- * This component is useful for indicating loading states with a customizable background and display color.
+ * ### Key Features
+ * - Lightweight overlay with spinner and message.
+ * - Easily themed via `backgroundColor`, `displayColor`, and `StyleProp`.
+ * - Supports render overrides for custom loading UX.
  *
- * @component
- * @param {LoadingModalOptions} props - Configuration options for the LoadingModal component.
- * @param {boolean} props.isVisible - Controls the visibility of the modal.
- * @param {string} [props.backgroundColor='rgba(0, 0, 0, 0.5)'] - Background color of the modal overlay.
- * @param {string} [props.displayColor='black'] - Color for the loading spinner and text.
+ * ### Accessibility
+ * - Spinner conveys ongoing progress; pair with additional messaging when possible.
  *
- * @returns {JSX.Element} The rendered LoadingModal component.
+ * @param {LoadingModalOptions} props Modal configuration.
+ * @returns {JSX.Element} Rendered loading modal.
  *
- * @example
+ * @example Simple loading overlay.
  * ```tsx
- * import React from 'react';
- * import { LoadingModal } from 'mediasfu-reactnative';
+ * <LoadingModal isVisible={true} />
+ * ```
  *
- * function App() {
- *   return (
- *     <LoadingModal
- *       isVisible={true}
- *       backgroundColor="rgba(0, 0, 0, 0.7)"
- *       displayColor="white"
- *     />
- *   );
- * }
- *
- * export default App;
+ * @example Custom content override.
+ * ```tsx
+ * <LoadingModal
+ *   isVisible={isFetching}
+ *   renderContent={({ defaultContent }) => (
+ *     <View>
+ *       {defaultContent}
+ *       <Text style={{ marginTop: 8 }}>Syncing data…</Text>
+ *     </View>
+ *   )}
+ * />
  * ```
  */
 
@@ -71,6 +86,9 @@ const LoadingModal: React.FC<LoadingModalOptions> = ({
   isVisible,
   backgroundColor = 'rgba(0, 0, 0, 0.5)',
   displayColor = 'black',
+  style,
+  renderContent,
+  renderContainer,
 }) => {
   /**
    * Styles for the modal overlay container.
@@ -104,21 +122,37 @@ const LoadingModal: React.FC<LoadingModalOptions> = ({
     textAlign: 'center',
   };
 
-  return (
+  const dimensions = { width: 200, height: 0 };
+
+  const defaultContent = (
+    <>
+      <ActivityIndicator size="large" color={displayColor} />
+      <Text style={loadingTextStyle}>Loading...</Text>
+    </>
+  );
+
+  const content = renderContent
+    ? renderContent({ defaultContent, dimensions })
+    : defaultContent;
+
+  const defaultContainer = (
     <Modal
       transparent
       animationType="fade"
       visible={isVisible}
       onRequestClose={() => { /* Optionally handle modal close */ }}
     >
-      <View style={modalContainerStyle}>
+      <View style={[modalContainerStyle, style]}>
         <View style={modalContentStyle}>
-          <ActivityIndicator size="large" color={displayColor} />
-          <Text style={loadingTextStyle}>Loading...</Text>
+          {content}
         </View>
       </View>
     </Modal>
   );
+
+  return renderContainer
+    ? renderContainer({ defaultContainer, dimensions })
+    : defaultContainer;
 };
 
 export default LoadingModal;

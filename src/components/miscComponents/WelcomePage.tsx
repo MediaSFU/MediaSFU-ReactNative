@@ -109,7 +109,7 @@ export type WelcomePageType = (options: WelcomePageOptions) => JSX.Element;
  * ```tsx
  * import React from 'react';
  * import { WelcomePage } from 'mediasfu-reactnative';
- * 
+ *
  * function App() {
  *   const parameters = {
  *     imgSrc: 'https://example.com/logo.png',
@@ -124,12 +124,12 @@ export type WelcomePageType = (options: WelcomePageOptions) => JSX.Element;
  *     updateRoomName: setRoomName,
  *     updateMember: setUserName,
  *   };
- * 
+ *
  *   return (
  *     <WelcomePage parameters={parameters} />
  *   );
  * }
- * 
+ *
  * export default App;
  * ```
  */

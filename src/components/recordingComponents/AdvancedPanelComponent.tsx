@@ -89,7 +89,7 @@ export interface AdvancedPanelOptions {
  * function App() {
  *   return <AdvancedPanelComponent parameters={advancedParameters} />;
  * }
- * 
+ *
  * export default App;
  * ```
  */

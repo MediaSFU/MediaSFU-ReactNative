@@ -27,7 +27,7 @@ export type RespondToWaitingType = (options: RespondToWaitingOptions) => Promise
  * @param {boolean | string} options.type - The type of response, either "true" or "false".
  * @param {string} options.roomName - The name of the room.
  * @param {Socket} options.socket - The socket instance to emit events.
- * 
+ *
  * @example
  * ```typescript
  * const options = {

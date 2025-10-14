@@ -1,8 +1,12 @@
 
 /* eslint-disable eqeqeq */
+import React from 'react';
 import { Socket } from 'socket.io-client';
 import MiniAudioPlayer from '../methods/utils/MiniAudioPlayer/MiniAudioPlayer';
 import MiniAudio from '../components/displayComponents/MiniAudio';
+import VideoCard from '../components/displayComponents/VideoCard';
+import AudioCard from '../components/displayComponents/AudioCard';
+import MiniCard from '../components/displayComponents/MiniCard';
 import {
   ReorderStreamsType,
   ReorderStreamsParameters,
@@ -49,6 +53,11 @@ export interface ConsumerResumeParameters
   hostLabel: string;
   whiteboardStarted: boolean;
   whiteboardEnded: boolean;
+  videoCardComponent?: React.ComponentType<React.ComponentProps<typeof VideoCard>>;
+  audioCardComponent?: React.ComponentType<React.ComponentProps<typeof AudioCard>>;
+  miniCardComponent?: React.ComponentType<React.ComponentProps<typeof MiniCard>>;
+  miniAudioComponent?: React.ComponentType<React.ComponentProps<typeof MiniAudio>>;
+  miniAudioPlayerComponent?: React.ComponentType<React.ComponentProps<typeof MiniAudioPlayer>>;
 
   updateUpdateMainWindow: (value: boolean) => void;
   updateAllAudioStreams: (value: (Stream | Participant)[]) => void;
@@ -170,7 +179,7 @@ export type ConsumerResumeType = (
  *   },
  *   nsock: socketInstance,
  * };
- * 
+ *
  * consumerResume(options)
  *   .then(() => {
  *     console.log('Consumer resumed successfully');
@@ -223,7 +232,12 @@ export const consumerResume = async ({
       hostLabel,
       whiteboardStarted,
       whiteboardEnded,
-      
+      videoCardComponent,
+      audioCardComponent,
+      miniCardComponent,
+      miniAudioComponent,
+      miniAudioPlayerComponent,
+
       updateUpdateMainWindow,
       updateAllAudioStreams,
       updateAllVideoStreams,
@@ -245,6 +259,9 @@ export const consumerResume = async ({
       reorderStreams,
       prepopulateUserMedia,
     } = parameters;
+
+    const MiniAudioComponentToUse = miniAudioComponent ?? MiniAudio;
+    const MiniAudioPlayerComponentToUse = miniAudioPlayerComponent ?? MiniAudioPlayer;
 
     if (params.kind === 'audio') {
       // Audio resumed
@@ -284,12 +301,12 @@ export const consumerResume = async ({
 
       // Create MiniAudioPlayer track
       const nTrack = (
-        <MiniAudioPlayer
+        <MiniAudioPlayerComponentToUse
           stream={nStream}
           remoteProducerId={remoteProducerId}
           parameters={parameters}
           consumer={consumer}
-          MiniAudioComponent={MiniAudio}
+          MiniAudioComponent={MiniAudioComponentToUse}
           miniAudioProps={{
             customStyle: { backgroundColor: 'gray' },
             name: name__,
@@ -336,7 +353,7 @@ export const consumerResume = async ({
           updateUpdateMainWindow(updateMainWindow);
           await prepopulateUserMedia({
             name: hostLabel,
-            parameters: { ...parameters, audStreamNames, allAudioStreams },
+            parameters: { ...parameters, audStreamNames, allAudioStreams, videoCardComponent, audioCardComponent, miniCardComponent },
           });
           updateMainWindow = false;
           updateUpdateMainWindow(updateMainWindow);
@@ -420,7 +437,7 @@ export const consumerResume = async ({
         }
 
         if (!lock_screen) {
-          await prepopulateUserMedia({ name: hostLabel, parameters });
+          await prepopulateUserMedia({ name: hostLabel, parameters: { ...parameters, videoCardComponent, audioCardComponent, miniCardComponent } });
           await reorderStreams({
             add: false,
             screenChanged: true,
@@ -433,6 +450,9 @@ export const consumerResume = async ({
               ...parameters,
               remoteScreenStream,
               allVideoStreams,
+              videoCardComponent,
+              audioCardComponent,
+              miniCardComponent,
             },
           });
           await reorderStreams({

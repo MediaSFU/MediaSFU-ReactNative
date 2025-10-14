@@ -18,6 +18,7 @@ import OthergridComponent from '../../components/displayComponents/OtherGridComp
 import MainScreenComponent from '../../components/displayComponents/MainScreenComponent';
 import MainContainerComponent from '../../components/displayComponents/MainContainerComponent';
 import AlertComponent from '../../components/displayComponents/AlertComponent';
+import MiniAudio from '../../components/displayComponents/MiniAudio';
 import MessagesModal from '../../components/messageComponents/MessagesModal';
 import ConfirmExitModal from '../../components/exitComponents/ConfirmExitModal';
 import ConfirmHereModal from '../../components/miscComponents/ConfirmHereModal';
@@ -29,6 +30,7 @@ import WelcomePage, {
 // pagination and display of media (samples)
 import FlexibleGrid from '../../components/displayComponents/FlexibleGrid';
 import AudioGrid from '../../components/displayComponents/AudioGrid';
+import MiniAudioPlayer from '../../methods/utils/MiniAudioPlayer/MiniAudioPlayer';
 
 // import methods for control (samples)
 import { launchMessages } from '../../methods/messageMethods/launchMessages';
@@ -109,6 +111,7 @@ import { receiveRoomMessages } from '../../consumers/receiveRoomMessages';
 import { formatNumber } from '../../methods/utils/formatNumber';
 import { connectIps } from '../../consumers/connectIps';
 import { connectLocalIps } from '../../consumers/connectLocalIps';
+import { withOverride, withFunctionOverride } from '../mediasfuComponents/overrideHelpers';
 
 import { startMeetingProgressTimer } from '../../methods/utils/meetingTimer/startMeetingProgressTimer';
 
@@ -205,73 +208,108 @@ export type MediasfuChatOptions = {
   customAudioCard?: CustomAudioCardType;
   customMiniCard?: CustomMiniCardType;
   customComponent?: React.FC<{ parameters: any }>;
+  containerStyle?: object;
+  uiOverrides?: import('../../@types/types').MediasfuUICustomOverrides;
 };
 
 /**
- * MediasfuChat component optimizes the media experience for chatting events.
- * Only 2 participants can share media (audio, video, *no screen share support*) with each other.
- * Participants can view each other's media and chat with each other.
- * It manages various states and references related to the media session, including
- * user credentials, room details, participants, and recording parameters.
+ * MediasfuChat component provides a simple two-person video chat experience optimized for
+ * one-on-one conversations with side-by-side video layout.
  *
- * @typedef {Object} MediasfuChatOptions - Options for the MediasfuChat component.
- * @property {function} [PrejoinPage=WelcomePage] - Function to render the prejoin page.
- * @property {string} [localLink=''] - Local link for the media server (if using Community Edition).
- * @property {boolean} [connectMediaSFU=true] - Flag to connect to the MediaSFU server (if using Community Edition and still need to connect to the server)
- * @property {Object} [credentials={ apiUserName: '', apiKey: '' }] - API credentials.
- * @property {boolean} [useLocalUIMode=false] - Flag to use local UI mode.
- * @property {Object} [seedData={}] - Seed data for initial state.
- * @property {boolean} [useSeed=false] - Flag to use seed data.
- * @property {string} [imgSrc='https://mediasfu.com/images/logo192.png'] - Image source URL.
- * @property {Object} [sourceParameters={}] - Source parameters.
- * @property {function} [updateSourceParameters] - Function to update source parameters.
- * @property {boolean} [returnUI=true] - Flag to return the UI.
- * @property {CreateMediaSFURoomOptions | JoinMediaSFURoomOptions} [noUIPreJoinOptions] - Options for the prejoin page.
- * @property {JoinRoomOnMediaSFUType} [joinMediaSFURoom] - Function to join a room on MediaSFU.
- * @property {CreateRoomOnMediaSFUType} [createMediaSFURoom] - Function to create a room on MediaSFU.
+ * ### Key Features
+ * - **Two-Person Limit**: Maximum 2 participants with audio/video
+ * - **Side-by-Side Layout**: Equal split-screen view for both participants
+ * - **Text Chat**: Real-time messaging alongside video
+ * - **No Screen Share**: Focused on face-to-face conversation
+ * - **Recording**: Capture chat sessions
+ * - **Simple Controls**: Minimal UI for quick start
+ * - **Custom Cards**: Override video card appearance
  *
- * @typedef {Object} SeedData - Data structure to populate initial state in the MediasfuBroadcast.
- * @property {string} [member] - The member name.
- * @property {string} [host] - The host name.
- * @property {EventType} [eventType] - The type of event.
- * @property {Participant[]} [participants] - The list of participants.
- * @property {Message[]} [messages] - The list of messages.
- * @property {Poll[]} [polls] - The list of polls.
- * @property {BreakoutParticipant[][]} [breakoutRooms] - The list of breakout rooms.
- * @property {Request[]} [requests] - The list of requests.
- * @property {WaitingRoomParticipant[]} [waitingList] - The list of waiting room participants.
- * @property {WhiteboardUser[]} [whiteboardUsers] - The list of whiteboard users.
+ * ### Layout Characteristics
+ * - 50/50 split screen for 2 participants
+ * - No grid pagination (max 2 people)
+ * - Chat overlay available
+ * - No screen sharing support
  *
- * MediasfuChat Component.
+ * ### Event Type
+ * Automatically sets `eventType: 'chat'` for two-person video chat mode.
  *
- * @returns {JSX.Element} The MediasfuChat component.
+ * ### Use Cases
+ * - One-on-one consultations
+ * - Customer support video calls
+ * - Personal video chats
+ * - Quick meetings between 2 people
+ *
+ * @component
+ * @param {MediasfuChatOptions} props - Component properties
+ * @returns {JSX.Element} MediaSFU Chat component
  *
  * @example
  * ```tsx
- * <MediasfuChat
- *   PrejoinPage={WelcomePage}
- *   credentials={{ apiUserName: 'username', apiKey: 'apikey' }}
- *   useLocalUIMode={false}
- *   seedData={{}}
- *   useSeed={false}
- *   imgSrc='https://mediasfu.com/images/logo192.png'
- *   sourceParameters={{ key: value }}
- *   updateSourceParameters={updateSourceParameters}
- *   returnUI={true}
- *   noUIPreJoinOptions={customPreJoinOptions}
- *   joinMediaSFURoom={joinRoomOnMediaSFU}
- *   createMediaSFURoom={createRoomOnMediaSFU}
- * />
+ * // Basic two-person video chat
+ * import { MediasfuChat } from 'mediasfu-reactnative';
+ *
+ * function App() {
+ *   return (
+ *     <MediasfuChat
+ *       credentials={{
+ *         apiUserName: 'your-api-username',
+ *         apiKey: 'your-api-key'
+ *       }}
+ *     />
+ *   );
+ * }
  * ```
  *
- * @description
- * This component handles the chat functionalities for MediaSFU, including joining rooms,
- * managing participants, and handling media streams. It uses various hooks and methods to
- * manage state and perform actions such as joining a room, updating initial values, and
- * handling media streams.
+ * @example
+ * ```tsx
+ * // Chat with custom video cards and branding
+ * import { MediasfuChat } from 'mediasfu-reactnative';
+ * import { ChatVideoCard } from './ChatVideoCard';
  *
+ * function App() {
+ *   return (
+ *     <MediasfuChat
+ *       credentials={{
+ *         apiUserName: 'your-api-username',
+ *         apiKey: 'your-api-key'
+ *       }}
+ *       customVideoCard={(props) => (
+ *         <ChatVideoCard {...props} showNameAlways roundedCorners />
+ *       )}
+ *       imgSrc="https://example.com/chat-icon.png"
+ *       containerStyle={{
+ *         backgroundColor: '#f5f5f5'
+ *       }}
+ *     />
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Chat with custom prejoin and UI overrides
+ * import { MediasfuChat } from 'mediasfu-reactnative';
+ * import { SimplePrejoin } from './SimplePrejoin';
+ * import { MinimalControls } from './MinimalControls';
+ *
+ * function App() {
+ *   return (
+ *     <MediasfuChat
+ *       PrejoinPage={SimplePrejoin}
+ *       credentials={{
+ *         apiUserName: 'your-api-username',
+ *         apiKey: 'your-api-key'
+ *       }}
+ *       uiOverrides={{
+ *         controlButtons: MinimalControls,
+ *         messagesModal: CustomChatOverlay
+ *       }}
+ *     />
+ *   );
+ * }
+ * ```
  */
-
 const MediasfuChat: React.FC<MediasfuChatOptions> = ({
   PrejoinPage = WelcomePage,
   localLink = '',
@@ -291,7 +329,37 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
   customAudioCard,
   customMiniCard,
   customComponent,
+  containerStyle,
+  uiOverrides,
 }) => {
+  // UI Override Components (Chat uses fewer components than others)
+  const MainContainer = React.useMemo(() => withOverride(uiOverrides?.mainContainer, MainContainerComponent), [uiOverrides?.mainContainer]);
+  const MainAspect = React.useMemo(() => withOverride(uiOverrides?.mainAspect, MainAspectComponent), [uiOverrides?.mainAspect]);
+  const MainScreen = React.useMemo(() => withOverride(uiOverrides?.mainScreen, MainScreenComponent), [uiOverrides?.mainScreen]);
+  const OtherGrid = React.useMemo(() => withOverride(uiOverrides?.otherGrid, OthergridComponent), [uiOverrides?.otherGrid]);
+  const FlexibleGridPrimary = React.useMemo(() => withOverride(uiOverrides?.flexibleGrid, FlexibleGrid), [uiOverrides?.flexibleGrid]);
+  const AudioGridComponent = React.useMemo(() => withOverride(uiOverrides?.audioGrid, AudioGrid), [uiOverrides?.audioGrid]);
+  const ControlButtonsTouch = React.useMemo(() => withOverride(uiOverrides?.controlButtonsTouch, ControlButtonsComponentTouch), [uiOverrides?.controlButtonsTouch]);
+  const LoadingModalComponent = React.useMemo(() => withOverride(uiOverrides?.loadingModal, LoadingModal), [uiOverrides?.loadingModal]);
+  const AlertComponentOverride = React.useMemo(() => withOverride(uiOverrides?.alert, AlertComponent), [uiOverrides?.alert]);
+  const MessagesModalComponent = React.useMemo(() => withOverride(uiOverrides?.messagesModal, MessagesModal), [uiOverrides?.messagesModal]);
+  const ConfirmExitModalComponent = React.useMemo(() => withOverride(uiOverrides?.confirmExitModal, ConfirmExitModal), [uiOverrides?.confirmExitModal]);
+  const ConfirmHereModalComponent = React.useMemo(() => withOverride(uiOverrides?.confirmHereModal, ConfirmHereModal), [uiOverrides?.confirmHereModal]);
+  const ShareEventModalComponent = React.useMemo(() => withOverride(uiOverrides?.shareEventModal, ShareEventModal), [uiOverrides?.shareEventModal]);
+
+  const consumerResumeFn = React.useMemo(() => withFunctionOverride(uiOverrides?.consumerResume, consumerResume), [uiOverrides?.consumerResume]);
+  const addVideosGridFn = React.useMemo(() => withFunctionOverride(uiOverrides?.addVideosGrid, addVideosGrid), [uiOverrides?.addVideosGrid]);
+
+  // Mini Audio component overrides
+  const MiniAudioComponentOverride = React.useMemo(
+    () => withOverride(uiOverrides?.miniAudio, MiniAudio),
+    [uiOverrides?.miniAudio],
+  );
+  const MiniAudioPlayerComponent = React.useMemo(
+    () => withOverride(uiOverrides?.miniAudioPlayer, MiniAudioPlayer),
+    [uiOverrides?.miniAudioPlayer],
+  );
+
   const updateStatesToInitialValues = async () => {
     const initialValues = initialValuesState as { [key: string]: any };
     const updateFunctions = getAllParams() as unknown as {
@@ -2283,7 +2351,7 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
       getVideos,
       rePort,
       trigger,
-      consumerResume,
+      consumerResume: consumerResumeFn,
       connectSendTransport,
       connectSendTransportAudio,
       connectSendTransportVideo,
@@ -2294,7 +2362,7 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
       checkGrid,
       getEstimate,
       calculateRowsAndColumns,
-      addVideosGrid,
+      addVideosGrid: addVideosGridFn,
       onScreenChanges,
       sleep,
       changeVids,
@@ -3104,6 +3172,8 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
       customVideoCard,
       customAudioCard,
       customMiniCard,
+      miniAudioComponent: MiniAudioComponentOverride,
+      miniAudioPlayerComponent: MiniAudioPlayerComponent,
     };
   };
 
@@ -4099,9 +4169,9 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
       ) : customComponent ? (
         React.createElement(customComponent, { parameters: { ...getAllParams(), ...mediaSFUFunctions() } })
       ) : returnUI ? (
-        <MainContainerComponent>
+        <MainContainer style={containerStyle}>
           {/* Main aspect component containsa ll but the control buttons (as used for webinar and conference) */}
-          <MainAspectComponent
+          <MainAspect
             backgroundColor="rgba(217, 227, 234, 0.99)"
             defaultFraction={1 - controlHeight}
             updateIsWideScreen={updateIsWideScreen}
@@ -4113,7 +4183,7 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
             }
           >
             {/* MainScreenComponent contains the main grid view and the minor grid view */}
-            <MainScreenComponent
+            <MainScreen
               doStack={true}
               mainSize={mainHeightWidth}
               updateComponentSizes={updateComponentSizes}
@@ -4126,7 +4196,7 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
             >
               {/* OthergridComponent shows the minor grid view - not used at all in broadcast event type */}
               {/* OthergridComponent becomes the dominant grid view in conference (the main grid only gets re-introduced during screenshare) and chat event types */}
-              <OthergridComponent
+              <OtherGrid
                 height={componentSizes.current.otherHeight}
                 width={componentSizes.current.otherWidth}
                 backgroundColor={'rgba(217, 227, 234, 0.99)'}
@@ -4138,13 +4208,13 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
                 {/* AudioGrid contains all the audio only streams */}
                 {/* If broadcasting and there are audio only streams (just one), the audio only streams are displayed in the main grid view */}
                 {/* If webinar and you are the host, the audio only streams (just one), are displayed in the main grid view */}
-                <AudioGrid
+                <AudioGridComponent
                   componentsToRender={
                     audioOnlyStreams.current ? audioOnlyStreams.current : []
                   }
                 />
 
-                <ControlButtonsComponentTouch
+                <ControlButtonsTouch
                   buttons={controlChatButtons}
                   position={'right'}
                   location={'bottom'}
@@ -4152,7 +4222,7 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
                   showAspect={eventType.current === 'chat'}
                 />
 
-                <FlexibleGrid
+                <FlexibleGridPrimary
                   customWidth={gridSizes.current.gridWidth!}
                   customHeight={gridSizes.current.gridHeight!}
                   rows={gridRows}
@@ -4160,17 +4230,17 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
                   componentsToRender={otherGridStreams[0]}
                   backgroundColor={'rgba(217, 227, 234, 0.99)'}
                 />
-              </OthergridComponent>
-            </MainScreenComponent>
-          </MainAspectComponent>
-        </MainContainerComponent>
+              </OtherGrid>
+            </MainScreen>
+          </MainAspect>
+        </MainContainer>
       ) : (
         <></>
       )}
 
       {returnUI && (
         <>
-          <MessagesModal
+          <MessagesModalComponent
             backgroundColor={
               eventType.current === 'webinar' ||
               eventType.current === 'conference'
@@ -4195,7 +4265,7 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
             chatSetting={chatSetting.current}
           />
 
-          <ConfirmExitModal
+          <ConfirmExitModalComponent
             backgroundColor="rgba(181, 233, 229, 0.97)"
             isConfirmExitModalVisible={isConfirmExitModalVisible}
             onConfirmExitClose={() => updateIsConfirmExitModalVisible(false)}
@@ -4205,7 +4275,7 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
             islevel={islevel.current}
           />
 
-          <ConfirmHereModal
+          <ConfirmHereModalComponent
             backgroundColor="rgba(181, 233, 229, 0.97)"
             isConfirmHereModalVisible={isConfirmHereModalVisible}
             onConfirmHereClose={() => updateIsConfirmHereModalVisible(false)}
@@ -4214,7 +4284,7 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
             socket={socket.current}
           />
 
-          <ShareEventModal
+          <ShareEventModalComponent
             isShareEventModalVisible={isShareEventModalVisible}
             onShareEventClose={() => updateIsShareEventModalVisible(false)}
             roomName={roomName.current}
@@ -4224,7 +4294,7 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
             localLink={localLink}
           />
 
-          <AlertComponent
+          <AlertComponentOverride
             visible={alertVisible}
             message={alertMessage}
             type={alertType}
@@ -4233,7 +4303,7 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
             textColor={'#ffffff'}
           />
 
-          <LoadingModal
+          <LoadingModalComponent
             isVisible={isLoadingModalVisible}
             backgroundColor="rgba(217, 227, 234, 0.99)"
             displayColor="black"

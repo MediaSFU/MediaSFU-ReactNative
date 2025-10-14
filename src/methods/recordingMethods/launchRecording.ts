@@ -38,7 +38,7 @@ export type LaunchRecordingType = (options: LaunchRecordingOptions) => void;
  * @param {boolean} options.localUIMode - Indicates if the local UI mode is active.
  *
  * @returns {void}
- * 
+ *
  * @example
  * ```typescript
  * launchRecording({

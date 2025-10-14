@@ -4,101 +4,139 @@ import React from 'react';
 import {
   View,
   StyleSheet,
+  StyleProp,
+  ViewStyle,
+  DimensionValue,
 } from 'react-native';
 import MeetingProgressTimer from './MeetingProgressTimer';
 
 /**
  * Interface defining the props for the OtherGridComponent.
  */
+/**
+ * Options for rendering `OtherGridComponent`.
+ *
+ * @interface OtherGridComponentOptions
+ *
+ * **Content:**
+ * @property {React.ReactNode} children Elements rendered inside the secondary grid.
+ *
+ * **Appearance:**
+ * @property {string} backgroundColor Background color for the container.
+ * @property {number | string} width Width of the grid.
+ * @property {number | string} height Height of the grid.
+ * @property {boolean} [showAspect=true] Controls whether the grid is visible.
+ * @property {StyleProp<ViewStyle>} [style] Additional styles for the outer container.
+ *
+ * **Timer:**
+ * @property {boolean} showTimer Controls visibility of the meeting progress timer.
+ * @property {string} meetingProgressTime Time string displayed by the timer.
+ * @property {string} [timeBackgroundColor] Background tint applied to the timer.
+ *
+ * **Advanced Render Overrides:**
+ * @property {(options: { defaultContent: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContent]
+ * Customize the inner layout.
+ * @property {(options: { defaultContainer: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContainer]
+ * Replace the outer container implementation.
+ */
 export interface OtherGridComponentOptions {
-  /**
-   * The background color of the grid.
-   */
   backgroundColor: string;
-
-  /**
-   * The child components to be rendered inside the grid.
-   */
   children: React.ReactNode;
-
-  /**
-   * The width of the grid.
-   */
   width: number | string;
-
-  /**
-   * The height of the grid.
-   */
   height: number | string;
-
-  /**
-   * Flag to determine if the grid should be displayed.
-   * @default true
-   */
   showAspect?: boolean;
-
-  /**
-   * The background color of the meeting progress timer.
-   */
   timeBackgroundColor?: string;
-
-  /**
-   * Flag to determine if the meeting progress timer should be displayed.
-   */
   showTimer: boolean;
-
-  /**
-   * The time to display on the meeting progress timer.
-   */
   meetingProgressTime: string;
+  style?: StyleProp<ViewStyle>;
+  renderContent?: (options: {
+    defaultContent: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
+  renderContainer?: (options: {
+    defaultContainer: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
 }
 
 export type OtherGridComponentType = React.FC<OtherGridComponentOptions>;
 
 /**
- * OtherGridComponent displays a container grid with optional child components and a meeting progress timer.
+ * OtherGridComponent renders the secondary participant grid, optionally showing a meeting progress timer in the corner.
+ * Override hooks allow complete control over the inner layout and outer wrapper.
  *
- * This component allows customization of dimensions, background color, and an optional timer display. It is useful
- * for displaying grouped content within a bordered grid layout.
+ * ### Key Features
+ * - Displays secondary/auxiliary grid for off-stage participants
+ * - Optional meeting progress timer overlay (top-right corner)
+ * - Toggle visibility with `showAspect` prop
+ * - Custom timer background color
+ * - Render overrides for content and container
  *
- * @component
- * @param {OtherGridComponentOptions} props - Configuration options for the OtherGridComponent.
- * @param {string} props.backgroundColor - Background color of the grid.
- * @param {React.ReactNode} props.children - Components to be rendered within the grid.
- * @param {number | string} props.width - Width of the grid.
- * @param {number | string} props.height - Height of the grid.
- * @param {boolean} [props.showAspect=true] - Flag to toggle the grid's display.
- * @param {string} [props.timeBackgroundColor='rgba(0,0,0,0.5)'] - Background color of the meeting progress timer.
- * @param {boolean} props.showTimer - Flag to display the meeting progress timer.
- * @param {string} props.meetingProgressTime - Time to show in the meeting progress timer.
+ * ### Layout
+ * - Flexible dimensions via `width` and `height`
+ * - Timer positioned absolutely in top-right
+ * - Children wrapped in flex container
  *
- * @returns {JSX.Element} The rendered OtherGridComponent.
+ * ### Accessibility
+ * - Timer includes accessible time display
+ * - Structural grouping for screen readers
  *
  * @example
  * ```tsx
- * import React from 'react';
- * import { OtherGridComponent } from 'mediasfu-reactnative';
+ * // Basic secondary grid with timer
+ * <OtherGridComponent
+ *   backgroundColor="#333"
+ *   height={200}
+ *   width={400}
+ *   meetingProgressTime="00:12:45"
+ *   showTimer
+ * >
+ *   <FlexibleGrid
+ *     rows={1}
+ *     columns={3}
+ *     customWidth={400}
+ *     customHeight={200}
+ *     componentsToRender={waitingParticipants}
+ *   />
+ * </OtherGridComponent>
+ * ```
  *
- * function App() {
- *   return (
- *     <OtherGridComponent
- *       backgroundColor="#f9f9f9"
- *       width={250}
- *       height={250}
- *       showAspect={true}
- *       timeBackgroundColor="rgba(0, 0, 0, 0.6)"
- *       showTimer={true}
- *       meetingProgressTime="10:45"
- *     >
- *       <Text>Child Component</Text>
- *     </OtherGridComponent>
- *   );
- * }
+ * @example
+ * ```tsx
+ * // Hidden aspect with custom timer color
+ * <OtherGridComponent
+ *   backgroundColor="#1a1a1a"
+ *   height={150}
+ *   width={600}
+ *   meetingProgressTime="01:05:20"
+ *   showTimer={false}
+ *   showAspect={false}
+ *   timeBackgroundColor="rgba(50,50,50,0.8)"
+ * >
+ *   <AudioOnlyGrid participants={audioParticipants} />
+ * </OtherGridComponent>
+ * ```
  *
- * export default App;
+ * @example
+ * ```tsx
+ * // With custom content overlay
+ * <OtherGridComponent
+ *   backgroundColor="transparent"
+ *   height={250}
+ *   width={500}
+ *   meetingProgressTime="00:30:15"
+ *   showTimer
+ *   renderContent={({ defaultContent, dimensions }) => (
+ *     <View>
+ *       {defaultContent}
+ *       <BreakoutRoomLabel roomName="Room 2" />
+ *     </View>
+ *   )}
+ * >
+ *   <BreakoutRoomGrid room={room2} />
+ * </OtherGridComponent>
  * ```
  */
-
 const OtherGridComponent: React.FC<OtherGridComponentOptions> = ({
   backgroundColor,
   children,
@@ -108,24 +146,50 @@ const OtherGridComponent: React.FC<OtherGridComponentOptions> = ({
   timeBackgroundColor = 'rgba(0,0,0,0.5)', // Default value if not provided
   showTimer,
   meetingProgressTime,
-}) => (
-  <View style={[styles.otherGridContainer, {
-    backgroundColor, width: width as number, height: height as number, display: showAspect ? 'flex' : 'none',
-  }]}
-  >
-    {/* Render the meeting progress timer */}
-    <MeetingProgressTimer
-      meetingProgressTime={meetingProgressTime}
-      initialBackgroundColor={timeBackgroundColor}
-      showTimer={showTimer}
-      position="topRight"
-    />
-    {/* Render the children */}
-    <View style={styles.childrenContainer}>
-      {children}
+  style,
+  renderContent,
+  renderContainer,
+}) => {
+  const dimensions = {
+    width: typeof width === 'number' ? width : 0,
+    height: typeof height === 'number' ? height : 0,
+  };
+
+  const defaultContent = (
+    <>
+      <MeetingProgressTimer
+        meetingProgressTime={meetingProgressTime}
+        initialBackgroundColor={timeBackgroundColor}
+        showTimer={showTimer}
+        position="topRight"
+      />
+      <View style={styles.childrenContainer}>
+        {children}
+      </View>
+    </>
+  );
+
+  const content = renderContent
+    ? renderContent({ defaultContent, dimensions })
+    : defaultContent;
+
+  const containerStyle: ViewStyle = {
+    backgroundColor,
+    width: width as DimensionValue,
+    height: height as DimensionValue,
+    display: showAspect ? 'flex' : 'none',
+  };
+
+  const defaultContainer = (
+    <View style={[styles.otherGridContainer, containerStyle, style]}>
+      {content}
     </View>
-  </View>
-);
+  );
+
+  return renderContainer
+    ? renderContainer({ defaultContainer, dimensions })
+    : defaultContainer;
+};
 
 export default OtherGridComponent;
 

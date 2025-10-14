@@ -35,9 +35,9 @@ export type StartShareScreenType = (options: StartShareScreenOptions) => Promise
  * @param {number} [options.parameters.targetWidth] - The target width for screen sharing.
  * @param {number} [options.parameters.targetHeight] - The target height for screen sharing.
  * @param {Function} options.parameters.streamSuccessScreen - Function to handle successful screen sharing.
- * 
+ *
  * @returns {Promise<void>} A promise that resolves when the screen sharing process is complete.
- * 
+ *
  * @throws Will log an error message if there is an issue starting the screen share.
  *
  * @example
@@ -53,7 +53,7 @@ export type StartShareScreenType = (options: StartShareScreenOptions) => Promise
  *     streamSuccessScreen: streamSuccessFunction,
  *   },
  * };
- * 
+ *
  * startShareScreen(options)
  *   .then(() => {
  *     console.log('Screen sharing started successfully');

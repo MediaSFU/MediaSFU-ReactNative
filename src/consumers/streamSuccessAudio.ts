@@ -151,7 +151,7 @@ export type StreamSuccessAudioType = (options: StreamSuccessAudioOptions) => Pro
  *     prepopulateUserMedia: prepopulateUserMediaFunction,
  *   },
  * };
- * 
+ *
  * streamSuccessAudio(options)
  *   .then(() => {
  *     console.log('Audio streaming setup successfully');

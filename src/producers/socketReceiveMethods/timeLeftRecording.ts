@@ -14,16 +14,16 @@ export type TimeLeftRecordingType = (options: TimeLeftRecordingOptions) => void;
  * @param {TimeLeftRecordingOptions} options - Options to manage time left for recording.
  * @param {number} options.timeLeft - Time remaining for the recording in seconds.
  * @param {ShowAlert} [options.showAlert] - Optional function to show alert message.
- * 
+ *
  * @returns {void}
- * 
+ *
  * @example
  * ```typescript
  * const options = {
  *   timeLeft: 30,
  *   showAlert: (alert) => console.log(alert.message),
  * };
- * 
+ *
  * timeLeftRecording(options);
  * // Output: "The recording will stop in less than 30 seconds."
  * ```

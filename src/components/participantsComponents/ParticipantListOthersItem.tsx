@@ -31,12 +31,12 @@ export type ParticipantListOthersItemType = (
  * ```tsx
  * import React from 'react';
  * import { ParticipantListOthersItem } from 'mediasfu-reactnative';
- * 
+ *
  * function App() {
  *   const participant = { name: 'Alice', islevel: '1', muted: false };
  *   const member = 'Alice';
  *   const coHost = 'Bob';
- *   
+ *
  *   return (
  *     <ParticipantListOthersItem
  *       participant={participant}
@@ -45,7 +45,7 @@ export type ParticipantListOthersItemType = (
  *     />
  *   );
  * }
- * 
+ *
  * export default App;
  * ```
  */

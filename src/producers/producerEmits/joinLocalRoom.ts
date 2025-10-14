@@ -49,9 +49,9 @@ export type CheckMediasfuURLType = (options: CheckMediasfuURLOptions) => Promise
  * @param {PreJoinPageParameters} options.parameters - Additional parameters for pre-join page actions.
  * @param {JoinRoomOnMediaSFUType} [options.joinMediaSFURoom] - The function to join a room on MediaSFU.
  * @param {string} [options.localLink] - The local link for the Community Edition.
- * 
+ *
  * @returns {Promise<void>} A promise that resolves when the actions are complete.
- * 
+ *
  * @example
  * ```typescript
  * const options = {
@@ -95,7 +95,7 @@ export async function checkMediasfuURL({
     data.mediasfuURL !== '' &&
     data.mediasfuURL.length > 10
   ) {
-   
+
     let link;
     let secretCode;
 
@@ -154,12 +154,12 @@ export async function checkMediasfuURL({
         socket.emit(
           'updateMediasfuURL',
           { eventID: roomName, mediasfuURL: response.data.publicURL },
-          async () => {}
+          async () => {},
         );
       } catch {
         // Do nothing
       }
-    
+
       await checkLimitsAndMakeRequest({
         apiUserName: response.data.roomName,
         apiToken: response.data.secret,
@@ -188,9 +188,9 @@ export async function checkMediasfuURL({
  * @param {boolean} options.checkConnect - A flag to check the MediaSFU URL and perform necessary actions.
  * @param {JoinRoomOnMediaSFUType} [options.joinMediaSFURoom] - The function to join a room on MediaSFU.
  * @param {string} [options.localLink] - The local link for the Community Edition.
- * 
+ *
  * @returns {Promise<object>} A promise that resolves with the data received from the 'joinRoom' event or rejects with a validation error.
- * 
+ *
  * @example
  * ```typescript
  * const options = {

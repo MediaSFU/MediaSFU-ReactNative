@@ -6,6 +6,8 @@ import {
   Pressable,
   StyleSheet,
   Dimensions,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { Socket } from 'socket.io-client';
@@ -13,99 +15,97 @@ import { confirmExit, ConfirmExitOptions } from '../../methods/exitMethods/confi
 import { getModalPosition } from '../../methods/utils/getModalPosition';
 
 /**
- * Interface defining the options required by the ConfirmExitModal component.
+ * Options for configuring `ConfirmExitModal`.
+ *
+ * @interface ConfirmExitModalOptions
+ *
+ * **Modal Control:**
+ * @property {boolean} isConfirmExitModalVisible Toggles the visibility of the modal.
+ * @property {() => void} onConfirmExitClose Called when the modal should close.
+ *
+ * **Appearance:**
+ * @property {'topRight' | 'topLeft' | 'bottomRight' | 'bottomLeft'} [position='topRight'] Anchor position on screen.
+ * @property {string} [backgroundColor='#83c0e9'] Card background color.
+ * @property {StyleProp<ViewStyle>} [style] Additional styling for the modal container.
+ *
+ * **Exit Behaviour:**
+ * @property {(options: ConfirmExitOptions) => void} [exitEventOnConfirm=confirmExit] Handler triggered on confirm.
+ * @property {string} member Name of the participant exiting.
+ * @property {boolean} [ban=false] Whether the participant should be banned on exit.
+ * @property {string} roomName Active room identifier.
+ * @property {Socket} socket Socket instance used for exit events.
+ * @property {string} islevel User level determining available actions (e.g., `'2'` for admin).
+ *
+ * **Advanced Render Overrides:**
+ * @property {(options: { defaultContent: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContent]
+ * Custom renderer for modal body.
+ * @property {(options: { defaultContainer: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContainer]
+ * Custom renderer for modal shell.
  */
 export interface ConfirmExitModalOptions {
-  /**
-   * Determines if the modal is visible.
-   */
   isConfirmExitModalVisible: boolean;
-
-  /**
-   * Callback function to close the modal.
-   */
   onConfirmExitClose: () => void;
-
-  /**
-   * Position of the modal on the screen.
-   * @default "topRight"
-   */
   position?: 'topRight' | 'topLeft' | 'bottomRight' | 'bottomLeft';
-
-  /**
-   * Background color of the modal.
-   * @default "#83c0e9"
-   */
   backgroundColor?: string;
-
-  /**
-   * Event handler function to be called on confirming exit.
-   * @default confirmExit
-   */
   exitEventOnConfirm?: (options: ConfirmExitOptions) => void;
-
-  /**
-   * Name of the member exiting.
-   */
   member: string;
-
-  /**
-   * Flag indicating if the member is banned.
-   */
   ban?: boolean;
-
-  /**
-   * Name of the room.
-   */
   roomName: string;
-
-  /**
-   * Socket object for communication.
-   */
   socket: Socket;
-
-  /**
-   * Level of the user (e.g., "1", "2").
-   */
   islevel: string;
+  style?: StyleProp<ViewStyle>;
+  renderContent?: (options: {
+    defaultContent: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
+  renderContainer?: (options: {
+    defaultContainer: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
 }
 
 export type ConfirmExitModalType = (options: ConfirmExitModalOptions) => JSX.Element;
 
 /**
- * ConfirmExitModal provides a modal interface to confirm user exit or end an event, with the option for admin-level users to end the event for all participants.
+ * ConfirmExitModal confirms whether a participant should leave or, for admins, end the event for all.
+ * It coordinates socket-based exits, respects ban flags, and surfaces override hooks for custom UI.
  *
- * @example
+ * ### Key Features
+ * - Differentiates between regular exit and admin-level "End Event" actions.
+ * - Calls `exitEventOnConfirm` with socket context for flexible business logic.
+ * - Supports corner anchoring, theming, and render overrides.
+ * - Provides clear call-to-action buttons with accessible labels.
+ *
+ * ### Accessibility
+ * - Buttons expose descriptive `accessibilityLabel` values.
+ * - Focusable layout ensures keyboard navigation across controls.
+ *
+ * @param {ConfirmExitModalOptions} props Modal configuration.
+ * @returns {JSX.Element} Rendered confirmation modal.
+ *
+ * @example Standard exit confirmation.
  * ```tsx
- * import React, { useState } from 'react';
- * import { ConfirmExitModal } from 'mediasfu-reactnative';
- * import { io } from 'socket.io-client';
+ * <ConfirmExitModal
+ *   isConfirmExitModalVisible={visible}
+ *   onConfirmExitClose={hide}
+ *   member={participant}
+ *   roomName={roomId}
+ *   socket={socket}
+ *   islevel="1"
+ * />
+ * ```
  *
- * const socket = io('https://your-server-url.com');
- *
- * function App() {
- *   const [isModalVisible, setModalVisible] = useState(true);
- *
- *   return (
- *     <View>
- *       <Button title="Confirm Exit" onPress={() => setModalVisible(true)} />
- *       <ConfirmExitModal
- *         isConfirmExitModalVisible={isModalVisible}
- *         onConfirmExitClose={() => setModalVisible(false)}
- *         position="bottomLeft"
- *         backgroundColor="#ffcccc"
- *         exitEventOnConfirm={() => console.log("Exit confirmed")}
- *         member="John Doe"
- *         ban={false}
- *         roomName="MainRoom"
- *         socket={socket}
- *         islevel="2"
- *       />
- *     </View>
- *   );
- * }
- *
- * export default App;
+ * @example Admin ending the event with custom styling.
+ * ```tsx
+ * <ConfirmExitModal
+ *   {...props}
+ *   islevel="2"
+ *   backgroundColor="#1f2937"
+ *   style={{ borderRadius: 16 }}
+ *   renderContent={({ defaultContent }) => (
+ *     <AnimatedView>{defaultContent}</AnimatedView>
+ *   )}
+ * />
  * ```
  */
 
@@ -120,6 +120,9 @@ const ConfirmExitModal: React.FC<ConfirmExitModalOptions> = ({
   roomName,
   socket,
   islevel,
+  style,
+  renderContent,
+  renderContainer,
 }) => {
   const [modalWidth, setModalWidth] = useState<number>(0.7 * Dimensions.get('window').width);
 
@@ -154,8 +157,73 @@ const ConfirmExitModal: React.FC<ConfirmExitModalOptions> = ({
     onConfirmExitClose();
   };
 
+  const dimensions = { width: modalWidth, height: 0 };
 
-  return (
+  const defaultContent = (
+    <>
+      {/* Header */}
+      <View style={styles.modalHeader}>
+        <Text style={styles.modalTitle}>Confirm Exit</Text>
+        <Pressable
+          onPress={onConfirmExitClose}
+          style={styles.btnCloseConfirmExit}
+          accessibilityRole="button"
+          accessibilityLabel="Close Confirm Exit Modal"
+        >
+          <FontAwesome5 name="times" style={styles.icon} />
+        </Pressable>
+      </View>
+
+      {/* Divider */}
+      <View style={styles.hr} />
+
+      {/* Body */}
+      <View style={styles.modalBody}>
+        <Text style={styles.confirmExitText}>
+          {islevel === '2'
+            ? 'This will end the event for all. Confirm exit.'
+            : 'Are you sure you want to exit?'}
+        </Text>
+      </View>
+
+      {/* Divider */}
+      <View style={styles.hr} />
+
+      {/* Footer */}
+      <View style={styles.modalFooter}>
+        {/* Cancel Button */}
+        <Pressable
+          onPress={onConfirmExitClose}
+          style={[styles.confirmButton, styles.btnCancel]}
+          accessibilityRole="button"
+          accessibilityLabel="Cancel Exit"
+        >
+          <Text style={[styles.confirmButtonText, styles.btnCancelText]}>Cancel</Text>
+        </Pressable>
+
+        {/* Separator */}
+        <View style={styles.doubleBorder} />
+
+        {/* Exit/End Event Button */}
+        <Pressable
+          onPress={handleConfirmExit}
+          style={[styles.confirmButton, styles.btnExit]}
+          accessibilityRole="button"
+          accessibilityLabel={islevel === '2' ? 'End Event' : 'Exit'}
+        >
+          <Text style={[styles.confirmButtonText, styles.btnExitText]}>
+            {islevel === '2' ? 'End Event' : 'Exit'}
+          </Text>
+        </Pressable>
+      </View>
+    </>
+  );
+
+  const content = renderContent
+    ? renderContent({ defaultContent, dimensions })
+    : defaultContent;
+
+  const defaultContainer = (
     <Modal
       transparent
       animationType="fade"
@@ -164,66 +232,16 @@ const ConfirmExitModal: React.FC<ConfirmExitModalOptions> = ({
     >
       <View style={[styles.modalContainer, getModalPosition({ position })]}>
         {/* Modal Content */}
-        <View style={[styles.modalContent, { backgroundColor, width: modalWidth }]}>
-          {/* Header */}
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Confirm Exit</Text>
-            <Pressable
-              onPress={onConfirmExitClose}
-              style={styles.btnCloseConfirmExit}
-              accessibilityRole="button"
-              accessibilityLabel="Close Confirm Exit Modal"
-            >
-              <FontAwesome5 name="times" style={styles.icon} />
-            </Pressable>
-          </View>
-
-          {/* Divider */}
-          <View style={styles.hr} />
-
-          {/* Body */}
-          <View style={styles.modalBody}>
-            <Text style={styles.confirmExitText}>
-              {islevel === '2'
-                ? 'This will end the event for all. Confirm exit.'
-                : 'Are you sure you want to exit?'}
-            </Text>
-          </View>
-
-          {/* Divider */}
-          <View style={styles.hr} />
-
-          {/* Footer */}
-          <View style={styles.modalFooter}>
-            {/* Cancel Button */}
-            <Pressable
-              onPress={onConfirmExitClose}
-              style={[styles.confirmButton, styles.btnCancel]}
-              accessibilityRole="button"
-              accessibilityLabel="Cancel Exit"
-            >
-              <Text style={[styles.confirmButtonText, styles.btnCancelText]}>Cancel</Text>
-            </Pressable>
-
-            {/* Separator */}
-            <View style={styles.doubleBorder} />
-
-            {/* Exit/End Event Button */}
-            <Pressable
-              onPress={handleConfirmExit}
-              style={[styles.confirmButton, styles.btnExit]}
-              accessibilityRole="button"
-              accessibilityLabel={islevel === '2' ? 'End Event' : 'Exit'}
-            >
-              <Text style={[styles.confirmButtonText, styles.btnExitText]}>
-                {islevel === '2' ? 'End Event' : 'Exit'}
-              </Text>
-            </Pressable>
-          </View>
+        <View style={[styles.modalContent, { backgroundColor, width: modalWidth }, style]}>
+          {content}
         </View>
       </View>
     </Modal>
   );
+
+  return renderContainer
+    ? renderContainer({ defaultContainer, dimensions })
+    : defaultContainer;
 };
 
 export default ConfirmExitModal;

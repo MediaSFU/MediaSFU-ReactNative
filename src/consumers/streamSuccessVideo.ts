@@ -122,9 +122,9 @@ export type StreamSuccessVideoType = (options: StreamSuccessVideoOptions) => Pro
  * @param {Function} options.parameters.showAlert - Function to display alert messages to the user.
  *
  * @returns {Promise<void>} A promise that resolves when the video streaming setup is complete.
- * 
+ *
  * @throws Will throw an error if there is an issue with streaming the video.
- * 
+ *
  * @example
  * ```typescript
  * await streamSuccessVideo({

@@ -136,7 +136,7 @@ export const connectSendTransportVideo: ConnectSendTransportVideoType = async ({
       updateUpdateMainWindow(updateMainWindow);
     }
 
-    // Handle local video transport regardless of primary success or 
+    // Handle local video transport regardless of primary success or
     if (targetOption === 'all' || targetOption === 'local') {
       try {
         await connectLocalSendTransportVideo({ videoParams, parameters });

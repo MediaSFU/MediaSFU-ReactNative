@@ -35,16 +35,16 @@ export type SwitchUserVideoAltType = (options: SwitchUserVideoAltOptions) => Pro
 
 /**
  * Switches the user's video stream based on the provided video preference and other parameters.
- * 
+ *
  * @param {SwitchUserVideoAltOptions} options - The options for switching the user's video.
  * @param {string} options.videoPreference - The preferred video facing mode (e.g., "user" or "environment").
  * @param {boolean} options.checkoff - A flag indicating whether to turn off the video before switching.
  * @param {SwitchUserVideoAltParameters} options.parameters - The parameters required for switching the video.
- * 
+ *
  * @returns {Promise<void>} A promise that resolves when the video switching is complete.
- * 
+ *
  * @throws Will throw an error if there is an issue with switching the video.
- * 
+ *
  * @example
  * ```typescript
  * const options = {
@@ -66,7 +66,7 @@ export type SwitchUserVideoAltType = (options: SwitchUserVideoAltOptions) => Pro
  *     getUpdatedAllParams: getUpdatedAllParamsFunction,
  *   },
  * };
- * 
+ *
  * switchUserVideoAlt(options)
  *   .then(() => {
  *     console.log("Video switched successfully");

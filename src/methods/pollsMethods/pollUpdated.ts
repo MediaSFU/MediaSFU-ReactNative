@@ -29,7 +29,7 @@ export type PollUpdatedType = (options: PollUpdatedOptions) => Promise<void>;
  * @param {Function} options.updatePoll - Function to update the current poll.
  * @param {Function} options.updateIsPollModalVisible - Function to update the visibility of the poll modal.
  * @returns {Promise<void>} A promise that resolves when the poll update is complete.
- * 
+ *
  * @example
  * ```typescript
  * await pollUpdated({

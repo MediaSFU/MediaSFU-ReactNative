@@ -7,6 +7,8 @@ import {
   StyleSheet,
   Dimensions,
   ScrollView,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import CustomButtons, { CustomButton } from './CustomButtons';
@@ -17,109 +19,129 @@ import { getModalPosition } from '../../methods/utils/getModalPosition';
 import { EventType } from '../../@types/types';
 
 /**
- * Interface defining the options (props) for the MenuModal component.
+ * Configuration options for the `MenuModal` component.
+ *
+ * @interface MenuModalOptions
+ *
+ * **Modal Control:**
+ * @property {boolean} isVisible Controls the modal visibility state.
+ * @property {() => void} onClose Handler invoked to dismiss the modal.
+ *
+ * **Appearance:**
+ * @property {string} [backgroundColor='#83c0e9'] Background fill applied to the modal card.
+ * @property {'topRight' | 'topLeft' | 'bottomRight' | 'bottomLeft'} [position='bottomRight'] Preferred anchor location.
+ * @property {StyleProp<ViewStyle>} [style] Additional styles merged into the modal container.
+ *
+ * **Meeting Metadata:**
+ * @property {string} roomName Human-readable meeting identifier.
+ * @property {string} adminPasscode Host/admin passcode displayed to privileged users.
+ * @property {string} islevel Participant level used to gate passcode visibility (level `'2'` shows the passcode).
+ * @property {EventType} eventType Event classification used by share helpers.
+ * @property {string} [localLink] URL for self-hosted Community Edition shares.
+ *
+ * **Menu Content:**
+ * @property {CustomButton[]} [customButtons] Optional array of bespoke menu actions.
+ * @property {boolean} [shareButtons=true] Toggles the share/action button group.
+ *
+ * **Advanced Render Overrides:**
+ * @property {(options: { defaultContent: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContent]
+ * Override to replace the default internal layout.
+ * @property {(options: { defaultContainer: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContainer]
+ * Override to swap the surrounding modal container implementation.
  */
 export interface MenuModalOptions {
-  /**
-   * The background color of the modal content.
-   * @default '#83c0e9'
-   */
   backgroundColor?: string;
-
-  /**
-   * Determines if the modal is visible.
-   */
   isVisible: boolean;
-
-  /**
-   * Function to call when the modal is closed.
-   */
   onClose: () => void;
-
-  /**
-   * An array of custom buttons to display in the modal.
-   */
   customButtons?: CustomButton[];
-
-  /**
-   * Determines if share buttons should be displayed.
-   * @default true
-   */
   shareButtons?: boolean;
-
-  /**
-   * Position of the modal on the screen.
-   * Possible values: 'topRight', 'topLeft', 'bottomRight', 'bottomLeft'
-   * @default 'bottomRight'
-   */
   position?: 'topRight' | 'topLeft' | 'bottomRight' | 'bottomLeft';
-
-  /**
-   * The name of the room.
-   */
   roomName: string;
-
-  /**
-   * The admin passcode for the meeting.
-   */
   adminPasscode: string;
-
-  /**
-   * The level of the user.
-   */
   islevel: string;
-
-  /**
-   * The type of event.
-   */
   eventType: EventType;
-
-  /**
-   * The link to the Commnity Edition server.
-   */
   localLink?: string;
+  style?: StyleProp<ViewStyle>;
+  renderContent?: (options: {
+    defaultContent: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
+  renderContainer?: (options: {
+    defaultContainer: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
 }
 
 export type MenuModalType = (options: MenuModalOptions) => JSX.Element;
 
 /**
- * MenuModal - A React Native component that displays a modal with various menu options and buttons.
+ * MenuModal offers a consolidated hub for meeting metadata, quick actions, and sharing shortcuts.
+ * Hosts and facilitators can expose custom buttons, reveal passcodes, and copy/share meeting details
+ * without navigating away from the current screen.
  *
- * @component
- * @param {MenuModalOptions} props - The properties passed to the MenuModal component.
- * @returns {JSX.Element} - The MenuModal component JSX element.
- * @example
+ * ### Key Features
+ * - Auto-resizes based on screen width with a 450px cap for consistent layout.
+ * - Supports custom call-to-actions via `customButtons` with iconography.
+ * - Conditionally reveals admin passcodes for elevated users (level `'2'`).
+ * - Integrates share helpers for room links, event type metadata, and local CE URLs.
+ * - Provides `renderContent` and `renderContainer` overrides for deep customization.
+ * - Anchorable to any corner of the screen using `position`.
+ *
+ * ### Accessibility
+ * - Close button carries descriptive labels for assistive technologies.
+ * - Scrollable content maintains keyboard navigation through focusable items.
+ *
+ * @param {MenuModalOptions} props Modal configuration options.
+ * @returns {JSX.Element} Rendered meeting menu modal.
+ *
+ * @example Basic meeting info menu with default share buttons.
  * ```tsx
- * import React from 'react';
- * import { MenuModal } from 'mediasfu-reactnative';
+ * <MenuModal
+ *   isVisible={visible}
+ *   onClose={handleClose}
+ *   roomName={roomName}
+ *   adminPasscode={adminPasscode}
+ *   islevel={userLevel}
+ *   eventType="video"
+ * />
+ * ```
  *
- * function App() {
- *   return (
- *     <MenuModal
- *       backgroundColor='#83c0e9'
- *       isVisible={true}
- *       onClose={() => console.log('Modal closed')}
- *       customButtons={[
- *         {
- *           action: () => console.log('Button pressed'),
- *           show: true,
- *           backgroundColor: '#4CAF50',
- *           icon: 'check-circle',
- *           text: 'Confirm',
- *         },
- *       ]}
- *       shareButtons={true}
- *       position='bottomRight'
- *       roomName='MeetingRoom123'
- *       adminPasscode='123456'
- *       islevel='2'
- *       eventType='video'
- *       localLink='http://localhost:3000'
- *     />
- *   );
- * }
+ * @example Custom action buttons and dark theme styling.
+ * ```tsx
+ * <MenuModal
+ *   isVisible
+ *   onClose={toggleMenu}
+ *   roomName="DesignSync"
+ *   adminPasscode="742915"
+ *   islevel="2"
+ *   eventType="hybrid"
+ *   backgroundColor="#101826"
+ *   style={{ borderRadius: 24 }}
+ *   customButtons={[
+ *     {
+ *       text: 'End Meeting',
+ *       icon: 'power-off',
+ *       show: true,
+ *       backgroundColor: '#ff5a5f',
+ *       action: handleEndMeeting,
+ *     },
+ *   ]}
+ * />
+ * ```
  *
- * export default App;
+ * @example Advanced UI override with custom container.
+ * ```tsx
+ * <MenuModal
+ *   isVisible={open}
+ *   onClose={close}
+ *   roomName={roomId}
+ *   adminPasscode={passcode}
+ *   islevel="1"
+ *   eventType="broadcast"
+ *   renderContainer={({ defaultContainer }) => (
+ *     <AnimatedPresence>{defaultContainer}</AnimatedPresence>
+ *   )}
+ * />
  * ```
  */
 
@@ -135,6 +157,9 @@ const MenuModal: React.FC<MenuModalOptions> = ({
   islevel,
   eventType,
   localLink,
+  style,
+  renderContent,
+  renderContainer,
 }) => {
   const [modalWidth, setModalWidth] = useState<number>(
     0.7 * Dimensions.get('window').width,
@@ -158,7 +183,63 @@ const MenuModal: React.FC<MenuModalOptions> = ({
     };
   }, []);
 
-  return (
+  const dimensions = { width: modalWidth, height: 0 };
+
+  const defaultContent = (
+    <>
+      {/* Header */}
+      <View style={styles.modalHeader}>
+        <Text style={styles.modalTitle}>
+          <FontAwesome5 name="bars" style={styles.icon} /> Menu
+        </Text>
+        <Pressable
+          onPress={onClose}
+          style={styles.closeButton}
+          accessibilityRole="button"
+          accessibilityLabel="Close Menu Modal"
+        >
+          <FontAwesome5 name="times" style={styles.icon} />
+        </Pressable>
+      </View>
+
+      {/* Divider */}
+      <View style={styles.hr} />
+
+      <View style={styles.modalBody}>
+        <ScrollView style={styles.scrollView}>
+          <View style={styles.listGroup}>
+            <CustomButtons buttons={customButtons} />
+
+            {/* Separator */}
+            <View style={styles.separator} />
+
+            {/* Meeting Passcode - Visible only for level 2 users */}
+            {islevel === '2' && (
+              <MeetingPasscodeComponent meetingPasscode={adminPasscode} />
+            )}
+
+            {/* Meeting ID */}
+            <MeetingIdComponent meetingID={roomName} />
+
+            {/* Share Buttons */}
+            {shareButtons && (
+              <ShareButtonsComponent
+                meetingID={roomName}
+                eventType={eventType}
+                localLink={localLink}
+              />
+            )}
+          </View>
+        </ScrollView>
+      </View>
+    </>
+  );
+
+  const content = renderContent
+    ? renderContent({ defaultContent, dimensions })
+    : defaultContent;
+
+  const defaultContainer = (
     <Modal
       transparent
       animationType="fade"
@@ -167,57 +248,21 @@ const MenuModal: React.FC<MenuModalOptions> = ({
     >
       <View style={[styles.modalContainer, getModalPosition({ position })]}>
         <View
-          style={[styles.modalContent, { backgroundColor, width: modalWidth }]}
+          style={[
+            styles.modalContent,
+            { backgroundColor, width: modalWidth },
+            style,
+          ]}
         >
-          {/* Header */}
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>
-              <FontAwesome5 name="bars" style={styles.icon} /> Menu
-            </Text>
-            <Pressable
-              onPress={onClose}
-              style={styles.closeButton}
-              accessibilityRole="button"
-              accessibilityLabel="Close Menu Modal"
-            >
-              <FontAwesome5 name="times" style={styles.icon} />
-            </Pressable>
-          </View>
-
-          {/* Divider */}
-          <View style={styles.hr} />
-
-          <View style={styles.modalBody}>
-            <ScrollView style={styles.scrollView}>
-              <View style={styles.listGroup}>
-                <CustomButtons buttons={customButtons} />
-
-                {/* Separator */}
-                <View style={styles.separator} />
-
-                {/* Meeting Passcode - Visible only for level 2 users */}
-                {islevel === '2' && (
-                  <MeetingPasscodeComponent meetingPasscode={adminPasscode} />
-                )}
-
-                {/* Meeting ID */}
-                <MeetingIdComponent meetingID={roomName} />
-
-                {/* Share Buttons */}
-                {shareButtons && (
-                  <ShareButtonsComponent
-                    meetingID={roomName}
-                    eventType={eventType}
-                    localLink={localLink}
-                  />
-                )}
-              </View>
-            </ScrollView>
-          </View>
+          {content}
         </View>
       </View>
     </Modal>
   );
+
+  return renderContainer
+    ? renderContainer({ defaultContainer, dimensions })
+    : defaultContainer;
 };
 
 export default MenuModal;

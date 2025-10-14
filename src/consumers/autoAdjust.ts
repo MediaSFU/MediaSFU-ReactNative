@@ -19,9 +19,9 @@ export type AutoAdjustType = (options: AutoAdjustOptions) => Promise<number[]>;
  * @param {string} options.eventType - The type of event (e.g., 'broadcast', 'chat', 'conference').
  * @param {boolean} options.shareScreenStarted - Indicates if screen sharing has started.
  * @param {boolean} options.shared - Indicates if something is shared.
- * 
+ *
  * @returns {Promise<number[]>} A promise that resolves to an array containing the adjusted values.
- * 
+ *
  * @example
  * import { autoAdjust } from 'mediasfu-reactnative';
  *
@@ -31,7 +31,7 @@ export type AutoAdjustType = (options: AutoAdjustOptions) => Promise<number[]>;
  *   shareScreenStarted: false,
  *   shared: false,
  * };
- * 
+ *
  * autoAdjust(options)
  *   .then(values => {
  *     console.log('Adjusted values:', values);

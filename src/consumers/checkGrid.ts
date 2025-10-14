@@ -21,7 +21,7 @@ export type CheckGridType = (options: CheckGridOptions) => Promise<[boolean, num
  * - `remainingVideos` (number): The number of remaining videos.
  * - `actualRows` (number): The actual number of rows.
  * - `lastrowcols` (number): The number of columns in the last row.
- * 
+ *
  * If an error occurs, it logs the error to the console.
  *
  * @example
@@ -30,7 +30,7 @@ export type CheckGridType = (options: CheckGridOptions) => Promise<[boolean, num
  *   cols: 4,
  *   actives: 10,
  * };
- * 
+ *
  * checkGrid(options)
  *   .then(result => {
  *     console.log('Grid check result:', result);

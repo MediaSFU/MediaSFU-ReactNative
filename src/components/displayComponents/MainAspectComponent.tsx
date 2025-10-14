@@ -6,61 +6,61 @@ import {
   StyleSheet,
   Dimensions,
   ScaledSize,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 
 /**
  * Interface defining the props for the MainAspectComponent.
  */
+/**
+ * Options for rendering `MainAspectComponent`.
+ *
+ * @interface MainAspectComponentOptions
+ *
+ * **Content:**
+ * @property {React.ReactNode} children Elements rendered inside the aspect container.
+ *
+ * **Appearance:**
+ * @property {string} [backgroundColor='transparent'] Background color for the container.
+ * @property {StyleProp<ViewStyle>} [style] Additional style overrides for the wrapper.
+ *
+ * **Sizing:**
+ * @property {boolean} [showControls=true] Adjusts vertical sizing when control bars are visible.
+ * @property {number} [containerWidthFraction=1] Fraction of window width used as the container width.
+ * @property {number} [containerHeightFraction=1] Fraction of window height used as the container height.
+ * @property {number} [defaultFraction=0.94] Multiplier applied to height when controls are visible.
+ *
+ * **Responsive Flags:**
+ * @property {(isWide: boolean) => void} updateIsWideScreen Callback invoked when the layout represents a wide screen.
+ * @property {(isMedium: boolean) => void} updateIsMediumScreen Callback invoked for medium screen threshold.
+ * @property {(isSmall: boolean) => void} updateIsSmallScreen Callback invoked for small screen threshold.
+ *
+ * **Advanced Render Overrides:**
+ * @property {(options: { defaultContent: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContent]
+ * Customize the child layout within the container.
+ * @property {(options: { defaultContainer: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContainer]
+ * Replace the outer container element.
+ */
 export interface MainAspectComponentOptions {
-  /**
-   * The background color of the component.
-   * @default 'transparent'
-   */
   backgroundColor?: string;
-
-  /**
-   * The child elements to be rendered inside the component.
-   */
   children: React.ReactNode;
-
-  /**
-   * Flag to determine if controls are shown, affecting the height calculation.
-   * @default true
-   */
   showControls?: boolean;
-
-  /**
-   * Fraction of the window width to be used for the container's width.
-   * @default 1
-   */
   containerWidthFraction?: number;
-
-  /**
-   * Fraction of the window height to be used for the container's height.
-   * @default 1
-   */
   containerHeightFraction?: number;
-
-  /**
-   * Default fraction to adjust the height when controls are shown.
-   * @default 0.94
-   */
   defaultFraction?: number;
-
-  /**
-   * Callback function to update the wide screen state.
-   */
   updateIsWideScreen: (isWide: boolean) => void;
-
-  /**
-   * Callback function to update the medium screen state.
-   */
   updateIsMediumScreen: (isMedium: boolean) => void;
-
-  /**
-   * Callback function to update the small screen state.
-   */
   updateIsSmallScreen: (isSmall: boolean) => void;
+  style?: StyleProp<ViewStyle>;
+  renderContent?: (options: {
+    defaultContent: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
+  renderContainer?: (options: {
+    defaultContainer: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
 }
 
 export type MainAspectComponentType = (
@@ -68,51 +68,80 @@ export type MainAspectComponentType = (
 ) => JSX.Element;
 
 /**
- * MainAspectComponent dynamically adjusts its dimensions based on window size and user-defined fractions, 
- * updating screen size states (wide, medium, small) based on container width.
+ * MainAspectComponent tracks responsive breakpoints and adjusts container dimensions relative to the viewport, providing callbacks
+ * for wide/medium/small determinations. Override hooks let consumers reshape either the children or the wrapper entirely.
  *
- * This component supports responsive layouts by adjusting its height and width based on fractions of the window size.
- * It also provides callbacks to update screen size states and toggles dimensions based on control visibility.
+ * ### Key Features
+ * - Dynamically tracks viewport size and fires breakpoint callbacks
+ * - Adjusts container height based on control visibility
+ * - Supports fractional sizing for flexible layouts
+ * - Re-renders on window dimension changes
+ * - Provides screen size callbacks (wide/medium/small)
  *
- * @component
- * @param {MainAspectComponentOptions} props - Properties for configuring the MainAspectComponent.
- * @param {string} [props.backgroundColor='transparent'] - Background color of the component.
- * @param {React.ReactNode} props.children - Elements to render inside the component.
- * @param {boolean} [props.showControls=true] - Toggles height adjustment when controls are visible.
- * @param {number} [props.containerWidthFraction=1] - Fraction of the window width for container width.
- * @param {number} [props.containerHeightFraction=1] - Fraction of the window height for container height.
- * @param {number} [props.defaultFraction=0.94] - Default height adjustment fraction when controls are shown.
- * @param {Function} props.updateIsWideScreen - Callback to set wide screen state.
- * @param {Function} props.updateIsMediumScreen - Callback to set medium screen state.
- * @param {Function} props.updateIsSmallScreen - Callback to set small screen state.
+ * ### Breakpoint Thresholds
+ * - Wide screen: ≥ 768px width
+ * - Medium screen: 576px–767px width
+ * - Small screen: < 576px width
  *
- * @returns {JSX.Element} The MainAspectComponent with responsive dimensions and background.
+ * ### Accessibility
+ * - Container provides structural grouping
+ * - Children maintain their accessibility properties
  *
  * @example
  * ```tsx
- * import React from 'react';
- * import { MainAspectComponent } from 'mediasfu-reactnative';
+ * // Basic responsive main area
+ * <MainAspectComponent
+ *   backgroundColor="#000"
+ *   showControls
+ *   updateIsWideScreen={(isWide) => setIsWideScreen(isWide)}
+ *   updateIsMediumScreen={(isMedium) => setIsMediumScreen(isMedium)}
+ *   updateIsSmallScreen={(isSmall) => setIsSmallScreen(isSmall)}
+ * >
+ *   <VideoGridContainer />
+ * </MainAspectComponent>
+ * ```
  *
- * function App() {
- *   return (
- *     <MainAspectComponent
- *       backgroundColor="lightgray"
- *       containerWidthFraction={0.8}
- *       containerHeightFraction={0.8}
- *       showControls={true}
- *       updateIsWideScreen={(isWide) => console.log("Wide screen:", isWide)}
- *       updateIsMediumScreen={(isMedium) => console.log("Medium screen:", isMedium)}
- *       updateIsSmallScreen={(isSmall) => console.log("Small screen:", isSmall)}
+ * @example
+ * ```tsx
+ * // Custom fractions with hidden controls
+ * <MainAspectComponent
+ *   backgroundColor="#1a1a1a"
+ *   showControls={false}
+ *   containerWidthFraction={0.9}
+ *   containerHeightFraction={0.85}
+ *   defaultFraction={0.95}
+ *   updateIsWideScreen={handleWideScreen}
+ *   updateIsMediumScreen={handleMediumScreen}
+ *   updateIsSmallScreen={handleSmallScreen}
+ *   style={{ borderRadius: 12, overflow: 'hidden' }}
+ * >
+ *   <StageView participants={stageParticipants} />
+ * </MainAspectComponent>
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // With animated container
+ * <MainAspectComponent
+ *   backgroundColor="transparent"
+ *   updateIsWideScreen={setWideScreen}
+ *   updateIsMediumScreen={setMediumScreen}
+ *   updateIsSmallScreen={setSmallScreen}
+ *   renderContainer={({ defaultContainer, dimensions }) => (
+ *     <Animated.View
+ *       style={{
+ *         transform: [{ scale: scaleAnim }],
+ *         opacity: opacityAnim,
+ *       }}
  *     >
- *       <Text>Responsive Component</Text>
- *     </MainAspectComponent>
- *   );
- * }
- *
- * export default App;
+ *       {defaultContainer}
+ *     </Animated.View>
+ *   )}
+ * >
+ *   <PresentationView />
+ * </MainAspectComponent>
  * ```
  */
-
 const MainAspectComponent: React.FC<MainAspectComponentOptions> = ({
   backgroundColor = 'transparent',
   children,
@@ -123,6 +152,9 @@ const MainAspectComponent: React.FC<MainAspectComponentOptions> = ({
   updateIsWideScreen,
   updateIsMediumScreen,
   updateIsSmallScreen,
+  style,
+  renderContent,
+  renderContainer,
 }) => {
   const [aspectStyles, setAspectStyles] = useState<{
     height: number;
@@ -197,7 +229,17 @@ const MainAspectComponent: React.FC<MainAspectComponentOptions> = ({
     updateIsSmallScreen,
   ]);
 
-  return (
+  const dimensions = {
+    width: aspectStyles.width,
+    height: aspectStyles.height,
+  };
+
+  const defaultContent = <>{children}</>;
+  const content = renderContent
+    ? renderContent({ defaultContent, dimensions })
+    : defaultContent;
+
+  const defaultContainer = (
     <View
       style={[
         styles.aspectContainer,
@@ -206,11 +248,16 @@ const MainAspectComponent: React.FC<MainAspectComponentOptions> = ({
           height: aspectStyles.height,
           width: aspectStyles.width,
         },
+        style,
       ]}
     >
-      {children}
+      {content}
     </View>
   );
+
+  return renderContainer
+    ? renderContainer({ defaultContainer, dimensions })
+    : defaultContainer;
 };
 
 export default MainAspectComponent;

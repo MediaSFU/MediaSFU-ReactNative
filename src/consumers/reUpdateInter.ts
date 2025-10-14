@@ -49,7 +49,7 @@ export type ReUpdateInterType = (options: ReUpdateInterOptions) => Promise<void>
 
 /**
  * Updates the interaction state based on the provided options and parameters.
- * 
+ *
  * @param {ReUpdateInterOptions} options - The options for updating the interaction.
  * @param {string} options.name - The name of the participant.
  * @param {boolean} [options.add=false] - Whether to add the participant to the interaction.
@@ -82,7 +82,7 @@ export type ReUpdateInterType = (options: ReUpdateInterOptions) => Promise<void>
  * @param {Function} options.parameters.onScreenChanges - Function to handle screen changes.
  * @param {Function} options.parameters.reorderStreams - Function to reorder streams.
  * @param {Function} options.parameters.changeVids - Function to change videos.
- * 
+ *
  * @returns {Promise<void>} A promise that resolves when the interaction update is complete.
  *
  * @throws {Error} Throws an error if there is an issue during the updating process.

@@ -23,54 +23,54 @@ export interface ComponentSizes {
 /**
  * Interface defining the props for the MainScreenComponent.
  */
+/**
+ * Options for rendering `MainScreenComponent`.
+ *
+ * @interface MainScreenComponentOptions
+ *
+ * **Content:**
+ * @property {React.ReactNode} children Child layout rendered within the screen container.
+ *
+ * **Layout:**
+ * @property {number} mainSize Percentage (0-100) assigned to the main component when stacking.
+ * @property {boolean} doStack Whether to split the screen between main/other regions.
+ * @property {ComponentSizes} componentSizes Cached dimensions for main and secondary regions.
+ * @property {(sizes: ComponentSizes) => void} updateComponentSizes Callback invoked when dimensions are recalculated.
+ *
+ * **Sizing:**
+ * @property {number} [containerWidthFraction=1] Fraction of window width consumed by the container.
+ * @property {number} [containerHeightFraction=1] Fraction of window height consumed by the container.
+ * @property {number} [defaultFraction=0.94] Height multiplier when controls are visible.
+ * @property {boolean} showControls Whether control surfaces are visible, affecting height.
+ *
+ * **Appearance:**
+ * @property {StyleProp<ViewStyle>} [style] Additional styles for the screen container.
+ *
+ * **Advanced Render Overrides:**
+ * @property {(options: { defaultContent: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContent]
+ * Customize the rendered children with computed dimensions.
+ * @property {(options: { defaultContainer: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContainer]
+ * Replace the entire container wrapper.
+ */
 export interface MainScreenComponentOptions {
-  /**
-   * The child components to be rendered inside the main screen.
-   */
   children: React.ReactNode;
-
-  /**
-   * The percentage size of the main component when stacking is enabled.
-   */
   mainSize: number;
-
-  /**
-   * Flag indicating whether the components should be stacked.
-   */
   doStack: boolean;
-
-  /**
-   * Fraction of the window width to be used for the container's width.
-   * @default 1
-   */
   containerWidthFraction?: number;
-
-  /**
-   * Fraction of the window height to be used for the container's height.
-   * @default 1
-   */
   containerHeightFraction?: number;
-
-  /**
-   * Callback function to update the sizes of the components.
-   */
   updateComponentSizes: (sizes: ComponentSizes) => void;
-
-  /**
-   * Default fraction to adjust the height when controls are shown.
-   * @default 0.94
-   */
   defaultFraction?: number;
-
-  /**
-   * Flag indicating whether controls are shown, affecting the container height.
-   */
   showControls: boolean;
-
-  /**
-   * An object containing the current sizes of the components.
-   */
   componentSizes: ComponentSizes;
+  style?: StyleProp<ViewStyle>;
+  renderContent?: (options: {
+    defaultContent: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
+  renderContainer?: (options: {
+    defaultContainer: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
 }
 
 /**
@@ -112,59 +112,83 @@ export type MainScreenComponentType = (
 ) => JSX.Element;
 
 /**
- * MainScreenComponent dynamically adjusts the layout and dimensions of its child components based on window size,
- * stacking mode, and specified width/height fractions, supporting flexible and responsive screen layouts.
+ * MainScreenComponent calculates media tile dimensions for the main and secondary regions and applies them to children that
+ * accept `mainSize` and `isWideScreen` props. Override hooks provide full control over content and container rendering.
  *
- * This component determines the appropriate dimensions for main and secondary components based on stacking mode, screen width,
- * and main component size, and can conditionally arrange child components in a column or row based on screen width.
+ * ### Key Features
+ * - Dynamically calculates main/other region sizes based on `mainSize` percentage
+ * - Automatically determines wide screen status (≥768px or aspect > 1.5:1)
+ * - Passes dimension props to compatible children (mainSize, isWideScreen)
+ * - Re-renders on window dimension changes
+ * - Supports stacking or side-by-side layout modes
  *
- * @component
- * @param {MainScreenComponentOptions} props - Configuration options for MainScreenComponent.
- * @param {React.ReactNode} props.children - Child components to render inside the screen container.
- * @param {number} props.mainSize - Percentage size of the main component when stacking.
- * @param {boolean} props.doStack - Flag indicating if components should be stacked vertically or horizontally.
- * @param {number} [props.containerWidthFraction=1] - Fraction of window width for container width.
- * @param {number} [props.containerHeightFraction=1] - Fraction of window height for container height.
- * @param {Function} props.updateComponentSizes - Callback to update sizes of main and secondary components.
- * @param {number} [props.defaultFraction=0.94] - Adjustment fraction for height when controls are visible.
- * @param {boolean} props.showControls - Flag indicating if controls are shown, affecting height calculation.
- * @param {ComponentSizes} props.componentSizes - Current sizes of the components (main and secondary).
+ * ### Layout Modes
+ * - **Stack mode** (`doStack=true`): Splits screen between main and secondary regions
+ * - **Single mode** (`doStack=false`): Allocates full screen to main region
  *
- * @returns {JSX.Element} The MainScreenComponent with dynamically calculated dimensions and layout.
+ * ### Accessibility
+ * - Container provides structural grouping for main regions
+ * - Children should include appropriate accessibility labels
  *
  * @example
  * ```tsx
- * import React, { useState } from 'react';
- * import { MainScreenComponent } from 'mediasfu-reactnative';
+ * // Basic split screen layout
+ * <MainScreenComponent
+ *   mainSize={70}
+ *   doStack
+ *   showControls
+ *   componentSizes={componentSizes}
+ *   updateComponentSizes={setComponentSizes}
+ * >
+ *   <MainGridComponent mainSize={70} />
+ *   <OtherGridComponent mainSize={70} />
+ * </MainScreenComponent>
+ * ```
  *
- * function App() {
- *   const [componentSizes, setComponentSizes] = useState<ComponentSizes>({
- *     mainHeight: 0,
- *     otherHeight: 0,
- *     mainWidth: 0,
- *     otherWidth: 0,
- *   });
+ * @example
+ * ```tsx
+ * // Full screen main view
+ * <MainScreenComponent
+ *   mainSize={100}
+ *   doStack={false}
+ *   showControls={false}
+ *   containerWidthFraction={0.95}
+ *   containerHeightFraction={0.9}
+ *   defaultFraction={1}
+ *   componentSizes={sizes}
+ *   updateComponentSizes={handleSizeUpdate}
+ *   style={{ backgroundColor: '#000' }}
+ * >
+ *   <PresentationView />
+ * </MainScreenComponent>
+ * ```
  *
- *   return (
- *     <MainScreenComponent
- *       mainSize={70}
- *       doStack={true}
- *       containerWidthFraction={1}
- *       containerHeightFraction={1}
- *       updateComponentSizes={setComponentSizes}
- *       showControls={true}
- *       componentSizes={componentSizes}
+ * @example
+ * ```tsx
+ * // With custom render override
+ * <MainScreenComponent
+ *   mainSize={60}
+ *   doStack
+ *   showControls
+ *   componentSizes={sizes}
+ *   updateComponentSizes={updateSizes}
+ *   renderContainer={({ defaultContainer, dimensions }) => (
+ *     <Animated.View
+ *       style={{
+ *         transform: [{ translateY: slideAnim }],
+ *         width: dimensions.width,
+ *         height: dimensions.height,
+ *       }}
  *     >
- *       <MainContent />
- *       <SecondaryContent />
- *     </MainScreenComponent>
- *   );
- * }
- *
- * export default App;
+ *       {defaultContainer}
+ *     </Animated.View>
+ *   )}
+ * >
+ *   <MainGrid />
+ *   <AudienceGrid />
+ * </MainScreenComponent>
  * ```
  */
-
 const MainScreenComponent: React.FC<MainScreenComponentOptions> = ({
   children,
   mainSize,
@@ -175,6 +199,9 @@ const MainScreenComponent: React.FC<MainScreenComponentOptions> = ({
   defaultFraction = 0.94,
   showControls,
   componentSizes,
+  style,
+  renderContent,
+  renderContainer,
 }) => {
   const { width: windowWidth, height: windowHeight }: ScaledSize = Dimensions.get('window');
 
@@ -230,17 +257,13 @@ const MainScreenComponent: React.FC<MainScreenComponentOptions> = ({
 
   }, [parentWidth, parentHeight, mainSize, doStack, isWideScreen]);
 
-  return (
-    <View
-      style={[
-        styles.screenContainer,
-        {
-          flexDirection: isWideScreen ? 'row' : 'column',
-          width: parentWidth,
-          height: parentHeight,
-        },
-      ]}
-    >
+  const dimensions = {
+    width: parentWidth,
+    height: parentHeight,
+  };
+
+  const defaultContent = (
+    <>
       {/* Render child components with updated dimensions */}
       {React.Children.map(children, (child, index) => {
         if (isResizableChild(child)) {
@@ -263,8 +286,32 @@ const MainScreenComponent: React.FC<MainScreenComponentOptions> = ({
         }
         return null;
       })}
+    </>
+  );
+
+  const content = renderContent
+    ? renderContent({ defaultContent, dimensions })
+    : defaultContent;
+
+  const defaultContainer = (
+    <View
+      style={[
+        styles.screenContainer,
+        {
+          flexDirection: isWideScreen ? 'row' : 'column',
+          width: parentWidth,
+          height: parentHeight,
+        },
+        style,
+      ]}
+    >
+      {content}
     </View>
   );
+
+  return renderContainer
+    ? renderContainer({ defaultContainer, dimensions })
+    : defaultContainer;
 };
 
 export default MainScreenComponent;

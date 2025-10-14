@@ -19,7 +19,7 @@ export type RecordPauseTimerType = (options: RecordPauseTimerOptions) => boolean
  * @param {boolean} options.canPauseResume - A flag to check if the timer can be paused or resumed.
  * @param {Function} options.showAlert - A function to show alerts.
  * @returns {boolean} A boolean value indicating if the timer can be paused or resumed.
- * 
+ *
  * @example
  * ```typescript
  * const canPause = recordPauseTimer({

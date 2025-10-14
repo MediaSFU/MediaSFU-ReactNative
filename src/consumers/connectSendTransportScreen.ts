@@ -45,7 +45,7 @@ const connectLocalSendTransportScreen = async ({
     // Find VP9 codec for local screen share
     const codec = device?.rtpCapabilities?.codecs?.find(
       (codec: { mimeType: string }) =>
-        codec.mimeType.toLowerCase() === 'video/vp9'
+        codec.mimeType.toLowerCase() === 'video/vp9',
     );
 
     // Produce local screen share data
@@ -59,7 +59,7 @@ const connectLocalSendTransportScreen = async ({
       // Update the local producer and transport objects
       updateLocalScreenProducer?.(localScreenProducer);
       updateLocalProducerTransport?.(localProducerTransport);
-    } 
+    }
   } catch (error) {
     console.error('Error connecting local screen transport:', error);
     throw error; // Re-throw to propagate the error
@@ -86,7 +86,7 @@ const connectLocalSendTransportScreen = async ({
  * @param {Function} [options.parameters.updateLocalProducerTransport] - The function to update the local producer transport object.
  * @param {Function} options.parameters.getUpdatedAllParams - The function to get updated parameters.
  * @param {Object} [options.parameters.*] - Additional parameters for future use.
- * 
+ *
  * @returns {Promise<void>} - A promise that resolves once the screen transport is successfully connected and set up.
  *
  * @throws Will throw an error if there is an issue with the connection or setup process.
@@ -139,7 +139,7 @@ export const connectSendTransportScreen: ConnectSendTransportScreenType = async 
     // Find VP9 codec for screen share
     const codec = device?.rtpCapabilities?.codecs?.find(
       (codec: { mimeType: string }) =>
-        codec.mimeType.toLowerCase() === 'video/vp9'
+        codec.mimeType.toLowerCase() === 'video/vp9',
     );
 
     // Produce screen share data using the producer transport

@@ -3,47 +3,56 @@
 import React from 'react';
 import {
   View,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 
+/**
+ * Options for rendering `AudioGrid`.
+ *
+ * @interface AudioGridOptions
+ *
+ * **Content:**
+ * @property {React.ReactNode[]} componentsToRender Children to be rendered inside the grid.
+ *
+ * **Appearance:**
+ * @property {StyleProp<ViewStyle>} [style] Additional styling for the grid container.
+ *
+ * **Advanced Render Overrides:**
+ * @property {(options: { defaultContent: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContent]
+ * Override for the rendered grid content.
+ * @property {(options: { defaultContainer: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContainer]
+ * Override for the surrounding container implementation.
+ */
 export interface AudioGridOptions {
-  componentsToRender: React.ReactNode[]; // Array of React components or elements
+  componentsToRender: React.ReactNode[];
+  style?: StyleProp<ViewStyle>;
+  renderContent?: (options: {
+    defaultContent: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
+  renderContainer?: (options: {
+    defaultContainer: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
 }
 
-export type AudioGridType = (options: AudioGridOptions) => React.ReactNode;
+export type AudioGridType = (options: AudioGridOptions) => JSX.Element;
 
 /**
- * AudioGrid component renders a grid layout of audio components or elements.
+ * AudioGrid arranges a list of audio-centric components within a simple grid wrapper. It is typically used to
+ * render collections of `AudioCard` or custom mini cards and supports override hooks for layout customization.
  *
- * This component organizes an array of audio components or elements into a flexible grid.
- *
- * @component
- * @param {AudioGridOptions} props - Properties for the AudioGrid component.
- * @param {React.ReactNode[]} props.componentsToRender - Array of React components or elements to render in the grid.
- *
- * @returns {JSX.Element} The AudioGrid component rendering a grid of audio components.
- *
- * @example
- * ```tsx
- * import React from 'react';
- * import { AudioGrid, AudioCard } from 'mediasfu-reactnative';
- *
- * function App() {
- *   const components = [
- *     <AudioCard name="Participant 1" />,
- *     <AudioCard name="Participant 2" />,
- *     <AudioCard name="Participant 3" />
- *   ];
- *
- *   return (
- *     <AudioGrid componentsToRender={components} />
- *   );
- * }
- *
- * export default App;
- * ```
+ * @param {AudioGridOptions} props Audio grid configuration.
+ * @returns {JSX.Element} Rendered audio grid container.
  */
 
-const AudioGrid: React.FC<AudioGridOptions> = ({ componentsToRender }) => {
+const AudioGrid: React.FC<AudioGridOptions> = ({
+  componentsToRender,
+  style,
+  renderContent,
+  renderContainer,
+}) => {
   /**
    * renderGrid - Renders componentsToRender array into a grid.
    * @returns {React.ReactNode[]} - An array of React components rendered in the grid.
@@ -59,9 +68,24 @@ const AudioGrid: React.FC<AudioGridOptions> = ({ componentsToRender }) => {
     return renderedComponents;
   };
 
-  return (
-    <View style={{ zIndex: 9 }}>{renderGrid()}</View>
+  const dimensions = { width: 0, height: 0 }; // AudioGrid doesn't have fixed dimensions
+
+  const defaultContent = (
+    <>
+      {renderGrid()}
+    </>
   );
+  const content = renderContent
+    ? renderContent({ defaultContent, dimensions })
+    : defaultContent;
+
+  const defaultContainer = (
+    <View style={[{ zIndex: 9 }, style]}>{content}</View>
+  );
+
+  return renderContainer
+    ? renderContainer({ defaultContainer, dimensions })
+    : defaultContainer;
 };
 
 export default AudioGrid;

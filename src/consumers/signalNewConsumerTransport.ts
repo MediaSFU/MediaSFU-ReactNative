@@ -28,17 +28,17 @@ export type SignalNewConsumerTransportType = (options: SignalNewConsumerTranspor
 
 /**
  * Signals the creation of a new consumer transport.
- * 
+ *
  * @param {SignalNewConsumerTransportOptions} options - The options for signaling a new consumer transport.
  * @param {string} options.remoteProducerId - The ID of the remote producer.
  * @param {string} options.islevel - Indicates the level of the consumer.
  * @param {Socket} options.nsock - The socket instance for communication.
  * @param {SignalNewConsumerTransportParameters} options.parameters - The parameters for the transport.
- * 
+ *
  * @returns {Promise<string[] | void>} A promise that resolves to an array of consuming transports or void.
- * 
+ *
  * @throws Will throw an error if the signaling process fails.
- * 
+ *
  * @example
  * const options = {
  *   remoteProducerId: 'producer-id',
@@ -54,7 +54,7 @@ export type SignalNewConsumerTransportType = (options: SignalNewConsumerTranspor
  *     getUpdatedAllParams: getUpdatedParamsFunction,
  *   },
  * };
- * 
+ *
  * signalNewConsumerTransport(options)
  *   .then(consumingTransports => {
  *     console.log('Consuming Transports:', consumingTransports);

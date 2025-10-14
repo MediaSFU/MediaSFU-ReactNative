@@ -4,7 +4,7 @@ import { Producer, ProducerCodecOptions, ProducerOptions } from 'mediasoup-clien
 import { Socket } from 'socket.io-client';
 import {
   PrepopulateUserMediaParameters, PrepopulateUserMediaType, CreateSendTransportParameters, CreateSendTransportType, ConnectSendTransportAudioParameters, ConnectSendTransportAudioType,
-   SleepType, MediaStream as MediaStreamType
+   SleepType, MediaStream as MediaStreamType,
 } from '../@types/types';
 import { MediaStream, MediaStreamTrack as MediaStreamTrackType  } from '../methods/utils/webrtc/webrtc';
 
@@ -97,14 +97,14 @@ export type StreamSuccessAudioSwitchType = (options: StreamSuccessAudioSwitchOpt
  * @param {Function} options.parameters.connectSendTransportAudio - Function to connect the send transport for audio.
  *
  * @returns {Promise<void>} A promise that resolves when the audio stream switch is complete.
- * 
+ *
  * @example
  * const options = {
  *   stream: newAudioStream, // MediaStream object containing the new audio track
  *   parameters: {
  *     audioProducer: currentAudioProducer,
  *     localAudioProducer: localAudioProducerInstance,
- *     localSocket: localSocketInstance, 
+ *     localSocket: localSocketInstance,
  *     socket: socketInstance,
  *     roomName: 'Room1',
  *     localStream: null,
@@ -134,7 +134,7 @@ export type StreamSuccessAudioSwitchType = (options: StreamSuccessAudioSwitchOpt
  *     connectSendTransportAudio: connectSendTransportAudioFunction,
  *   },
  * };
- * 
+ *
  * streamSuccessAudioSwitch(options)
  *   .then(() => {
  *     console.log('Audio stream switched successfully');

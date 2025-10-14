@@ -8,6 +8,8 @@ import {
   Pressable,
   StyleSheet,
   Dimensions,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import RNPickerSelect from 'react-native-picker-select'; // Install using: npm install react-native-picker-select
@@ -17,7 +19,27 @@ import { switchVideoAlt, SwitchVideoAltOptions, SwitchVideoAltParameters } from 
 import { getModalPosition } from '../../methods/utils/getModalPosition';
 
 /**
- * Interface defining the parameters required by the MediaSettingsModal component.
+ * Parameters for media settings state and device management.
+ *
+ * @interface MediaSettingsModalParameters
+ * @extends SwitchAudioParameters
+ * @extends SwitchVideoParameters
+ * @extends SwitchVideoAltParameters
+ *
+ * **Default Devices:**
+ * @property {string} userDefaultVideoInputDevice Currently selected video input device ID.
+ * @property {string} userDefaultAudioInputDevice Currently selected audio input device ID.
+ *
+ * **Available Devices:**
+ * @property {MediaDeviceInfo[]} videoInputs Enumerated list of camera devices.
+ * @property {MediaDeviceInfo[]} audioInputs Enumerated list of microphone devices.
+ *
+ * **Background Modal:**
+ * @property {boolean} isBackgroundModalVisible Flag indicating if the background effect modal is open.
+ * @property {(visible: boolean) => void} updateIsBackgroundModalVisible Updates the visibility of the background modal.
+ *
+ * **Utility:**
+ * @property {() => MediaSettingsModalParameters} getUpdatedAllParams Retrieves the latest parameter snapshot for downstream consumers.
  */
 export interface MediaSettingsModalParameters extends SwitchAudioParameters, SwitchVideoParameters, SwitchVideoAltParameters {
   userDefaultVideoInputDevice: string;
@@ -33,7 +55,30 @@ export interface MediaSettingsModalParameters extends SwitchAudioParameters, Swi
 }
 
 /**
- * Interface defining the options (props) for the MediaSettingsModal component.
+ * Configuration options for the `MediaSettingsModal` component.
+ *
+ * @interface MediaSettingsModalOptions
+ *
+ * **Modal Control:**
+ * @property {boolean} isMediaSettingsModalVisible Toggles visibility of the media settings modal.
+ * @property {() => void} onMediaSettingsClose Callback invoked when the modal should close.
+ *
+ * **Device Switch Handlers:**
+ * @property {(options: SwitchVideoAltOptions) => Promise<void>} [switchCameraOnPress=switchVideoAlt] Handler for flipping between device cameras.
+ * @property {(options: SwitchVideoOptions) => Promise<void>} [switchVideoOnPress=switchVideo] Handler for changing the active video input.
+ * @property {(options: SwitchAudioOptions) => Promise<void>} [switchAudioOnPress=switchAudio] Handler for changing the active audio input.
+ *
+ * **State Parameters:**
+ * @property {MediaSettingsModalParameters} parameters Current device selections and available devices.
+ *
+ * **Customization:**
+ * @property {'topRight' | 'topLeft' | 'bottomRight' | 'bottomLeft'} [position='topRight'] Modal anchoring position.
+ * @property {string} [backgroundColor='#83c0e9'] Background color of the modal surface.
+ * @property {StyleProp<ViewStyle>} [style] Additional styling applied to the modal container.
+ *
+ * **Advanced Render Overrides:**
+ * @property {(options: { defaultContent: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContent] Override for the modal content body.
+ * @property {(options: { defaultContainer: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContainer] Override for the modal container wrapper.
  */
 export interface MediaSettingsModalOptions {
   /**
@@ -80,58 +125,90 @@ export interface MediaSettingsModalOptions {
    * @default "#83c0e9"
    */
   backgroundColor?: string;
+
+  /**
+   * Optional custom style for the modal container.
+   */
+  style?: StyleProp<ViewStyle>;
+
+  /**
+   * Custom render function for modal content.
+   */
+  renderContent?: (options: {
+    defaultContent: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
+
+  /**
+   * Custom render function for the modal container.
+   */
+  renderContainer?: (options: {
+    defaultContainer: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
 }
 
 export type MediaSettingsModalType = (options: MediaSettingsModalOptions) => JSX.Element;
 
 /**
- * MediaSettingsModal provides a modal interface for users to adjust media settings, such as selecting audio and video input devices and switching cameras.
+ * MediaSettingsModal - Audio/video device selection interface.
+ *
+ * Offers participants a guided control surface for swapping microphones,
+ * cameras, and launching background effects. Designed for quick device
+ * management across desktop and mobile with override hooks for bespoke UI.
+ *
+ * **Key Features:**
+ * - Enumerates available audio and video input devices with friendly labels.
+ * - Provides camera flip support on mobile via `switchCameraOnPress`.
+ * - Integrates background effect modal visibility toggles.
+ * - Applies device switches instantly using supplied handler callbacks.
+ * - Supports modal placement at any screen corner.
+ * - Accepts additional styling through the `style` prop for brand alignment.
+ * - Exposes override hooks to replace default content or container markup.
+ * - Relies on `getUpdatedAllParams` for up-to-date device inventories.
+ *
+ * **UI Customization:**
+ * Replace via `uiOverrides.mediaSettingsModal` to deliver a tailored media
+ * settings panel while continuing to use the provided stream utilities.
+ *
+ * @component
+ * @param {MediaSettingsModalOptions} props Component properties.
+ * @returns {JSX.Element} Rendered media settings modal.
  *
  * @example
  * ```tsx
- * import React, { useState } from 'react';
- * import { MediaSettingsModal } from 'mediasfu-reactnative';
- * import { io } from 'socket.io-client';
+ * // Basic device selection workflow
+ * <MediaSettingsModal
+ *   isMediaSettingsModalVisible={visible}
+ *   onMediaSettingsClose={() => setVisible(false)}
+ *   parameters={parameters}
+ * />
+ * ```
  *
- * const socket = io('https://your-server-url.com');
- * const videoInputs = [
- *   { deviceId: 'videoDevice1', label: 'Front Camera' },
- *   { deviceId: 'videoDevice2', label: 'Back Camera' }
- * ];
- * const audioInputs = [
- *   { deviceId: 'audioDevice1', label: 'Built-in Microphone' },
- *   { deviceId: 'audioDevice2', label: 'External Microphone' }
- * ];
+ * @example
+ * ```tsx
+ * // Custom switch handlers
+ * <MediaSettingsModal
+ *   isMediaSettingsModalVisible={isOpen}
+ *   onMediaSettingsClose={closeModal}
+ *   parameters={params}
+ *   switchCameraOnPress={handleCameraSwitch}
+ *   switchVideoOnPress={handleVideoSwitch}
+ *   switchAudioOnPress={handleAudioSwitch}
+ * />
+ * ```
  *
- * function App() {
- *   const [isModalVisible, setModalVisible] = useState(true);
- *
- *   return (
- *     <View>
- *       <Button title="Open Media Settings" onPress={() => setModalVisible(true)} />
- *       <MediaSettingsModal
- *         isMediaSettingsModalVisible={isModalVisible}
- *         onMediaSettingsClose={() => setModalVisible(false)}
- *         position="bottomLeft"
- *         backgroundColor="#f0f0f0"
- *         parameters={{
- *           userDefaultVideoInputDevice: 'videoDevice1',
- *           userDefaultAudioInputDevice: 'audioDevice1',
- *           videoInputs,
- *           audioInputs,
- *           getUpdatedAllParams: () => ({
- *             userDefaultVideoInputDevice: 'videoDevice1',
- *             userDefaultAudioInputDevice: 'audioDevice1',
- *             videoInputs,
- *             audioInputs,
- *           }),
- *         }}
- *       />
- *     </View>
- *   );
- * }
- *
- * export default App;
+ * @example
+ * ```tsx
+ * // uiOverrides integration for branded dialog
+ * const MediaSettings = withOverride(uiOverrides.mediaSettingsModal, MediaSettingsModal);
+ * <MediaSettings
+ *   isMediaSettingsModalVisible={open}
+ *   onMediaSettingsClose={close}
+ *   parameters={params}
+ *   backgroundColor="#1a1a1a"
+ *   style={{ borderRadius: 24 }}
+ * />
  * ```
  */
 
@@ -144,6 +221,9 @@ const MediaSettingsModal: React.FC<MediaSettingsModalOptions> = ({
   parameters,
   position = 'topRight',
   backgroundColor = '#83c0e9',
+  style,
+  renderContent,
+  renderContainer,
 }) => {
   const {
     userDefaultVideoInputDevice,
@@ -229,7 +309,114 @@ const MediaSettingsModal: React.FC<MediaSettingsModalOptions> = ({
   //   updateIsBackgroundModalVisible(!isBackgroundModalVisible);
   // };
 
-  return (
+  const dimensions = { width: modalWidth, height: 0 };
+
+  const defaultContent = (
+    <>
+      {/* Header */}
+      <View style={styles.modalHeader}>
+        <Text style={styles.modalTitle}>Media Settings</Text>
+        <Pressable
+          onPress={onMediaSettingsClose}
+          style={styles.btnCloseMediaSettings}
+          accessibilityRole="button"
+          accessibilityLabel="Close Media Settings Modal"
+        >
+          <FontAwesome5 name="times" style={styles.icon} />
+        </Pressable>
+      </View>
+
+      {/* Divider */}
+      <View style={styles.hr} />
+
+      {/* Body */}
+      <View style={styles.modalBody}>
+        {/* Select Camera */}
+        <View style={styles.formGroup}>
+          <Text style={styles.label}>
+            <FontAwesome5 name="camera" size={16} color="black" />
+            Select Camera:
+          </Text>
+          <RNPickerSelect
+            onValueChange={(value: string) => handleVideoSwitch(value)}
+            items={videoInputs.map((input) => ({
+              label: input.label || `Camera ${input.deviceId}`,
+              value: input.deviceId,
+            }))}
+            value={selectedVideoInput || ''}
+            style={pickerSelectStyles}
+            placeholder={{ label: 'Select a camera...', value: '' }}
+            useNativeAndroidPickerStyle={false}
+          />
+        </View>
+
+        {/* Separator */}
+        <View style={styles.sep} />
+
+        {/* Select Microphone */}
+        <View style={styles.formGroup}>
+          <Text style={styles.label}>
+            <FontAwesome5 name="microphone" size={16} color="black" />
+            Select Microphone:
+          </Text>
+          <RNPickerSelect
+            onValueChange={(value: string) => handleAudioSwitch(value)}
+            items={audioInputs.map((input) => ({
+              label: input.label || `Microphone ${input.deviceId}`,
+              value: input.deviceId,
+            }))}
+            value={selectedAudioInput || ''}
+            style={pickerSelectStyles}
+            placeholder={{ label: 'Select a microphone...', value: '' }}
+            useNativeAndroidPickerStyle={false}
+          />
+        </View>
+
+        {/* Separator */}
+        <View style={styles.sep} />
+
+        {/* Switch Camera Button */}
+        <View style={styles.formGroup}>
+          <Pressable
+            onPress={handleSwitchCamera}
+            style={styles.switchCameraButton}
+            accessibilityRole="button"
+            accessibilityLabel="Switch Camera"
+          >
+            <Text style={styles.switchCameraButtonText}>
+              <FontAwesome5 name="sync-alt" size={16} color="black" />
+              Switch Camera
+            </Text>
+          </Pressable>
+        </View>
+
+        {/* Separator */}
+        {/* <View style={styles.sep} /> */}
+
+        {/* Virtual Background Button  - Not implemented */}
+        {/* <View style={styles.formGroup}>
+          <Pressable
+            onPress={toggleVirtualBackground}
+            style={styles.virtualBackgroundButton}
+            accessibilityRole="button"
+            accessibilityLabel="Toggle Virtual Background"
+          >
+            <Text style={styles.virtualBackgroundButtonText}>
+              <FontAwesome5 name="photo-video" size={16} color="black" />
+              {' '}
+              Virtual Background
+            </Text>
+          </Pressable>
+        </View> */}
+      </View>
+    </>
+  );
+
+  const content = renderContent
+    ? renderContent({ defaultContent, dimensions })
+    : defaultContent;
+
+  const defaultContainer = (
     <Modal
       transparent
       animationType="fade"
@@ -237,107 +424,16 @@ const MediaSettingsModal: React.FC<MediaSettingsModalOptions> = ({
       onRequestClose={onMediaSettingsClose}
     >
       <View style={[styles.modalContainer, getModalPosition({ position })]}>
-        <View style={[styles.modalContent, { backgroundColor, width: modalWidth }]}>
-          {/* Header */}
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Media Settings</Text>
-            <Pressable
-              onPress={onMediaSettingsClose}
-              style={styles.btnCloseMediaSettings}
-              accessibilityRole="button"
-              accessibilityLabel="Close Media Settings Modal"
-            >
-              <FontAwesome5 name="times" style={styles.icon} />
-            </Pressable>
-          </View>
-
-          {/* Divider */}
-          <View style={styles.hr} />
-
-          {/* Body */}
-          <View style={styles.modalBody}>
-            {/* Select Camera */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>
-                <FontAwesome5 name="camera" size={16} color="black" />
-                Select Camera:
-              </Text>
-              <RNPickerSelect
-                onValueChange={(value: string) => handleVideoSwitch(value)}
-                items={videoInputs.map((input) => ({
-                  label: input.label || `Camera ${input.deviceId}`,
-                  value: input.deviceId,
-                }))}
-                value={selectedVideoInput || ''}
-                style={pickerSelectStyles}
-                placeholder={{ label: 'Select a camera...', value: '' }}
-                useNativeAndroidPickerStyle={false}
-              />
-            </View>
-
-            {/* Separator */}
-            <View style={styles.sep} />
-
-            {/* Select Microphone */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>
-                <FontAwesome5 name="microphone" size={16} color="black" />
-                Select Microphone:
-              </Text>
-              <RNPickerSelect
-                onValueChange={(value: string) => handleAudioSwitch(value)}
-                items={audioInputs.map((input) => ({
-                  label: input.label || `Microphone ${input.deviceId}`,
-                  value: input.deviceId,
-                }))}
-                value={selectedAudioInput || ''}
-                style={pickerSelectStyles}
-                placeholder={{ label: 'Select a microphone...', value: '' }}
-                useNativeAndroidPickerStyle={false}
-              />
-            </View>
-
-            {/* Separator */}
-            <View style={styles.sep} />
-
-            {/* Switch Camera Button */}
-            <View style={styles.formGroup}>
-              <Pressable
-                onPress={handleSwitchCamera}
-                style={styles.switchCameraButton}
-                accessibilityRole="button"
-                accessibilityLabel="Switch Camera"
-              >
-                <Text style={styles.switchCameraButtonText}>
-                  <FontAwesome5 name="sync-alt" size={16} color="black" />
-                  Switch Camera
-                </Text>
-              </Pressable>
-            </View>
-
-            {/* Separator */}
-            {/* <View style={styles.sep} /> */}
-
-            {/* Virtual Background Button  - Not implemented */}
-            {/* <View style={styles.formGroup}>
-              <Pressable
-                onPress={toggleVirtualBackground}
-                style={styles.virtualBackgroundButton}
-                accessibilityRole="button"
-                accessibilityLabel="Toggle Virtual Background"
-              >
-                <Text style={styles.virtualBackgroundButtonText}>
-                  <FontAwesome5 name="photo-video" size={16} color="black" />
-                  {' '}
-                  Virtual Background
-                </Text>
-              </Pressable>
-            </View> */}
-          </View>
+        <View style={[styles.modalContent, { backgroundColor, width: modalWidth }, style]}>
+          {content}
         </View>
       </View>
     </Modal>
   );
+
+  return renderContainer
+    ? (renderContainer({ defaultContainer, dimensions }) as JSX.Element)
+    : defaultContainer;
 };
 
 export default MediaSettingsModal;

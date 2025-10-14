@@ -36,11 +36,11 @@ export type UpdateConsumingDomainsType = (options: UpdateConsumingDomainsOptions
  * @param {string} options.apiKey - API key for authorization.
  * @param {string} options.apiToken - API token for secure access.
  * @param {UpdateConsumingDomainsParameters} options.parameters - Additional parameters required for updating consuming domains.
- * 
+ *
  * @returns {Promise<void>} Resolves when consuming domains have been successfully updated.
- * 
+ *
  * @throws Logs an error if an issue occurs during the update process.
- * 
+ *
  * @example
  * ```typescript
  * const options = {
@@ -57,7 +57,7 @@ export type UpdateConsumingDomainsType = (options: UpdateConsumingDomainsOptions
  *     getUpdatedAllParams: () => ({ consume_sockets: [{ id: "socket1", isConnected: true }] }),
  *   },
  * };
- * 
+ *
  * await updateConsumingDomains(options);
  * ```
  */

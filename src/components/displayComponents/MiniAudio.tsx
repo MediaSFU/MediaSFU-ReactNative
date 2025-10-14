@@ -22,95 +22,53 @@ import {
 type OverlayPosition = 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
 
 /**
- * Interface defining the props for the MiniAudio component.
+ * Options for rendering a draggable `MiniAudio` component.
+ *
+ * @interface MiniAudioOptions
+ *
+ * **Appearance:**
+ * @property {boolean} [visible=true] Determines if the component is visible.
+ * @property {StyleProp<ViewStyle>} [customStyle] Custom styles for the component container.
+ * @property {string} name The name to display on the audio player.
+ * @property {StyleProp<TextStyle>} [nameTextStyling] Custom styles for the name text.
+ * @property {string} [textColor='white'] The color of the text.
+ * @property {string} imageSource The source URI for the background image.
+ * @property {boolean} [roundedImage=false] Flag to determine if the background image should be rounded.
+ * @property {StyleProp<ImageStyle>} [imageStyle] Custom styles for the background image.
+ *
+ * **Waveform & Overlay:**
+ * @property {boolean} [showWaveform=false] Flag to show or hide the waveform animation.
+ * @property {OverlayPosition} [overlayPosition='topLeft'] The position of the overlay on the screen.
+ * @property {string} [barColor='red'] The color of the waveform bars.
  */
 export interface MiniAudioOptions {
-  /**
-   * Determines if the component is visible.
-   * @default true
-   */
   visible?: boolean;
-
-  /**
-   * Custom styles for the component container.
-   */
   customStyle?: StyleProp<ViewStyle>;
-
-  /**
-   * The name to display on the audio player.
-   */
   name: string;
-
-  /**
-   * Flag to show or hide the waveform animation.
-   * @default false
-   */
   showWaveform?: boolean;
-
-  /**
-   * The position of the overlay on the screen.
-   * @default 'topLeft'
-   */
   overlayPosition?: OverlayPosition;
-
-  /**
-   * The color of the waveform bars.
-   * @default 'red'
-   */
   barColor?: string;
-
-  /**
-   * The color of the text.
-   * @default 'white'
-   */
   textColor?: string;
-
-  /**
-   * Custom styles for the name text.
-   */
   nameTextStyling?: StyleProp<TextStyle>;
-
-  /**
-   * The source URI for the background image.
-   */
   imageSource: string;
-
-  /**
-   * Flag to determine if the background image should be rounded.
-   * @default false
-   */
   roundedImage?: boolean;
-
-  /**
-   * Custom styles for the background image.
-   */
   imageStyle?: StyleProp<ImageStyle>;
 }
 
 export type MiniAudioType = (options: MiniAudioOptions) => JSX.Element;
 
 /**
- * MiniAudio component renders a draggable audio player with customizable display options, including
- * optional waveform animation, overlay positioning, and background image styling.
+ * MiniAudio renders a draggable floating audio card with an animated waveform overlay and customizable appearance.
  *
- * This component provides an animated waveform that can be toggled, and it allows for flexible styling of the name, position, and image.
- * The component is also draggable for convenient placement on the screen.
+ * ### Key Features
+ * - Pan-responder enabled for free dragging across the screen.
+ * - Animated waveform bars synchronized with audio state.
+ * - Configurable overlay positioning and background imagery.
+ * - Platform-aware styling for web and mobile layouts.
  *
  * @component
- * @param {MiniAudioOptions} props - Configuration options for the MiniAudio component.
- * @param {boolean} [props.visible=true] - Controls the visibility of the component.
- * @param {StyleProp<ViewStyle>} [props.customStyle] - Custom styles for the component container.
- * @param {string} props.name - Name to display on the audio player.
- * @param {boolean} [props.showWaveform=false] - Toggles visibility of the waveform animation.
- * @param {OverlayPosition} [props.overlayPosition='topLeft'] - Position of the overlay on the screen.
- * @param {string} [props.barColor='red'] - Color of the waveform bars.
- * @param {string} [props.textColor='white'] - Color of the displayed name text.
- * @param {StyleProp<TextStyle>} [props.nameTextStyling] - Custom styles for the name text.
- * @param {string} props.imageSource - URI for the background image.
- * @param {boolean} [props.roundedImage=false] - Determines if the background image should be rounded.
- * @param {StyleProp<ImageStyle>} [props.imageStyle] - Custom styles for the background image.
- *
- * @returns {JSX.Element} The MiniAudio component.
+ * @param {MiniAudioOptions} props Mini audio floating card configuration.
+ * @returns {JSX.Element} Rendered draggable mini audio component.
  *
  * @example
  * ```tsx
@@ -176,14 +134,19 @@ const MiniAudio: React.FC<MiniAudioOptions> = ({
     Array.from({ length: 9 }, () => new Animated.Value(0)),
   );
 
-  useEffect(() => {
-    if (showWaveform) {
-      animateWaveform();
-    } else {
-      resetWaveform();
-    }
-  }, [showWaveform]);
+  /**
+   * Retrieves the animation duration for a specific bar.
+   * @param {number} index - The index of the waveform bar.
+   * @returns {number} The duration in milliseconds.
+   */
+  const getAnimationDuration = (index: number): number => {
+    const durations = [474, 433, 407, 458, 400, 427, 441, 419, 487];
+    return durations[index] || 0;
+  };
 
+  /**
+   * Animates the waveform bars using the Animated API.
+   */
   const animateWaveform = () => {
     const animations = waveformAnimations.map((animation, index) => Animated.loop(
       Animated.sequence([
@@ -207,18 +170,23 @@ const MiniAudio: React.FC<MiniAudioOptions> = ({
    * Resets the waveform animations to initial state.
    */
   const resetWaveform = () => {
-    waveformAnimations.forEach((animation) => animation.setValue(0));
+    waveformAnimations.forEach((animation) => {
+      animation.setValue(0);
+      animation.stopAnimation();
+    });
   };
 
-  /**
-   * Retrieves the animation duration for a specific bar.
-   * @param index - The index of the waveform bar.
-   * @returns number - The duration in milliseconds.
-   */
-  const getAnimationDuration = (index: number): number => {
-    const durations = [474, 433, 407, 458, 400, 427, 441, 419, 487];
-    return durations[index] || 0;
-  };
+  useEffect(() => {
+    if (showWaveform) {
+      animateWaveform();
+    } else {
+      resetWaveform();
+    }
+
+    return () => {
+      resetWaveform();
+    };
+  }, [showWaveform]);
 
   return (
     <View style={[styles.container, { display: visible ? 'flex' : 'none' }]}>

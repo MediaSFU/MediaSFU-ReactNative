@@ -46,18 +46,18 @@ export interface ParticipantListOptions {
  * ```tsx
  * import React from 'react';
  * import { ParticipantList } from 'mediasfu-reactnative';
- * 
+ *
  * function App() {
  *   const participants = [
  *     { id: '1', name: 'Alice', muted: false, ... },
  *     { id: '2', name: 'Bob', muted: true, ... },
  *     // more participants
  *   ];
- *   
+ *
  *   const handleMute = (participantId) => { ... };
  *   const handleMessage = (participantId) => { ... };
  *   const handleRemove = (participantId) => { ... };
- *   
+ *
  *   return (
  *     <ParticipantList
  *       participants={participants}
@@ -79,7 +79,7 @@ export interface ParticipantListOptions {
  *     />
  *   );
  * }
- * 
+ *
  * export default App;
  * ```
  */

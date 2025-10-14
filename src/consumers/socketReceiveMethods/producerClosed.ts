@@ -39,7 +39,7 @@ export type ProducerClosedType = (options: ProducerClosedOptions) => Promise<voi
  *
  * @example
  * import { producerClosed } from 'mediasfu-reactnative';
- * 
+ *
  * const options = {
  *   remoteProducerId: 'producerId',
  *   parameters: {
@@ -49,7 +49,7 @@ export type ProducerClosedType = (options: ProducerClosedOptions) => Promise<voi
  *     updateConsumerTransports: (transports) => console.log('Updated transports:', transports),
  *   },
  * };
- * 
+ *
  * producerClosed(options)
  *   .then(() => {
  *     console.log('Producer closed successfully');

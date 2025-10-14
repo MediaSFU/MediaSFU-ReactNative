@@ -143,7 +143,7 @@ export type ChangeVidsType = (options: ChangeVidsOptions) => Promise<void>;
  * @property {Function} updateMemberRoom - Function to update member room.
  * @property {Function} mixStreams - Function to mix streams.
  * @property {Function} dispStreams - Function to display streams.
- * 
+ *
  * @example
  * const options = {
  *   screenChanged: false,
@@ -206,7 +206,7 @@ export type ChangeVidsType = (options: ChangeVidsOptions) => Promise<void>;
  *     dispStreams: dispStreams,
  *   },
  * };
- * 
+ *
  * changeVids(options)
  *   .then(() => {
  *     console.log('Video streams changed successfully');

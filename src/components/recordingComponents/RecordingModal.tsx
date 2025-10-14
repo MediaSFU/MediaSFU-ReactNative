@@ -9,6 +9,8 @@ import {
   Dimensions,
   Pressable,
   Text,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import StandardPanelComponent from './StandardPanelComponent';
@@ -61,106 +63,98 @@ export interface RecordingModalParameters
   [key: string]: any;
 }
 
+/**
+ * Configuration options for the `RecordingModal` component.
+ *
+ * @interface RecordingModalOptions
+ *
+ * **Modal Control:**
+ * @property {boolean} isRecordingModalVisible Controls visibility of the recording modal.
+ * @property {() => void} onClose Invoked when the modal should close.
+ *
+ * **Appearance:**
+ * @property {string} [backgroundColor='#83c0e9'] Background color applied to the modal surface.
+ * @property {'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' | 'center'} [position='bottomRight'] Anchor position for modal placement.
+ * @property {StyleProp<ViewStyle>} [style] Additional styles merged into the modal container.
+ *
+ * **Recording Actions:**
+ * @property {ConfirmRecordingType} confirmRecording Callback to confirm configured recording settings prior to start.
+ * @property {StartRecordingType} startRecording Handler invoked to begin recording after confirmation.
+ *
+ * **State Parameters:**
+ * @property {RecordingModalParameters} parameters Parameter bundle including recording preferences and update helpers.
+ *
+ * **Advanced Render Overrides:**
+ * @property {(options: { defaultContent: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContent]
+ * Override for customizing the internal panel layout.
+ * @property {(options: { defaultContainer: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContainer]
+ * Override for swapping the modal container (e.g., animated wrappers).
+ */
 export interface RecordingModalOptions {
-  /**
-   * Flag to control the visibility of the modal.
-   */
   isRecordingModalVisible: boolean;
-
-  /**
-   * Callback function to handle the closing of the modal.
-   */
   onClose: () => void;
-
-  /**
-   * Background color of the modal content.
-   * Defaults to '#83c0e9'.
-   */
   backgroundColor?: string;
-
-  /**
-   * Position of the modal on the screen.
-   * Possible values: 'topLeft', 'topRight', 'bottomLeft', 'bottomRight', 'center'.
-   * Defaults to 'bottomRight'.
-   */
   position?: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' | 'center';
-
-  /**
-   * Function to confirm recording settings.
-   */
   confirmRecording: ConfirmRecordingType;
-
-  /**
-   * Function to start the recording.
-   */
   startRecording: StartRecordingType;
-
-  /**
-   * Parameters for configuring the recording.
-   */
   parameters: RecordingModalParameters;
+  style?: StyleProp<ViewStyle>;
+  renderContent?: (options: {
+    defaultContent: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
+  renderContainer?: (options: {
+    defaultContainer: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
 }
 
 export type RecordingModalType = (options: RecordingModalOptions) => JSX.Element;
 
 /**
- * RecordingModal component displays a modal with settings for configuring and managing recordings. It includes sections for both standard and advanced recording options, allowing users to specify video types, display options, background colors, custom text, and other recording parameters.
+ * RecordingModal orchestrates both standard and advanced recording preferences prior to capture. It
+ * surfaces panels for video layout, overlays, audio/media mixes, and HLS configuration, while
+ * supporting override hooks for custom UI shells.
  *
- * @component
- * @param {RecordingModalOptions} props - The properties object.
- * @returns {JSX.Element} The rendered RecordingModal component.
+ * ### Key Features
+ * - Consolidates standard & advanced panels for holistic recording setup.
+ * - Integrates confirm/start callbacks to coordinate recording workflow.
+ * - Exposes update handlers for colors, text overlays, and media mixes via `parameters`.
+ * - Anchorable to any screen corner and themable through props.
+ * - Supports render overrides for bespoke container or panel presentations.
  *
- * @example
+ * ### Accessibility
+ * - Control buttons include accessibility roles and descriptive labels.
+ * - ScrollView ensures all settings remain reachable with assistive technologies.
+ *
+ * @param {RecordingModalOptions} props Modal configuration options.
+ * @returns {JSX.Element} Rendered recording configuration modal.
+ *
+ * @example Toggle recording parameters with default layout.
  * ```tsx
- * import React from 'react';
- * import { RecordingModal } from 'mediasfu-reactnative';
- * 
- * const recordingParameters = {
- *   recordPaused: false,
- *   recordingVideoType: 'fullDisplay',
- *   recordingDisplayType: 'video',
- *   recordingBackgroundColor: '#ffffff',
- *   recordingNameTagsColor: '#000000',
- *   recordingOrientationVideo: 'landscape',
- *   recordingNameTags: true,
- *   recordingAddText: false,
- *   recordingCustomText: '',
- *   recordingCustomTextPosition: 'top',
- *   recordingCustomTextColor: '#000000',
- *   recordingMediaOptions: 'default',
- *   recordingAudioOptions: 'default',
- *   recordingVideoOptions: 'default',
- *   recordingAddHLS: false,
- *   eventType: 'conference',
- *   updateRecordingVideoType: (value) => {},
- *   updateRecordingDisplayType: (value) => {},
- *   updateRecordingBackgroundColor: (value) => {},
- *   updateRecordingNameTagsColor: (value) => {},
- *   updateRecordingOrientationVideo: (value) => {},
- *   updateRecordingNameTags: (value) => {},
- *   updateRecordingAddText: (value) => {},
- *   updateRecordingCustomText: (value) => {},
- *   updateRecordingCustomTextPosition: (value) => {},
- *   updateRecordingCustomTextColor: (value) => {},
- *   updateRecordingMediaOptions: (value) => {},
- *   updateRecordingAudioOptions: (value) => {},
- *   updateRecordingVideoOptions: (value) => {},
- *   updateRecordingAddHLS: (value) => {},
- * };
+ * <RecordingModal
+ *   isRecordingModalVisible={visible}
+ *   onClose={close}
+ *   confirmRecording={confirmRecording}
+ *   startRecording={startRecording}
+ *   parameters={recordingParams}
+ * />
+ * ```
  *
- * function App() {
- *   return (
- *     <RecordingModal
- *       isRecordingModalVisible={true}
- *       onClose={() => console.log('Modal closed')}
- *       confirmRecording={() => console.log('Confirm recording settings')}
- *       startRecording={() => console.log('Start recording')}
- *       parameters={recordingParameters}
- *     />
- *   );
- * }
- * 
- * export default App;
+ * @example Dark-themed modal with custom container override.
+ * ```tsx
+ * <RecordingModal
+ *   isRecordingModalVisible
+ *   onClose={handleDismiss}
+ *   confirmRecording={handleConfirm}
+ *   startRecording={handleStart}
+ *   backgroundColor="#0f172a"
+ *   style={{ borderRadius: 24 }}
+ *   parameters={params}
+ *   renderContainer={({ defaultContainer }) => (
+ *     <SlideUp>{defaultContainer}</SlideUp>
+ *   )}
+ * />
  * ```
  */
 
@@ -172,6 +166,9 @@ const RecordingModal: React.FC<RecordingModalOptions> = ({
   confirmRecording,
   startRecording,
   parameters,
+  style,
+  renderContent,
+  renderContainer,
 }) => {
   const { recordPaused } = parameters;
 
@@ -181,7 +178,62 @@ const RecordingModal: React.FC<RecordingModalOptions> = ({
     modalWidth = 400;
   }
 
-  return (
+  const dimensions = { width: modalWidth, height: 0 };
+
+  const defaultContent = (
+    <>
+      {/* Header */}
+      <View style={styles.modalHeader}>
+        <Text style={styles.modalTitle}>
+          <FontAwesome name="bars" size={24} color="black" />
+          {' Recording Settings'}
+        </Text>
+        <Pressable onPress={onClose} style={styles.closeButton}>
+          <FontAwesome name="times" size={24} color="black" />
+        </Pressable>
+      </View>
+
+      <View style={styles.separator} />
+
+      {/* Modal Body */}
+      <View style={styles.modalBody}>
+        <ScrollView style={styles.scrollView}>
+          <View style={styles.listGroup}>
+            <StandardPanelComponent parameters={parameters} />
+            <AdvancedPanelComponent parameters={parameters} />
+          </View>
+        </ScrollView>
+      </View>
+
+      <View style={styles.separator} />
+
+      {/* Action Buttons */}
+      <View style={styles.buttonRow}>
+        <Pressable
+          style={[styles.button, styles.confirmButton]}
+          onPress={() => confirmRecording({ parameters })}
+        >
+          <Text style={styles.buttonText}>Confirm</Text>
+        </Pressable>
+        {!recordPaused && (
+          <Pressable
+            style={[styles.button, styles.startButton]}
+            onPress={() => startRecording({ parameters })}
+          >
+            <Text style={styles.buttonText}>
+              Start <FontAwesome name="play" size={16} color="black" />
+            </Text>
+          </Pressable>
+        )}
+      </View>
+    </>
+  );
+
+  const content = renderContent
+    ? renderContent({ defaultContent, dimensions })
+    : defaultContent;
+
+  const defaultContainer = (
     <Modal
       transparent
       animationType="slide"
@@ -190,56 +242,17 @@ const RecordingModal: React.FC<RecordingModalOptions> = ({
     >
       <View style={[styles.modalContainer, getModalPosition({ position })]}>
         <View
-          style={[styles.modalContent, { backgroundColor, width: modalWidth }]}
+          style={[styles.modalContent, { backgroundColor, width: modalWidth }, style]}
         >
-          {/* Header */}
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>
-              <FontAwesome name="bars" size={24} color="black" />
-              {' Recording Settings'}
-            </Text>
-            <Pressable onPress={onClose} style={styles.closeButton}>
-              <FontAwesome name="times" size={24} color="black" />
-            </Pressable>
-          </View>
-
-          <View style={styles.separator} />
-
-          {/* Modal Body */}
-          <View style={styles.modalBody}>
-            <ScrollView style={styles.scrollView}>
-              <View style={styles.listGroup}>
-                <StandardPanelComponent parameters={parameters} />
-                <AdvancedPanelComponent parameters={parameters} />
-              </View>
-            </ScrollView>
-          </View>
-
-          <View style={styles.separator} />
-
-          {/* Action Buttons */}
-          <View style={styles.buttonRow}>
-            <Pressable
-              style={[styles.button, styles.confirmButton]}
-              onPress={() => confirmRecording({ parameters })}
-            >
-              <Text style={styles.buttonText}>Confirm</Text>
-            </Pressable>
-            {!recordPaused && (
-              <Pressable
-                style={[styles.button, styles.startButton]}
-                onPress={() => startRecording({ parameters })}
-              >
-                <Text style={styles.buttonText}>
-                  Start <FontAwesome name="play" size={16} color="black" />
-                </Text>
-              </Pressable>
-            )}
-          </View>
+          {content}
         </View>
       </View>
     </Modal>
   );
+
+  return renderContainer
+    ? renderContainer({ defaultContainer, dimensions })
+    : defaultContainer;
 };
 
 export default RecordingModal;

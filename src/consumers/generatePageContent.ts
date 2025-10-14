@@ -39,11 +39,11 @@ export type GeneratePageContentType = (options: GeneratePageContentOptions) => P
  * @param {Function} options.parameters.dispStreams - Function to display streams for the specified page.
  * @param {number} [options.breakRoom=-1] - The break room identifier.
  * @param {boolean} [options.inBreakRoom=false] - Flag indicating if the user is in a break room.
- * 
+ *
  * @returns {Promise<void>} A promise that resolves when the content generation is complete.
- * 
+ *
  * @throws {Error} Throws an error if content generation fails.
- * 
+ *
  * @example
  * const options = {
  *   page: 1,
@@ -60,7 +60,7 @@ export type GeneratePageContentType = (options: GeneratePageContentOptions) => P
  *   breakRoom: 1,
  *   inBreakRoom: false,
  * };
- * 
+ *
  * generatePageContent(options)
  *   .then(() => {
  *     console.log('Page content generated successfully');

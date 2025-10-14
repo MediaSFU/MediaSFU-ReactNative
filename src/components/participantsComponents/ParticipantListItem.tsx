@@ -45,7 +45,7 @@ export interface ParticipantListItemOptions {
  * ```tsx
  * import React from 'react';
  * import { ParticipantListItem } from 'mediasfu-reactnative';
- * 
+ *
  * function App() {
  *   const participant = {
  *     id: '123',
@@ -54,7 +54,7 @@ export interface ParticipantListItemOptions {
  *     islevel: '1',
  *     // other participant properties
  *   };
- *   
+ *
  *   return (
  *     <ParticipantListItem
  *       participant={participant}
@@ -77,7 +77,7 @@ export interface ParticipantListItemOptions {
  *     />
  *   );
  * }
- * 
+ *
  * export default App;
  * ```
  */

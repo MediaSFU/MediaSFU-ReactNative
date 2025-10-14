@@ -29,7 +29,7 @@ export type CheckPermissionType = (options: CheckPermissionOptions) => Promise<n
  *   screenshareSetting: 'approval',
  *   chatSetting: 'allow',
  * };
- * 
+ *
  * checkPermission(options)
  *   .then(result => {
  *     console.log('Permission result:', result);

@@ -109,7 +109,7 @@ export type CloseAndResizeType = (options: CloseAndResizeOptions) => Promise<voi
  * @param {function} options.parameters.rePort - Function to report.
  *
  * @returns {Promise<void>} A promise that resolves when the operation is complete.
- * 
+ *
  * @example
  * const options = {
  *   producerId: 'producerId',
@@ -158,7 +158,7 @@ export type CloseAndResizeType = (options: CloseAndResizeOptions) => Promise<voi
  *     rePort: rePortFunction,
  *   },
  * };
- * 
+ *
  * closeAndResize(options)
  *   .then(() => {
  *     console.log('Closed and resized successfully');

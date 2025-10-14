@@ -9,35 +9,24 @@ import {
 } from 'react-native';
 
 /**
- * Interface defining the props for the MeetingProgressTimer component.
+ * Options for rendering a `MeetingProgressTimer` badge.
+ *
+ * @interface MeetingProgressTimerOptions
+ *
+ * **Appearance:**
+ * @property {string} meetingProgressTime The current progress time of the meeting to be displayed.
+ * @property {string} [initialBackgroundColor='green'] The initial background color of the timer.
+ * @property {StyleProp<TextStyle>} [textStyle] Additional styles to apply to the timer text.
+ * @property {boolean} [showTimer=true] Flag to determine whether the timer should be displayed.
+ *
+ * **Positioning:**
+ * @property {'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight'} [position='topLeft'] The position of the timer on the screen.
  */
 export interface MeetingProgressTimerOptions {
-  /**
-   * The current progress time of the meeting to be displayed.
-   */
   meetingProgressTime: string;
-
-  /**
-   * The initial background color of the timer.
-   * @default 'green'
-   */
   initialBackgroundColor?: string;
-
-  /**
-   * The position of the timer on the screen.
-   * @default 'topLeft'
-   */
   position?: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
-
-  /**
-   * Additional styles to apply to the timer text.
-   */
   textStyle?: StyleProp<TextStyle>;
-
-  /**
-   * Flag to determine whether the timer should be displayed.
-   * @default true
-   */
   showTimer?: boolean;
 }
 
@@ -57,19 +46,16 @@ const positions: Record<
 export type MeetingProgressTimerType = (options: MeetingProgressTimerOptions) => JSX.Element;
 
 /**
- * MeetingProgressTimer displays a timer badge indicating the progress time of a meeting, with customizable positioning and styles.
+ * MeetingProgressTimer displays a compact badge showing the meeting's elapsed time with corner-anchored positioning.
  *
- * This component is designed to show a timer in one of four corner positions with optional styling and background color customization.
+ * ### Key Features
+ * - Positioned in one of four screen corners for minimal layout interference.
+ * - Customizable background and text styling for brand alignment.
+ * - Optional visibility toggle for show/hide behavior.
  *
  * @component
- * @param {MeetingProgressTimerOptions} props - Configuration options for MeetingProgressTimer.
- * @param {string} props.meetingProgressTime - The current progress time of the meeting to display.
- * @param {string} [props.initialBackgroundColor='green'] - Background color of the timer badge.
- * @param {'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight'} [props.position='topLeft'] - Position of the timer on the screen.
- * @param {StyleProp<TextStyle>} [props.textStyle] - Additional styles for the timer text.
- * @param {boolean} [props.showTimer=true] - Controls whether the timer is visible.
- *
- * @returns {JSX.Element} The MeetingProgressTimer component.
+ * @param {MeetingProgressTimerOptions} props Timer badge configuration.
+ * @returns {JSX.Element} Rendered meeting progress timer badge.
  *
  * @example
  * ```tsx

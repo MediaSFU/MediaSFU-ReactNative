@@ -62,7 +62,7 @@ export type GetEstimateType = (options: GetEstimateOptions) => [number, number, 
  *     calculateRowsAndColumns: ({ n }) => [3, 4], // Example implementation
  *   },
  * };
- * 
+ *
  * const estimate = getEstimate(options);
  * console.log('Estimated:', estimate); // Output: Estimated: [10, 3, 4]
  */

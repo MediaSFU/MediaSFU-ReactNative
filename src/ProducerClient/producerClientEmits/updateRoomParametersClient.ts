@@ -215,7 +215,7 @@ export type UpdateRoomParametersClientType = (options: UpdateRoomParametersClien
  *     updateRecordingSupportForOtherOrientation: (support) => {},
  *     updateRecordingMultiFormatsSupport: (support) => {},
  *     updateRecordingVideoOptions: (options) => {},
- *     updateRecordingAudioOptions: (options) => {}, 
+ *     updateRecordingAudioOptions: (options) => {},
  *     updateMainHeightWidth: (heightWidth) => {},
  *   }
  * });

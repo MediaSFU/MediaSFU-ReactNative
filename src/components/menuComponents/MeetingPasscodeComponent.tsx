@@ -25,7 +25,7 @@ export interface MeetingPasscodeComponentOptions {
  * @param {Object} props - Properties for configuring the MeetingPasscodeComponent.
  * @param {string} props.meetingPasscode - The meeting passcode to display.
  * @returns {JSX.Element} The MeetingPasscodeComponent.
- * 
+ *
  * @example
  * ```tsx
  * import React from 'react';

@@ -42,58 +42,33 @@ export type MiniAudioPlayerType = (
   ) => JSX.Element;
 
 /**
- * MiniAudioPlayer component is a React Native component for playing audio streams
- * and optionally a mini audio component for visualizing audio waveforms.
+ * Web-specific implementation of MiniAudioPlayer for rendering remote audio streams
+ * with optional waveform visualization overlay.
  *
- * @component
- * @param {MiniAudioPlayerOptions} props - The properties for the MiniAudioPlayer component.
- * @param {MediaStream | null} props.stream - The media stream to be played by the audio player.
- * @param {Consumer} props.consumer - The consumer object for consuming media.
- * @param {string} props.remoteProducerId - The ID of the remote producer.
- * @param {MiniAudioPlayerParameters} props.parameters - The parameters object containing various settings and methods.
- * @param {Function} props.parameters.getUpdatedAllParams - Function to get updated parameters.
- * @param {Function} props.parameters.reUpdateInter - Function to re-update interaction parameters.
- * @param {Function} props.parameters.updateParticipantAudioDecibels - Function to update participant audio decibels.
- * @param {boolean} props.parameters.breakOutRoomStarted - Flag indicating if the breakout room has started.
- * @param {boolean} props.parameters.breakOutRoomEnded - Flag indicating if the breakout room has ended.
- * @param {Array<BreakoutParticipant>} props.parameters.limitedBreakRoom - Array of limited breakout room participants.
- * @param {React.ComponentType} [props.MiniAudioComponent] - An optional component to render for audio visualization.
- * @param {Object} [props.miniAudioProps] - Additional properties to pass to the MiniAudioComponent.
+ * @platform web
  *
- * @returns {JSX.Element} The rendered MiniAudioPlayer component.
+ * ### Key Features
+ * - Uses RTCView for web-based audio rendering
+ * - Monitors audio levels via RTP receiver stats
+ * - Optionally renders MiniAudioComponent for waveform visualization
+ * - Supports breakout room participant filtering
+ *
+ * ### Component Override
+ * You can replace the default waveform visualizer by providing:
+ * - `MiniAudioComponent` prop - Custom component for this instance
+ * - `parameters.miniAudioComponent` - Global override via parameters
+ *
+ * @see MiniAudioPlayer.tsx for complete documentation and examples
  *
  * @example
  * ```tsx
- * // Import and use MiniAudioPlayer in a React component
- * import { MiniAudioPlayer } from 'mediasfu-reactnative';
- *
- * const WaveformVisualizer = ({ stream }: { stream: MediaStream }) => (
- *   <canvas width='300' height='50' />
- * );
- *
- * const App = () => {
- *   const stream = useMediaStream(); // Custom hook to get MediaStream
- *   const parameters = {
- *     // Mocked parameters with required functions
- *     getUpdatedAllParams: () => updatedParameters,
- *     reUpdateInter: () => {},
- *     updateParticipantAudioDecibels: () => {},
- *     breakOutRoomStarted: false,
- *     breakOutRoomEnded: false,
- *     limitedBreakRoom: [],
- *   };
- *
- *   return (
- *     <MiniAudioPlayer
- *       stream={stream}
- *       consumer={consumer}
- *       remoteProducerId='producer123'
- *       parameters={parameters}
- *       MiniAudioComponent={WaveformVisualizer}
- *       miniAudioProps={{ color: 'blue' }}
- *     />
- *   );
- * };
+ * <MiniAudioPlayer
+ *   stream={audioStream}
+ *   consumer={audioConsumer}
+ *   remoteProducerId="producer-web"
+ *   parameters={meetingParameters}
+ *   MiniAudioComponent={CustomWebWaveform}
+ * />
  * ```
  */
 
@@ -115,6 +90,11 @@ const MiniAudioPlayer: React.FC<MiniAudioPlayerOptions> = ({
     breakOutRoomEnded,
     limitedBreakRoom,
   } = parameters;
+
+  const parameterMiniAudioComponent = parameters
+    .miniAudioComponent as React.ComponentType<any> | undefined;
+  const resolvedMiniAudioComponent =
+    MiniAudioComponent ?? parameterMiniAudioComponent;
 
   const [showWaveModal, setShowWaveModal] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState<boolean>(true);
@@ -323,9 +303,10 @@ const MiniAudioPlayer: React.FC<MiniAudioPlayerOptions> = ({
   }, [stream]);
 
   const renderMiniAudioComponent = (): JSX.Element | null => {
-    if (MiniAudioComponent) {
+    if (resolvedMiniAudioComponent) {
+      const MiniAudioComponentToRender = resolvedMiniAudioComponent;
       return (
-        <MiniAudioComponent
+        <MiniAudioComponentToRender
           showWaveform={showWaveModal}
           visible={showWaveModal && !isMuted}
           {...miniAudioProps}

@@ -23,7 +23,7 @@ export type RecordUpdateTimerType = (options: RecordUpdateTimerOptions) => void;
  * @param {Function} options.updateRecordElapsedTime - Callback to update the elapsed recording time.
  * @param {Function} options.updateRecordingProgressTime - Callback to update the formatted recording time.
  * @returns {void}
- * 
+ *
  * @example
  * ```typescript
  * recordUpdateTimer({

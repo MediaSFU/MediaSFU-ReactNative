@@ -10,6 +10,8 @@ import {
   ScrollView,
   TextInput,
   Dimensions,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { Socket } from 'socket.io-client';
@@ -26,6 +28,37 @@ import {
   ShowAlert,
 } from '../../@types/types';
 
+/**
+ * Parameter bundle for `ParticipantsModal`, providing real-time participant state and helpers.
+ *
+ * @interface ParticipantsModalParameters
+ *
+ * **Participant State:**
+ * @property {Participant[]} participants All known participants for the session.
+ * @property {Participant[]} filteredParticipants Current participant collection after applying filters.
+ *
+ * **Role & Permissions:**
+ * @property {CoHostResponsibility[]} coHostResponsibility Responsibility matrix dictating co-host abilities.
+ * @property {string} coHost Username/ID of the acting co-host.
+ * @property {string} member Current user identifier.
+ * @property {string} islevel Current user level (host/co-host/member differentiation).
+ *
+ * **Session Context:**
+ * @property {EventType} eventType Meeting type controlling available actions.
+ * @property {Socket} socket Live socket.io connection for participant management.
+ * @property {string} roomName Active room identifier.
+ * @property {ShowAlert} [showAlert] Optional alerting callback for feedback.
+ *
+ * **Messaging Helpers:**
+ * @property {(isVisible: boolean) => void} updateIsMessagesModalVisible Toggles direct message modal visibility.
+ * @property {(participant: Participant | null) => void} updateDirectMessageDetails Sets context for direct messages.
+ * @property {(start: boolean) => void} updateStartDirectMessage Toggles direct messaging flow.
+ * @property {(participants: Participant[]) => void} updateParticipants Applies updates to the participant list.
+ *
+ * **Utility:**
+ * @property {() => ParticipantsModalParameters} getUpdatedAllParams Retrieves latest parameter snapshot.
+ * @property {Record<string, any>} [key: string] Additional extension values consumed by overrides.
+ */
 export interface ParticipantsModalParameters {
   position?: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' | 'center';
   backgroundColor?: string;
@@ -43,12 +76,44 @@ export interface ParticipantsModalParameters {
   updateDirectMessageDetails: (participant: Participant | null) => void;
   updateStartDirectMessage: (start: boolean) => void;
   updateParticipants: (participants: Participant[]) => void;
-
-  // mediasfu functions
   getUpdatedAllParams: () => ParticipantsModalParameters;
   [key: string]: any;
 }
 
+/**
+ * Configuration options for the `ParticipantsModal` component.
+ *
+ * @interface ParticipantsModalOptions
+ *
+ * **Modal Control:**
+ * @property {boolean} isParticipantsModalVisible Controls visibility.
+ * @property {() => void} onParticipantsClose Invoked when the modal should close.
+ *
+ * **Participant Tools:**
+ * @property {(filter: string) => void} onParticipantsFilterChange Updates the search query.
+ * @property {number} participantsCounter Initial count badge displayed in the header.
+ * @property {typeof muteParticipants} [onMuteParticipants=muteParticipants] Custom handler for muting selected participants.
+ * @property {typeof messageParticipants} [onMessageParticipants=messageParticipants] Custom direct message handler.
+ * @property {typeof removeParticipants} [onRemoveParticipants=removeParticipants] Custom removal handler.
+ *
+ * **Render Overrides:**
+ * @property {React.ComponentType<any>} [RenderParticipantList=ParticipantList] Component used for main participant rendering.
+ * @property {React.ComponentType<any>} [RenderParticipantListOthers=ParticipantListOthers] Component for overflow/other participants.
+ *
+ * **State Parameters:**
+ * @property {ParticipantsModalParameters} parameters Parameter bundle providing helpers and state access.
+ *
+ * **Customization:**
+ * @property {string} [backgroundColor='#83c0e9'] Modal surface color.
+ * @property {'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' | 'center'} [position='topRight'] Anchor position.
+ * @property {StyleProp<ViewStyle>} [style] Additional styling applied to modal container.
+ *
+ * **Advanced Render Overrides:**
+ * @property {(options: { defaultContent: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContent]
+ * Override to replace the default modal body content.
+ * @property {(options: { defaultContainer: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContainer]
+ * Override to replace the modal container wrapper.
+ */
 export interface ParticipantsModalOptions {
   isParticipantsModalVisible: boolean;
   onParticipantsClose: () => void;
@@ -62,6 +127,15 @@ export interface ParticipantsModalOptions {
   parameters: ParticipantsModalParameters;
   backgroundColor?: string;
   position?: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' | 'center';
+  style?: StyleProp<ViewStyle>;
+  renderContent?: (options: {
+    defaultContent: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
+  renderContainer?: (options: {
+    defaultContainer: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
 }
 
 export type ParticipantsModalType = (
@@ -69,54 +143,59 @@ export type ParticipantsModalType = (
 ) => JSX.Element;
 
 /**
- * ParticipantsModal displays a list of participants in a modal, with options for filtering, muting, messaging, or removing participants based on user permissions and event type.
+ * ParticipantsModal centralizes participant management actions—mute, message, remove—within a flexible
+ * modal. It adapts to co-host permissions, supports direct messaging shortcuts, and offers render
+ * overrides for tailor-made participant experiences.
  *
- * @component
- * @param {ParticipantsModalOptions} props - The properties for the ParticipantsModal component.
- * @returns {JSX.Element} The rendered ParticipantsModal component.
+ * ### Key Features
+ * - Real-time list synchronized through `parameters.getUpdatedAllParams`.
+ * - Inline filtering with keyboard friendly TextInput.
+ * - Built-in handlers for muting, messaging, and removal, all overrideable.
+ * - Separate render components for primary and "others" participant lists.
+ * - Corner anchoring and theming via `position` and `backgroundColor` props.
+ * - Render overrides to swap container/content for custom UI frameworks.
  *
- * @example
+ * ### Accessibility
+ * - Close button provides descriptive labels for assistive tech.
+ * - Participant actions surface through Pressables, inheriting screen reader cues.
+ *
+ * @param {ParticipantsModalOptions} props Modal configuration options.
+ * @returns {JSX.Element} Rendered participant management modal.
+ *
+ * @example Basic usage with default handlers.
  * ```tsx
- * import React, { useState } from 'react';
- * import { ParticipantsModal } from 'mediasfu-reactnative';
- * 
- * function App() {
- *   const [isModalVisible, setIsModalVisible] = useState(false);
- *   const participantsParameters = {
- *     position: 'topRight',
- *     backgroundColor: '#83c0e9',
- *     coHostResponsibility: [{ name: 'participants', value: true }],
- *     coHost: 'JaneDoe',
- *     member: 'JohnDoe',
- *     islevel: '2',
- *     participants: [
- *       { name: 'Alice', id: '1', islevel: '1', muted: false },
- *       { name: 'Bob', id: '2', islevel: '1', muted: true },
- *     ],
- *     eventType: 'webinar',
- *     filteredParticipants: [],
- *     socket: socketInstance,
- *     showAlert: showAlertFunction,
- *     roomName: 'MainRoom',
- *     updateIsMessagesModalVisible: setIsMessagesModalVisible,
- *     updateDirectMessageDetails: setDirectMessageDetails,
- *     updateStartDirectMessage: setStartDirectMessage,
- *     updateParticipants: setParticipants,
- *     getUpdatedAllParams: () => participantsParameters,
- *   };
- * 
- *   return (
- *     <ParticipantsModal
- *       isParticipantsModalVisible={isModalVisible}
- *       onParticipantsClose={() => setIsModalVisible(false)}
- *       onParticipantsFilterChange={(filter) => handleFilterChange(filter)}
- *       participantsCounter={participantsParameters.participants.length}
- *       parameters={participantsParameters}
- *     />
- *   );
- * }
- * 
- * export default App;
+ * <ParticipantsModal
+ *   isParticipantsModalVisible={visible}
+ *   onParticipantsClose={handleClose}
+ *   onParticipantsFilterChange={setFilter}
+ *   participantsCounter={participants.length}
+ *   parameters={parameters}
+ * />
+ * ```
+ *
+ * @example Custom mute/message/remove handlers and styling.
+ * ```tsx
+ * <ParticipantsModal
+ *   isParticipantsModalVisible
+ *   onParticipantsClose={close}
+ *   onParticipantsFilterChange={setQuery}
+ *   participantsCounter={filtered.length}
+ *   onMuteParticipants={customMute}
+ *   onMessageParticipants={customMessage}
+ *   onRemoveParticipants={customRemove}
+ *   backgroundColor="#151d2c"
+ *   style={{ borderRadius: 24 }}
+ *   parameters={params}
+ * />
+ * ```
+ *
+ * @example Override participant list renderer for custom cards.
+ * ```tsx
+ * <ParticipantsModal
+ *   {...props}
+ *   RenderParticipantList={MyParticipantGrid}
+ *   RenderParticipantListOthers={MyOverflowList}
+ * />
  * ```
  */
 
@@ -133,6 +212,9 @@ const ParticipantsModal: React.FC<ParticipantsModalOptions> = ({
   position = 'topRight',
   backgroundColor = '#83c0e9',
   parameters,
+  style,
+  renderContent,
+  renderContainer,
 }) => {
   const {
     coHostResponsibility,
@@ -175,7 +257,79 @@ const ParticipantsModal: React.FC<ParticipantsModalOptions> = ({
     setParticipantsCounter_s(updatedParams.filteredParticipants.length);
   }, [participants, parameters]);
 
-  return (
+  const dimensions = { width: modalWidth, height: 0 };
+
+  const defaultContent = (
+    <ScrollView style={styles.scrollView}>
+      <View style={styles.modalHeader}>
+        <Text style={styles.modalTitle}>
+          Participants
+          {' '}
+          <Text style={styles.badge}>{participantsCounter_s}</Text>
+        </Text>
+        <Pressable
+          onPress={onParticipantsClose}
+          style={styles.closeButton}
+        >
+          <FontAwesome name="times" size={24} color="black" />
+        </Pressable>
+      </View>
+
+      <View style={styles.separator} />
+      <View style={styles.modalBody}>
+        {/* Search Input */}
+        <View style={styles.formGroup}>
+          <TextInput
+            style={styles.input}
+            placeholder="Search ..."
+            value={filterText}
+            onChangeText={(text) => {
+              setFilterText(text);
+              onParticipantsFilterChange(text);
+            }}
+          />
+        </View>
+
+        {/* Participant List */}
+
+        {(participantList && islevel === '2')
+        || (coHost === member && participantsValue === true) ? (
+          <RenderParticipantList
+            participants={participantList}
+            isBroadcast={eventType === 'broadcast'}
+            onMuteParticipants={onMuteParticipants}
+            onMessageParticipants={onMessageParticipants}
+            onRemoveParticipants={onRemoveParticipants}
+            socket={socket}
+            coHostResponsibility={coHostResponsibility}
+            member={member}
+            islevel={islevel}
+            showAlert={showAlert}
+            coHost={coHost}
+            roomName={roomName}
+            updateIsMessagesModalVisible={updateIsMessagesModalVisible}
+            updateDirectMessageDetails={updateDirectMessageDetails}
+            updateStartDirectMessage={updateStartDirectMessage}
+            updateParticipants={updateParticipants}
+          />
+          ) : participantList ? (
+            <RenderParticipantListOthers
+              participants={participantList}
+              coHost={coHost}
+              member={member}
+            />
+          ) : (
+            <Text style={styles.noParticipantsText}>No participants</Text>
+          )}
+      </View>
+    </ScrollView>
+  );
+
+  const content = renderContent
+    ? renderContent({ defaultContent, dimensions })
+    : defaultContent;
+
+  const defaultContainer = (
     <Modal
       transparent
       animationType="slide"
@@ -184,75 +338,17 @@ const ParticipantsModal: React.FC<ParticipantsModalOptions> = ({
     >
       <View style={[styles.modalContainer, getModalPosition({ position })]}>
         <View
-          style={[styles.modalContent, { backgroundColor, width: modalWidth }]}
+          style={[styles.modalContent, { backgroundColor, width: modalWidth }, style]}
         >
-          <ScrollView style={styles.scrollView}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
-                Participants
-                {' '}
-                <Text style={styles.badge}>{participantsCounter_s}</Text>
-              </Text>
-              <Pressable
-                onPress={onParticipantsClose}
-                style={styles.closeButton}
-              >
-                <FontAwesome name="times" size={24} color="black" />
-              </Pressable>
-            </View>
-
-            <View style={styles.separator} />
-            <View style={styles.modalBody}>
-              {/* Search Input */}
-              <View style={styles.formGroup}>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Search ..."
-                  value={filterText}
-                  onChangeText={(text) => {
-                    setFilterText(text);
-                    onParticipantsFilterChange(text);
-                  }}
-                />
-              </View>
-
-              {/* Participant List */}
-
-              {(participantList && islevel === '2')
-              || (coHost === member && participantsValue === true) ? (
-                <RenderParticipantList
-                  participants={participantList}
-                  isBroadcast={eventType === 'broadcast'}
-                  onMuteParticipants={onMuteParticipants}
-                  onMessageParticipants={onMessageParticipants}
-                  onRemoveParticipants={onRemoveParticipants}
-                  socket={socket}
-                  coHostResponsibility={coHostResponsibility}
-                  member={member}
-                  islevel={islevel}
-                  showAlert={showAlert}
-                  coHost={coHost}
-                  roomName={roomName}
-                  updateIsMessagesModalVisible={updateIsMessagesModalVisible}
-                  updateDirectMessageDetails={updateDirectMessageDetails}
-                  updateStartDirectMessage={updateStartDirectMessage}
-                  updateParticipants={updateParticipants}
-                />
-                ) : participantList ? (
-                  <RenderParticipantListOthers
-                    participants={participantList}
-                    coHost={coHost}
-                    member={member}
-                  />
-                ) : (
-                  <Text style={styles.noParticipantsText}>No participants</Text>
-                )}
-            </View>
-          </ScrollView>
+          {content}
         </View>
       </View>
     </Modal>
   );
+
+  return renderContainer
+    ? renderContainer({ defaultContainer, dimensions })
+    : defaultContainer;
 };
 
 export default ParticipantsModal;

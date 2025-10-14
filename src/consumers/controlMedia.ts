@@ -51,7 +51,7 @@ export type ControlMediaType = (options: ControlMediaOptions) => Promise<void>;
  *   coHost: 'CoHostName',
  *   roomName: 'Room 1',
  * };
- * 
+ *
  * controlMedia(options)
  *   .then(() => {
  *     console.log('Media control operation completed successfully.');

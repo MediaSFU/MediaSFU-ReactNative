@@ -13,78 +13,108 @@ import {
 /**
  * Interface defining the props for the SubAspectComponent.
  */
+/**
+ * Options for rendering `SubAspectComponent`.
+ *
+ * @interface SubAspectComponentOptions
+ *
+ * **Content:**
+ * @property {React.ReactNode} children Elements displayed inside the sub-container.
+ *
+ * **Appearance:**
+ * @property {string} backgroundColor Background color of the sub-aspect wrapper.
+ * @property {StyleProp<ViewStyle>} [style] Additional style overrides for the container.
+ *
+ * **Sizing:**
+ * @property {boolean} [showControls=true] Determines whether the container is visible and sized.
+ * @property {number} [containerWidthFraction=1] Fraction of window width applied to the container width.
+ * @property {number} [containerHeightFraction=1] Fraction of window height applied to the container height.
+ * @property {number} [defaultFractionSub=0] Height fraction used when controls are visible.
+ *
+ * **Advanced Render Overrides:**
+ * @property {(options: { defaultContent: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContent]
+ * Customize the child layout.
+ * @property {(options: { defaultContainer: JSX.Element; dimensions: { width: number; height: number } }) => JSX.Element} [renderContainer]
+ * Replace the outer container implementation.
+ */
 export interface SubAspectComponentOptions {
-  /**
-   * The background color of the component.
-   */
   backgroundColor: string;
-
-  /**
-   * The child elements to be rendered inside the component.
-   */
   children: React.ReactNode;
-
-  /**
-   * Flag to show or hide the controls.
-   * @default true
-   */
   showControls?: boolean;
-
-  /**
-   * The fraction of the window width to be used for the component's width.
-   */
   containerWidthFraction?: number;
-
-  /**
-   * The fraction of the window height to be used for the component's height.
-   */
   containerHeightFraction?: number;
-
-  /**
-   * The default sub-aspect fraction to be used if controls are shown.
-   * @default 0.0
-   */
   defaultFractionSub?: number;
+  style?: StyleProp<ViewStyle>;
+  renderContent?: (options: {
+    defaultContent: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
+  renderContainer?: (options: {
+    defaultContainer: JSX.Element;
+    dimensions: { width: number; height: number };
+  }) => JSX.Element;
 }
 
 export type SubAspectComponentType = (options: SubAspectComponentOptions) => JSX.Element;
 
 /**
- * SubAspectComponent is a flexible sub-container for media or content displays, adjusting its dimensions
- * based on screen size and optional control visibility.
+ * SubAspectComponent renders the auxiliary strip used for stage controls, resizing with the viewport and honoring the
+ * `showControls` flag. Consumers can override either the content or the container via render hooks.
  *
- * @param {Object} props - Properties for configuring the SubAspectComponent.
- * @param {string} props.backgroundColor - Background color of the component.
- * @param {React.ReactNode} props.children - The elements to render inside the component.
- * @param {boolean} [props.showControls=true] - Whether to display the sub-aspect; affects height calculation.
- * @param {number} [props.containerWidthFraction=1.0] - Fraction of window width used for component width.
- * @param {number} [props.containerHeightFraction=1.0] - Fraction of window height used for component height.
- * @param {number} [props.defaultFractionSub=0.0] - Height fraction adjustment when `showControls` is `true`.
+ * ### Key Features
+ * - Dynamically sizes based on viewport and control visibility
+ * - Respects fractional width/height for flexible layouts
+ * - Adjusts height fraction when controls are shown/hidden
+ * - Re-renders on window dimension changes
+ * - Supports render overrides for custom layouts
+ *
+ * ### Accessibility
+ * - Provides structural grouping for control elements
+ * - Children should include appropriate accessibility labels
  *
  * @example
  * ```tsx
- * import React from 'react';
- * import { SubAspectComponent } from 'mediasfu-reactnative';
+ * // Basic control strip at bottom
+ * <SubAspectComponent
+ *   backgroundColor="#2d2d2d"
+ *   showControls
+ *   defaultFractionSub={0.1}
+ * >
+ *   <ControlButtonsComponent buttons={controlButtons} />
+ * </SubAspectComponent>
+ * ```
  *
- * function App() {
- *   return (
- *     <SubAspectComponent
- *       backgroundColor="#e0e0e0"
- *       showControls={true}
- *       containerWidthFraction={0.8}
- *       containerHeightFraction={0.15}
- *       defaultFractionSub={0.5}
- *     >
- *       <Text>Content inside sub-container</Text>
- *     </SubAspectComponent>
- *   );
- * }
+ * @example
+ * ```tsx
+ * // Hidden controls with custom fractions
+ * <SubAspectComponent
+ *   backgroundColor="transparent"
+ *   showControls={false}
+ *   containerWidthFraction={0.9}
+ *   containerHeightFraction={0.15}
+ *   defaultFractionSub={0.12}
+ *   style={{ borderTopWidth: 1, borderTopColor: '#444' }}
+ * >
+ *   <ParticipantBar participants={participants} />
+ * </SubAspectComponent>
+ * ```
  *
- * export default App;
+ * @example
+ * ```tsx
+ * // With animated container
+ * <SubAspectComponent
+ *   backgroundColor="#000"
+ *   showControls={controlsVisible}
+ *   renderContainer={({ defaultContainer, dimensions }) => (
+ *     <Animated.View style={{ height: slideAnim, overflow: 'hidden' }}>
+ *       {defaultContainer}
+ *     </Animated.View>
+ *   )}
+ * >
+ *   <MeetingControls />
+ * </SubAspectComponent>
  * ```
  */
-
-
 const SubAspectComponent: React.FC<SubAspectComponentOptions> = ({
   backgroundColor,
   children,
@@ -92,6 +122,9 @@ const SubAspectComponent: React.FC<SubAspectComponentOptions> = ({
   containerWidthFraction = 1.0, // Default to full width if not provided
   containerHeightFraction = 1.0, // Default to full height if not provided
   defaultFractionSub = 0.0,
+  style,
+  renderContent,
+  renderContainer,
 }) => {
   // Calculate sub-aspect fraction based on showControls
   const subAspectFraction = showControls ? defaultFractionSub : 0.0;
@@ -157,17 +190,34 @@ const SubAspectComponent: React.FC<SubAspectComponentOptions> = ({
     subAspectFraction,
   ]);
 
-  return (
+  // Extract dimensions from aspectStyles
+  const styleObj = aspectStyles as ViewStyle;
+  const dimensions = {
+    width: typeof styleObj.width === 'number' ? styleObj.width : 0,
+    height: typeof styleObj.height === 'number' ? styleObj.height : 0,
+  };
+
+  const defaultContent = <>{children}</>;
+  const content = renderContent
+    ? renderContent({ defaultContent, dimensions })
+    : defaultContent;
+
+  const defaultContainer = (
     <View
       style={[
         styles.subAspectContainer,
         { backgroundColor },
         aspectStyles,
+        style,
       ]}
     >
-      {children}
+      {content}
     </View>
   );
+
+  return renderContainer
+    ? renderContainer({ defaultContainer, dimensions })
+    : defaultContainer;
 };
 
 export default SubAspectComponent;

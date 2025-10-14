@@ -33,10 +33,10 @@ export type SwitchVideoAltType = (options: SwitchVideoAltOptions) => Promise<voi
 
 /**
  * Switches the user's video device with alternate logic, taking into account recording state and camera access permissions.
- * 
+ *
  * @param {SwitchVideoAltOptions} options - The parameters object containing necessary variables.
  * @returns {Promise<void>}
- * 
+ *
  * @example
  * ```typescript
  * switchVideoAlt({

@@ -26,7 +26,7 @@ export interface MeetingIdComponentOptions {
  * @param {MeetingIdComponentOptions} props - Configuration options for the MeetingIdComponent.
  * @param {string} [props.meetingID=''] - The meeting ID to display.
  * @returns {JSX.Element} The rendered MeetingIdComponent component.
- * 
+ *
  * @example
  * ```tsx
  * import React from 'react';
