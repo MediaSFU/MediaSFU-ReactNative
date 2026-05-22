@@ -14,6 +14,36 @@ import {
 } from '../../../@types/types';
 import { Consumer } from 'mediasoup-client/lib/types';
 
+interface SpeakerTranslationState {
+  enabled?: boolean;
+  originalProducerId?: string;
+}
+
+const getParticipantForProducer = (
+  participants: Participant[],
+  remoteProducerId: string,
+) => participants.find((participant) => participant.audioID === remoteProducerId);
+
+const isTranslationSuppressingOriginal = (
+  updatedParams: MiniAudioPlayerParameters,
+  remoteProducerId: string,
+  participant?: Participant,
+) => {
+  if (!participant?.name) {
+    return false;
+  }
+
+  const speakerTranslationStates = updatedParams.speakerTranslationStates as
+    | Map<string, SpeakerTranslationState>
+    | undefined;
+  const speakerState = speakerTranslationStates?.get(participant.name);
+
+  return Boolean(
+    speakerState?.enabled
+    && speakerState.originalProducerId === remoteProducerId,
+  );
+};
+
 export interface MiniAudioPlayerParameters extends ReUpdateInterParameters {
   breakOutRoomStarted: boolean;
   breakOutRoomEnded: boolean;
@@ -138,8 +168,14 @@ const MiniAudioPlayer: React.FC<MiniAudioPlayerOptions> = ({
           currentUserPage,
         } = updatedParams;
 
-        const participant = participants.find(
-          (obj: Participant) => obj.audioID === remoteProducerId,
+        const participant = getParticipantForProducer(
+          participants,
+          remoteProducerId,
+        );
+        const translationSuppressingOriginal = isTranslationSuppressingOriginal(
+          updatedParams,
+          remoteProducerId,
+          participant,
         );
 
         let audioActiveInRoom = true;
@@ -164,6 +200,18 @@ const MiniAudioPlayer: React.FC<MiniAudioPlayerOptions> = ({
         }
 
         if (participant) {
+          if (translationSuppressingOriginal) {
+            setShowWaveModal(false);
+            setIsMuted(true);
+
+            if (participant.name && activeSounds.includes(participant.name)) {
+              activeSounds.splice(activeSounds.indexOf(participant.name), 1);
+            }
+
+            updateActiveSounds(activeSounds);
+            return;
+          }
+
           setIsMuted(participant.muted ?? false);
 
           if (eventType !== 'chat' && eventType !== 'broadcast') {

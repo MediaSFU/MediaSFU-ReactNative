@@ -65,6 +65,7 @@ export interface PollModalOptions {
   onClose: () => void;
   position?: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' | 'center';
   backgroundColor?: string;
+  isDarkMode?: boolean;
   member: string;
   islevel: string;
   polls: Poll[];
@@ -189,6 +190,7 @@ const PollModal: React.FC<PollModalOptions> = ({
   onClose,
   position = 'topRight',
   backgroundColor = '#f5f5f5',
+  isDarkMode,
   member,
   islevel,
   polls,
@@ -219,6 +221,14 @@ const PollModal: React.FC<PollModalOptions> = ({
     () => ({ width: modalWidth, height: 0 }),
     [modalWidth],
   );
+  const themed = typeof isDarkMode === 'boolean';
+  const textColor = themed ? (isDarkMode ? '#f8fafc' : '#0f172a') : 'black';
+  const mutedTextColor = themed ? (isDarkMode ? '#cbd5e1' : '#475569') : 'gray';
+  const borderColor = themed ? (isDarkMode ? 'rgba(226, 232, 240, 0.18)' : 'rgba(71, 85, 105, 0.22)') : '#000';
+  const inputBackgroundColor = themed ? (isDarkMode ? '#1e293b' : '#ffffff') : 'transparent';
+  const inputBorderColor = themed ? (isDarkMode ? 'rgba(226, 232, 240, 0.22)' : 'rgba(71, 85, 105, 0.28)') : 'gray';
+  const controlColor = themed ? (isDarkMode ? '#60a5fa' : '#2563eb') : '#000';
+  const pickerTheme = themed ? createPickerSelectStyles(isDarkMode) : pickerSelectStyles;
 
   useEffect(() => {
     if (!isPollModalVisible) {
@@ -297,7 +307,7 @@ const PollModal: React.FC<PollModalOptions> = ({
           <View style={styles.formGroup}>
             {newPoll.options.map((option, index) => (
               <View key={index} style={styles.optionStaticRow}>
-                <Text style={styles.optionStaticText}>{option}</Text>
+                <Text style={[styles.optionStaticText, { color: textColor }] as any}>{option}</Text>
               </View>
             ))}
           </View>
@@ -308,8 +318,9 @@ const PollModal: React.FC<PollModalOptions> = ({
             {newPoll.options.map((option, index) => (
               <View key={index} style={styles.optionRow}>
                 <TextInput
-                  style={styles.optionInput}
+                  style={[styles.optionInput, { color: textColor, borderColor: inputBorderColor, backgroundColor: inputBackgroundColor }] as any}
                   placeholder={`Option ${index + 1}`}
+                  placeholderTextColor={mutedTextColor}
                   value={option}
                   onChangeText={(value) => updateCustomOption(index, value)}
                 />
@@ -358,14 +369,15 @@ const PollModal: React.FC<PollModalOptions> = ({
         <View
           style={[
             styles.radioButton,
-            poll.voters && poll.voters[member] === index && styles.radioButtonSelected,
+            { borderColor: controlColor },
+            poll.voters && poll.voters[member] === index && [styles.radioButtonSelected, { borderColor: controlColor, backgroundColor: controlColor }],
           ]}
         >
           {poll.voters && poll.voters[member] === index && (
             <View style={styles.radioButtonIcon} />
           )}
         </View>
-        <Text style={styles.formCheckLabel}>{option}</Text>
+        <Text style={[styles.formCheckLabel, { color: textColor }] as any}>{option}</Text>
       </Pressable>
     ));
   };
@@ -378,7 +390,7 @@ const PollModal: React.FC<PollModalOptions> = ({
     return (
       <View style={styles.pollStatus}>
         {poll.votes.map((vote, index) => (
-          <Text key={index} style={styles.statusText}>
+          <Text key={index} style={[styles.statusText, { color: textColor }] as any}>
             {`${poll.options[index]}: ${vote} votes (${calculatePercentage(
               poll.votes,
               index,
@@ -404,21 +416,21 @@ const PollModal: React.FC<PollModalOptions> = ({
   const defaultContent = (
     <>
       <View style={styles.header}>
-        <Text style={styles.headerText}>Polls</Text>
+        <Text style={[styles.headerText, { color: textColor }] as any}>Polls</Text>
         <Pressable onPress={onClose} style={styles.closeButton}>
-          <FontAwesome5 name="times" size={24} color="black" />
+          <FontAwesome5 name="times" size={24} color={textColor} />
         </Pressable>
       </View>
 
-      <View style={styles.separator} />
+      <View style={[styles.separator, { backgroundColor: borderColor }] as any} />
 
       <ScrollView>
         {islevel === '2' && (
           <>
             <View style={styles.section}>
-              <Text style={styles.sectionHeader}>Previous Polls</Text>
+              <Text style={[styles.sectionHeader, { color: textColor }] as any}>Previous Polls</Text>
               {polls.length === 0 && (
-                <Text style={styles.noPollText}>No polls available</Text>
+                <Text style={[styles.noPollText, { color: mutedTextColor }] as any}>No polls available</Text>
               )}
               {polls.map((existingPoll, index) => {
                 const isCurrent = poll && existingPoll.id === poll.id && poll.status === 'active';
@@ -428,16 +440,16 @@ const PollModal: React.FC<PollModalOptions> = ({
 
                 return (
                   <View key={index} style={styles.pollCard}>
-                    <Text style={styles.pollLabel}>Question</Text>
+                    <Text style={[styles.pollLabel, { color: textColor }] as any}>Question</Text>
                     <TextInput
-                      style={styles.textarea}
+                      style={[styles.textarea, { color: textColor, borderColor: inputBorderColor, backgroundColor: inputBackgroundColor }] as any}
                       multiline
                       editable={false}
                       value={existingPoll.question}
                     />
-                    <Text style={styles.pollLabel}>Results</Text>
+                    <Text style={[styles.pollLabel, { color: textColor }] as any}>Results</Text>
                     {existingPoll.options.map((option, optionIndex) => (
-                      <Text key={optionIndex} style={styles.statusText}>
+                      <Text key={optionIndex} style={[styles.statusText, { color: textColor }] as any}>
                         {`${option}: ${existingPoll.votes[optionIndex]} votes (${calculatePercentage(
                           existingPoll.votes,
                           optionIndex,
@@ -465,16 +477,17 @@ const PollModal: React.FC<PollModalOptions> = ({
               })}
             </View>
 
-            <View style={styles.separator} />
+            <View style={[styles.separator, { backgroundColor: borderColor }] as any} />
 
             <View style={styles.section}>
-              <Text style={styles.sectionHeader}>Create New Poll</Text>
+              <Text style={[styles.sectionHeader, { color: textColor }] as any}>Create New Poll</Text>
               <View style={styles.formGroup}>
-                <Text style={styles.label}>Question</Text>
+                <Text style={[styles.label, { color: textColor }] as any}>Question</Text>
                 <TextInput
-                  style={styles.textarea}
+                  style={[styles.textarea, { color: textColor, borderColor: inputBorderColor, backgroundColor: inputBackgroundColor }] as any}
                   multiline
                   placeholder="Enter poll question"
+                  placeholderTextColor={mutedTextColor}
                   value={newPoll.question}
                   onChangeText={(value) =>
                     setNewPoll((prevState) => ({ ...prevState, question: value }))
@@ -483,7 +496,7 @@ const PollModal: React.FC<PollModalOptions> = ({
               </View>
 
               <View style={styles.formGroup}>
-                <Text style={styles.label}>Type</Text>
+                <Text style={[styles.label, { color: textColor }] as any}>Type</Text>
                 <RNPickerSelect
                   onValueChange={handlePollTypeChange}
                   items={[
@@ -494,7 +507,7 @@ const PollModal: React.FC<PollModalOptions> = ({
                   placeholder={{ label: 'Select poll type', value: '' }}
                   value={newPoll.type}
                   useNativeAndroidPickerStyle={false}
-                  style={pickerSelectStyles}
+                  style={pickerTheme}
                 />
               </View>
 
@@ -509,22 +522,22 @@ const PollModal: React.FC<PollModalOptions> = ({
               </Pressable>
             </View>
 
-            <View style={styles.separator} />
+            <View style={[styles.separator, { backgroundColor: borderColor }] as any} />
           </>
         )}
 
         <View style={styles.section}>
-          <Text style={styles.sectionHeader}>Current Poll</Text>
+          <Text style={[styles.sectionHeader, { color: textColor }] as any}>Current Poll</Text>
           {poll && poll.status === 'active' ? (
             <View style={styles.pollCard}>
-              <Text style={styles.pollLabel}>Question</Text>
+              <Text style={[styles.pollLabel, { color: textColor }] as any}>Question</Text>
               <TextInput
-                style={styles.textarea}
+                style={[styles.textarea, { color: textColor, borderColor: inputBorderColor, backgroundColor: inputBackgroundColor }] as any}
                 multiline
                 editable={false}
                 value={poll.question}
               />
-              <Text style={styles.pollLabel}>Options</Text>
+              <Text style={[styles.pollLabel, { color: textColor }] as any}>Options</Text>
               {renderCurrentPollOptions()}
               {renderPollStatus()}
               {islevel === '2' && (
@@ -545,7 +558,7 @@ const PollModal: React.FC<PollModalOptions> = ({
               )}
             </View>
           ) : (
-            <Text style={styles.noPollText}>No active poll available.</Text>
+            <Text style={[styles.noPollText, { color: mutedTextColor }] as any}>No active poll available.</Text>
           )}
         </View>
       </ScrollView>
@@ -787,6 +800,27 @@ const pickerSelectStyles = StyleSheet.create({
     paddingRight: 30,
     backgroundColor: 'white',
     marginBottom: 10,
+  },
+});
+
+const createPickerSelectStyles = (isDarkMode: boolean) => StyleSheet.create({
+  inputIOS: {
+    ...pickerSelectStyles.inputIOS,
+    color: isDarkMode ? '#f8fafc' : '#0f172a',
+    borderColor: isDarkMode ? 'rgba(226, 232, 240, 0.22)' : 'rgba(71, 85, 105, 0.28)',
+    backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+  },
+  inputAndroid: {
+    ...pickerSelectStyles.inputAndroid,
+    color: isDarkMode ? '#f8fafc' : '#0f172a',
+    borderColor: isDarkMode ? 'rgba(226, 232, 240, 0.22)' : 'rgba(71, 85, 105, 0.28)',
+    backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+  },
+  inputWeb: {
+    ...pickerSelectStyles.inputWeb,
+    color: isDarkMode ? '#f8fafc' : '#0f172a',
+    borderColor: isDarkMode ? 'rgba(226, 232, 240, 0.22)' : 'rgba(71, 85, 105, 0.28)',
+    backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
   },
 });
 

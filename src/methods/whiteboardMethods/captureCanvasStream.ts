@@ -2,9 +2,10 @@ import { Producer } from 'mediasoup-client/lib/types';
 import {
   ConnectSendTransportScreenType, CreateSendTransportType, DisconnectSendTransportScreenType, SleepType,
   CreateSendTransportParameters, DisconnectSendTransportScreenParameters, ConnectSendTransportScreenParameters,
-  MediaStream as MediaStream, MediaStreamTrack,
+  MediaStream as MediaStream,
 } from '../../@types/types';
 import { Socket } from 'socket.io-client';
+import { captureCanvasStream as sharedCaptureCanvasStream } from 'mediasfu-shared';
 
 export interface CaptureCanvasStreamParameters extends CreateSendTransportParameters, DisconnectSendTransportScreenParameters, ConnectSendTransportScreenParameters {
   canvasWhiteboard: HTMLCanvasElement | null;
@@ -78,84 +79,6 @@ export type CaptureCanvasStreamType = (options: CaptureCanvasStreamOptions) => P
  * ```
  */
 
-export const captureCanvasStream = async ({
-  parameters,
-  start = true,
-}: CaptureCanvasStreamOptions): Promise<void> => {
-  try {
-    let {
-      canvasWhiteboard,
-      canvasStream,
-      updateCanvasStream,
-      screenProducer,
-      localScreenProducer,
-      transportCreated,
-      localTransportCreated,
-      updateScreenProducer,
-      updateLocalScreenProducer,
-      localSocket,
-
-      //mediasfu functions
-      sleep,
-      createSendTransport,
-      connectSendTransportScreen,
-      disconnectSendTransportScreen,
-    } = parameters;
-
-    if (start && !canvasStream) {
-      const stream = canvasWhiteboard!.captureStream(30);
-      canvasStream = stream as any;
-      updateCanvasStream(canvasStream);
-
-      if (localSocket && !localSocket.id) {
-
-        try {
-          if (!localTransportCreated) {
-            await createSendTransport({ option: 'screen', parameters });
-          } else {
-            try {
-              if (localScreenProducer) {
-                localScreenProducer.close();
-                if (updateLocalScreenProducer) {
-                  updateLocalScreenProducer(null);
-                }
-                await sleep({ ms: 500 });
-              }
-            } catch (error) {
-              console.error(error);
-            }
-            await connectSendTransportScreen({ stream: canvasStream, parameters });
-          }
-        } catch {
-          // do nothing
-        }
-
-        return;
-      }
-
-      if (!transportCreated) {
-        await createSendTransport({ option: 'screen', parameters });
-      } else {
-        try {
-          if (screenProducer) {
-            screenProducer.close();
-            updateScreenProducer(null);
-            await sleep({ ms: 500 });
-          }
-        } catch (error) {
-          console.error(error);
-        }
-        await connectSendTransportScreen({ stream: canvasStream, parameters });
-      }
-    } else {
-      if (canvasStream && !start) {
-        canvasStream.getTracks().forEach((track: MediaStreamTrack) => track?.stop());
-        canvasStream = null;
-        updateCanvasStream(null);
-        disconnectSendTransportScreen({ parameters });
-      }
-    }
-  } catch (error) {
-    console.error(error, 'error in captureCanvasStream');
-  }
+export const captureCanvasStream = async (options: CaptureCanvasStreamOptions): Promise<void> => {
+  await sharedCaptureCanvasStream(options as any);
 };

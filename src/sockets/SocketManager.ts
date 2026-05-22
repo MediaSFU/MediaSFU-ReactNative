@@ -1,20 +1,11 @@
-
 // Socket manager for media socket.
 import { MeetingRoomParams, RecordingParams } from '../@types/types';
-import io, { Socket } from 'socket.io-client'; // Importing socket type
-
-/**
- * Validates the provided API key or token.
- * @param {string} value - The API key or token to validate.
- * @returns {Promise<Boolean>} - True if the API key or token is valid, false otherwise.
- */
-async function validateApiKeyToken(value: string): Promise<boolean> {
-  // API key or token must be alphanumeric and length 64
-  if (!/^[a-z0-9]{64}$/i.test(value)) {
-    throw new Error('Invalid API key or token.');
-  }
-  return true;
-}
+import { Socket } from 'socket.io-client'; // Importing socket type
+import {
+  connectSocket as sharedConnectSocket,
+  connectLocalSocket as sharedConnectLocalSocket,
+  disconnectSocket as sharedDisconnectSocket,
+} from 'mediasfu-shared';
 
 export interface ResponseLocalConnection {
   socket?: Socket;
@@ -83,75 +74,12 @@ export type ConnectLocalSocketType = (options: ConnectLocalSocketOptions) => Pro
 async function connectSocket(
   { apiUserName, apiKey, apiToken, link }: ConnectSocketOptions,
 ): Promise<Socket> {
-  // Validate inputs
-  if (!apiUserName) {
-    throw new Error('API username required.');
-  }
-  if (!(apiKey || apiToken)) {
-    throw new Error('API key or token required.');
-  }
-  if (!link) {
-    throw new Error('Socket link required.');
-  }
-
-  // Validate the API key or token
-  let useKey = false;
-  try {
-    if (apiKey && apiKey.length === 64) {
-      await validateApiKeyToken(apiKey);
-      useKey = true;
-    } else if (apiToken && apiToken.length === 64) {
-      await validateApiKeyToken(apiToken);
-      useKey = false;
-    } else {
-      throw new Error('Invalid API key or token format.');
-    }
-  } catch {
-    throw new Error('Invalid API key or token.');
-  }
-
-  let socket: Socket;
-
-  return new Promise((resolve, reject) => {
-    // Connect to socket using the link provided
-    if (useKey) {
-      socket = io(`${link}/media`, {
-        transports: ['websocket'],
-        query: {
-          apiUserName: apiUserName,
-          apiKey: apiKey!,
-        },
-      });
-    } else {
-      socket = io(`${link}/media`, {
-        transports: ['websocket'],
-        query: {
-          apiUserName: apiUserName,
-          apiToken: apiToken!,
-        },
-      });
-    }
-
-    // Handle socket connection events
-    socket.on('connection-success', ({ socketId }: { socketId: string }) => {
-      //check if link contains mediasfu.com and contains more than one c
-      let conn = 'media';
-      try {
-        if (link.includes('mediasfu.com') && (link.match(/c/g)?.length ?? 0) > 1) {
-          conn = 'consume';
-        }
-      } catch {
-        // do nothing
-      }
-
-      console.log(`Connected to ${conn} socket with ID: ${socketId}`);
-      resolve(socket);
-    });
-
-    socket.on('connect_error', (error: Error) => {
-      reject(new Error('Error connecting to media socket: ' + error.message));
-    });
-  });
+  return sharedConnectSocket({
+    apiUserName,
+    apiKey,
+    apiToken,
+    link,
+  } as any) as unknown as Promise<Socket>;
 }
 
 
@@ -179,28 +107,7 @@ async function connectSocket(
  */
 
 async function connectLocalSocket({ link }: ConnectLocalSocketOptions): Promise<ResponseLocalConnection> {
-  if (!link) {
-    throw new Error('Socket link required.');
-  }
-
-  let socket: Socket;
-
-  return new Promise((resolve, reject) => {
-    // Connect to socket using the link provided
-    socket = io(`${link}/media`, {
-      transports: ['websocket'],
-    });
-
-
-    // Handle socket connection events
-    socket.on('connection-success', (data: ResponseLocalConnectionData) => {
-      resolve({ socket, data });
-    });
-
-    socket.on('connect_error', (error: Error) => {
-      reject(new Error('Error connecting to media socket: ' + error.message));
-    });
-  });
+  return sharedConnectLocalSocket({ link } as any) as unknown as Promise<ResponseLocalConnection>;
 }
 
 /**
@@ -223,10 +130,7 @@ async function connectLocalSocket({ link }: ConnectLocalSocketOptions): Promise<
  */
 
 async function disconnectSocket({ socket }: DisconnectSocketOptions): Promise<boolean> {
-  if (socket) {
-    socket.disconnect();
-  }
-  return true;
+  return sharedDisconnectSocket({ socket: socket as any });
 }
 
 export { connectSocket, disconnectSocket, connectLocalSocket };

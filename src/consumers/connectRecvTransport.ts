@@ -1,3 +1,4 @@
+import { connectRecvTransport as sharedConnectRecvTransport } from 'mediasfu-shared';
 import { Socket } from 'socket.io-client';
 import { ConsumerResumeType, ConsumerResumeParameters, Transport as TransportType } from '../@types/types';
 import { Consumer, Device, Transport } from 'mediasoup-client/lib/types';
@@ -65,94 +66,6 @@ export type ConnectRecvTransportType = (options: ConnectRecvTransportOptions) =>
  * ```
  */
 
-export const connectRecvTransport = async ({
-  consumerTransport,
-  remoteProducerId,
-  serverConsumerTransportId,
-  nsock,
-  parameters,
-}: ConnectRecvTransportOptions): Promise<void> => {
-  parameters = parameters.getUpdatedAllParams();
-
-  const {
-    device,
-    consumerTransports,
-    updateConsumerTransports,
-    consumerResume,
-  } = parameters;
-
-  try {
-    // Emit 'consume' event to signal consumption initiation
-    nsock.emit(
-      'consume',
-      {
-        rtpCapabilities: device!.rtpCapabilities,
-        remoteProducerId,
-        serverConsumerTransportId,
-      },
-      async ({ params }: { params: Params }) => {
-        if (params.error) {
-          // Handle error
-          console.log('consume error', params.error);
-          return;
-        }
-
-        try {
-          // Consume media using received parameters
-          const consumer: Consumer = await consumerTransport.consume({
-            id: params.id,
-            producerId: params.producerId,
-            kind: params.kind as 'audio' | 'video',
-            rtpParameters: params.rtpParameters,
-          });
-
-          // Update consumerTransports array with the new consumer
-          consumerTransports.push({
-            consumerTransport,
-            serverConsumerTransportId: params.id,
-            producerId: remoteProducerId,
-            consumer,
-            socket_: nsock,
-          });
-
-          updateConsumerTransports(consumerTransports);
-
-          // Extract track from the consumer
-          const { track } = consumer;
-
-          // Emit 'consumer-resume' event to signal consumer resumption
-          nsock.emit(
-            'consumer-resume',
-            { serverConsumerId: params.serverConsumerId },
-            async ({ resumed }: { resumed: boolean }) => {
-              if (resumed) {
-                // Consumer resumed and ready to be used
-                try {
-                  await consumerResume({
-                    track,
-                    kind: params.kind,
-                    remoteProducerId,
-                    params,
-                    parameters,
-                    nsock,
-                    consumer,
-                  });
-                } catch (error) {
-                  // Handle error
-                  console.log('consumerResume error', error);
-                }
-              }
-            },
-          );
-        } catch (error) {
-          // Handle error
-          console.log('consume error', error);
-          return;
-        }
-      },
-    );
-  } catch (error) {
-    // Handle error
-    console.log('connectRecvTransport error', error);
-  }
+export const connectRecvTransport = async (options: ConnectRecvTransportOptions): Promise<void> => {
+  await (sharedConnectRecvTransport as unknown as ConnectRecvTransportType)(options);
 };

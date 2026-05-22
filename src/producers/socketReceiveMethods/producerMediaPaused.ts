@@ -2,6 +2,7 @@ import {
   Participant, PrepopulateUserMediaType, ReorderStreamsType, ReUpdateInterParameters,
   ReUpdateInterType, ReorderStreamsParameters, PrepopulateUserMediaParameters,
 } from '../../@types/types';
+import { producerMediaPaused as sharedProducerMediaPaused } from 'mediasfu-shared';
 
 export interface ProducerMediaPausedParameters extends PrepopulateUserMediaParameters, ReorderStreamsParameters, ReUpdateInterParameters {
   activeSounds: string[];
@@ -90,86 +91,10 @@ export const producerMediaPaused = async ({
   name,
   parameters,
 }: ProducerMediaPausedOptions): Promise<void> => {
-  // Get updated parameters
-  parameters = parameters.getUpdatedAllParams();
-
-  let {
-    activeSounds,
-    meetingDisplayType,
-    meetingVideoOptimized,
-    participants,
-    oldSoundIds,
-    shared,
-    shareScreenStarted,
-    updateMainWindow,
-    hostLabel,
-    islevel,
-    updateActiveSounds,
-    updateUpdateMainWindow,
-    reorderStreams,
-    prepopulateUserMedia,
-    reUpdateInter,
-  } = parameters;
-
-  // Iterate through participants and update UI
-  await Promise.all(
-    participants.map(async (participant) => {
-      if (participant.muted) {
-        try {
-          if (participant.islevel === '2' && !participant.videoID && !shared && !shareScreenStarted && islevel !== '2') {
-            updateMainWindow = true;
-            updateUpdateMainWindow(updateMainWindow);
-            await prepopulateUserMedia({ name: hostLabel, parameters });
-            updateMainWindow = false;
-            updateUpdateMainWindow(updateMainWindow);
-          }
-        } catch { /* empty */ }
-
-        if (shareScreenStarted || shared) {
-          if (participant.name && activeSounds.includes(participant.name)) {
-            activeSounds = activeSounds.filter((audioStream) => audioStream !== participant.name);
-            updateActiveSounds(activeSounds);
-          }
-
-          reUpdateInter({
-            name: participant.name!,
-            add: false,
-            force: true,
-            parameters,
-          });
-        } else {
-          // no screensahre so obey user display settings; show waveforms, ..
-        }
-      }
-    }),
-  );
-
-  // Handle meeting display type and optimize UI
-  if (
-    meetingDisplayType === 'media'
-    || (meetingDisplayType === 'video' && !meetingVideoOptimized)
-  ) {
-    const participant = participants.find((p) => p.name === name);
-    const hasVideo = participant?.videoID !== null && participant?.videoID !== '';
-
-    if (!hasVideo && !(shareScreenStarted || shared)) {
-      await reorderStreams({ add: false, screenChanged: true, parameters });
-    }
-  }
-
-  // Handle audio media
-  if (kind === 'audio') {
-    try {
-      const participant = participants.find((p) => p.audioID === producerId) || participants.find((p) => p.name === name);
-
-      if (participant && ((participant.name && oldSoundIds.includes(participant.name)) || (name && oldSoundIds.includes(name)))) {
-        reUpdateInter({
-          name: participant.name!,
-          add: false,
-          force: true,
-          parameters,
-        });
-      }
-    } catch { /* empty */ }
-  }
+  return sharedProducerMediaPaused({
+    producerId,
+    kind,
+    name,
+    parameters,
+  });
 };

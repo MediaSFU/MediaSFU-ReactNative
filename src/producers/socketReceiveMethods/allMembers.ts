@@ -5,6 +5,7 @@ import {
   CoHostResponsibility,
   WaitingRoomParticipant,
 } from '../../@types/types';
+import { allMembers as sharedAllMembers } from 'mediasfu-shared';
 
 /**
  * Handles participant management and UI updates for all members.
@@ -115,164 +116,15 @@ export const allMembers = async ({
   apiKey,
   apiToken,
 }: AllMembersOptions): Promise<void> => {
-  let {
-    participantsAll,
-    participants,
-    dispActiveNames,
-    requestList,
-    lock_screen,
-    firstAll,
-    membersReceived,
-    roomRecvIPs,
-    deferScreenReceived,
-    screenId,
-    shareScreenStarted,
-    meetingDisplayType,
-    hostFirstSwitch,
-    waitingRoomList,
-    islevel,
-    socket,
-
-    updateParticipantsAll,
-    updateParticipants,
-    updateRequestList,
-    updateCoHost,
-    updateCoHostResponsibility,
-    updateFirstAll,
-    updateMembersReceived,
-    updateDeferScreenReceived,
-    updateShareScreenStarted,
-    updateHostFirstSwitch,
-    updateConsume_sockets,
-    updateRoomRecvIPs,
-    updateIsLoadingModalVisible,
-    updateTotalReqWait,
-
-    onScreenChanges,
-    connectIps,
-    connectLocalIps,
-    sleep,
-    reorderStreams,
-  } = parameters;
-
-  participantsAll = members.map(({ isBanned, isSuspended, name, audioID, videoID }) => ({
-    isBanned,
-    isSuspended,
-    name,
-    audioID,
-    videoID,
-  }));
-
-  updateParticipantsAll(participantsAll);
-
-  participants = members.filter(
-    (participant) => !participant.isBanned && !participant.isSuspended,
-  );
-
-  updateParticipants(participants);
-
-  if (dispActiveNames.length > 0) {
-    const dispActiveNames_ = dispActiveNames.filter(
-      (name) => !participants.map((participant) => participant.name).includes(name),
-    );
-
-    if (dispActiveNames_.length > 0) {
-      await reorderStreams({ add: false, screenChanged: true, parameters });
-    }
-  }
-
-  // check to expect no roomRecvIPs for local instance
-  let onLocal = false;
-  if (roomRecvIPs.length === 1 && roomRecvIPs[0] === 'none') {
-    onLocal = true;
-  }
-
-
-  if (!membersReceived && !onLocal) {
-    if (roomRecvIPs.length < 1) {
-      let checkIPs = setInterval(async () => {
-        if (roomRecvIPs.length > 0) {
-          clearInterval(checkIPs);
-
-          if (deferScreenReceived && screenId) {
-            shareScreenStarted = true;
-            updateShareScreenStarted(shareScreenStarted);
-          }
-
-          const [sockets_, ips_] = await connectIps({
-            consume_sockets,
-            remIP: roomRecvIPs,
-            parameters,
-            apiUserName,
-            apiKey,
-            apiToken,
-          });
-
-          updateConsume_sockets(sockets_);
-          updateRoomRecvIPs(ips_);
-
-          membersReceived = true;
-          updateMembersReceived(membersReceived);
-
-          await sleep({ ms: 250 });
-          updateIsLoadingModalVisible(false);
-          deferScreenReceived = false;
-          updateDeferScreenReceived(deferScreenReceived);
-        }
-      }, 10);
-    } else {
-      const [sockets_, ips_] = await connectIps({
-        consume_sockets,
-        remIP: roomRecvIPs,
-        parameters,
-        apiUserName,
-        apiKey,
-        apiToken,
-      });
-
-      updateConsume_sockets(sockets_);
-      updateRoomRecvIPs(ips_);
-      membersReceived = true;
-      updateMembersReceived(membersReceived);
-
-      if (deferScreenReceived && screenId) {
-        shareScreenStarted = true;
-        updateShareScreenStarted(shareScreenStarted);
-      }
-
-      await sleep({ ms: 250 });
-      updateIsLoadingModalVisible(false);
-      deferScreenReceived = false;
-      updateDeferScreenReceived(deferScreenReceived);
-    }
-  }
-
-  if (onLocal && !membersReceived) {
-    if (connectLocalIps) {
-      await connectLocalIps({ socket: socket, parameters });
-    }
-    await sleep({ ms: 100 });
-    updateIsLoadingModalVisible(false);
-  }
-
-  requestList = requestss.filter((request) =>
-    participants.some((participant) => participant.id === request.id),
-  );
-  updateRequestList(requestList);
-
-  updateTotalReqWait(requestList.length + waitingRoomList.length);
-
-  updateCoHost(coHoste);
-  updateCoHostResponsibility(coHostRes);
-
-  if (!lock_screen && !firstAll) {
-    await onScreenChanges({ parameters });
-
-    if (meetingDisplayType !== 'all') {
-      updateFirstAll(true);
-    }
-  } else if (islevel === '2' && !hostFirstSwitch) {
-    await onScreenChanges({ parameters });
-    updateHostFirstSwitch(true);
-  }
+  return sharedAllMembers({
+    members,
+    requestss,
+    coHoste,
+    coHostRes,
+    parameters,
+    consume_sockets,
+    apiUserName,
+    apiKey,
+    apiToken,
+  });
 };

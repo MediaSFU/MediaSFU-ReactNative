@@ -1,6 +1,6 @@
 import { Socket } from 'socket.io-client';
 import { RtpCapabilities } from 'mediasoup-client/lib/types'; // Import the RtpCapabilities type from the mediasoup-client library
-import { validateAlphanumeric } from '../../methods/utils/validateAlphanumeric'; // Import the validateAlphanumeric function from the validateAlphanumeric file
+import { joinConRoom as sharedJoinConRoom } from 'mediasfu-shared';
 
 export interface JoinConRoomOptions {
   socket: Socket;
@@ -62,95 +62,12 @@ export async function joinConRoom(
     socket, roomName, islevel, member, sec, apiUserName,
   }: JoinConRoomOptions,
 ): Promise<JoinConRoomResponse> {
-  return new Promise((resolve, reject) => {
-    // Validate inputs
-    if (!(sec && roomName && islevel && apiUserName && member)) {
-      const validationError: JoinConRoomResponse = {
-        success: false,
-        rtpCapabilities: null,
-        reason: 'Missing required parameters',
-      };
-      reject(validationError);
-      return;
-    }
-
-    // Validate alphanumeric for roomName, apiUserName, and member
-    try {
-      validateAlphanumeric({ str: roomName });
-      validateAlphanumeric({ str: apiUserName });
-      validateAlphanumeric({ str: member });
-    } catch {
-      const validationError: JoinConRoomResponse = {
-        success: false,
-        rtpCapabilities: null,
-        reason: 'Invalid roomName or apiUserName or member',
-      };
-      reject(validationError);
-      return;
-    }
-
-    // Validate roomName starts with 's' or 'p'
-    if (!(roomName.startsWith('s') || roomName.startsWith('p'))) {
-      const validationError: JoinConRoomResponse = {
-        success: false,
-        rtpCapabilities: null,
-        reason: 'Invalid roomName, must start with s or p',
-      };
-      reject(validationError);
-      return;
-    }
-
-    // Validate other conditions for sec, roomName, islevel, apiUserName
-    if (
-      !(
-        sec.length === 64
-        && roomName.length >= 8
-        && islevel.length === 1
-        && apiUserName.length >= 6
-        && (islevel === '0' || islevel === '1' || islevel === '2')
-      )
-    ) {
-      const validationError: JoinConRoomResponse = {
-        success: false,
-        rtpCapabilities: null,
-        reason: 'Invalid roomName or islevel or apiUserName or secret',
-      };
-      reject(validationError);
-      return;
-    }
-
-    socket.emit(
-      'joinConRoom',
-      {
-        roomName, islevel, member, sec, apiUserName,
-      },
-      async (data: JoinConRoomResponse) => {
-        try {
-          // Check if rtpCapabilities is null
-          if (data.rtpCapabilities == null) {
-            // Check if banned, suspended, or noAdmin
-            if (data.banned) {
-              throw new Error('User is banned.');
-            }
-            if (data.suspended) {
-              throw new Error('User is suspended.');
-            }
-            if (data.noAdmin) {
-              throw new Error('Host has not joined the room yet.');
-            }
-
-            // Resolve with the data received from the 'joinConRoom' event
-            resolve(data);
-          } else {
-            // Handle other cases or perform additional actions
-            resolve(data);
-          }
-        } catch (error) {
-          // Handle errors during the joinConRoom process
-          console.log('Error joining room:', error);
-          reject(error);
-        }
-      },
-    );
-  });
+  return sharedJoinConRoom({
+    socket: socket as any,
+    roomName,
+    islevel,
+    member,
+    sec,
+    apiUserName,
+  } as any);
 }

@@ -1,3 +1,5 @@
+import { meetingStillThere as sharedMeetingStillThere } from 'mediasfu-shared';
+
 export interface MeetingStillThereOptions {
   updateIsConfirmHereModalVisible: (isVisible: boolean) => void;
 }
@@ -27,6 +29,7 @@ export type MeetingStillThereType = (options: MeetingStillThereOptions) => Promi
 export const meetingStillThere = async ({
   updateIsConfirmHereModalVisible,
 }: MeetingStillThereOptions): Promise<void> => {
-  // Update the visibility of the "still there?" modal
-  updateIsConfirmHereModalVisible(true);
+  return sharedMeetingStillThere({
+    updateIsConfirmHereModalVisible,
+  });
 };

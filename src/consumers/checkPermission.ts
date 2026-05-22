@@ -1,9 +1,14 @@
+import { checkPermission as sharedCheckPermission } from 'mediasfu-shared';
+import { PermissionConfig } from '../methods/permissionsMethods/updatePermissionConfig';
+
 export interface CheckPermissionOptions {
   audioSetting: string;
   videoSetting: string;
   screenshareSetting: string;
   chatSetting: string;
   permissionType: 'audioSetting' | 'videoSetting' | 'screenshareSetting' | 'chatSetting';
+  permissionConfig?: PermissionConfig | null;
+  participantLevel?: string;
 }
 
 // Export the type definition for the function
@@ -39,52 +44,6 @@ export type CheckPermissionType = (options: CheckPermissionOptions) => Promise<n
  *   });
  */
 
-export async function checkPermission({
-  permissionType, audioSetting, videoSetting, screenshareSetting, chatSetting,
-}: CheckPermissionOptions) {
-  try {
-    // PermissionType is audioSetting, videoSetting, screenshareSetting, chatSetting
-    // Perform a switch case to check for the permissionType and return the response
-    switch (permissionType) {
-      case 'audioSetting':
-        if (audioSetting === 'allow') {
-          return 0;
-        } if (audioSetting === 'approval') {
-          return 1;
-        }
-        return 2;
-
-      case 'videoSetting':
-        if (videoSetting === 'allow') {
-          return 0;
-        } if (videoSetting === 'approval') {
-          return 1;
-        }
-        return 2;
-
-      case 'screenshareSetting':
-        if (screenshareSetting === 'allow') {
-          return 0;
-        } if (screenshareSetting === 'approval') {
-          return 1;
-        }
-        return 2;
-
-      case 'chatSetting':
-        if (chatSetting === 'allow') {
-          return 0;
-        } if (chatSetting === 'approval') {
-          return 1;
-        }
-        return 2;
-
-      default:
-        // throw new Error(`Invalid permissionType: ${permissionType}`);
-        return 2;
-    }
-  } catch {
-    // console.log('checkPermission error', error);
-    // throw error;
-    return 2;
-  }
-}
+export const checkPermission = async (options: CheckPermissionOptions): Promise<number> => {
+  return (sharedCheckPermission as unknown as CheckPermissionType)(options);
+};

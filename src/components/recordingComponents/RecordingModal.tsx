@@ -95,6 +95,7 @@ export interface RecordingModalOptions {
   onClose: () => void;
   backgroundColor?: string;
   position?: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' | 'center';
+  isDarkMode?: boolean;
   confirmRecording: ConfirmRecordingType;
   startRecording: StartRecordingType;
   parameters: RecordingModalParameters;
@@ -110,6 +111,36 @@ export interface RecordingModalOptions {
 }
 
 export type RecordingModalType = (options: RecordingModalOptions) => JSX.Element;
+
+type RecordingDisplayAdviceParameters = {
+  meetingDisplayType?: string;
+  breakOutRoomStarted?: boolean;
+  breakOutRoomEnded?: boolean;
+  recordingVideoParticipantsFullRoomSupport?: boolean;
+  recordingVideoOptions?: string;
+  recordingMediaOptions?: string;
+};
+
+const getRecordingDisplayAdvice = (parameters?: RecordingDisplayAdviceParameters) => {
+  if (!parameters) {
+    return null;
+  }
+
+  const normalizedRecordingMediaOptions =
+    parameters.recordingMediaOptions === 'all' ? 'video' : parameters.recordingMediaOptions;
+
+  if (
+    !parameters.recordingVideoParticipantsFullRoomSupport &&
+    parameters.recordingVideoOptions === 'all' &&
+    normalizedRecordingMediaOptions === 'video' &&
+    parameters.meetingDisplayType === 'all' &&
+    !(parameters.breakOutRoomStarted && !parameters.breakOutRoomEnded)
+  ) {
+    return 'Meeting display is set to All. This recording setup may be blocked. Switch the meeting display to Media before confirming so only participants with active media are included.';
+  }
+
+  return null;
+};
 
 /**
  * RecordingModal orchestrates both standard and advanced recording preferences prior to capture. It
@@ -163,6 +194,7 @@ const RecordingModal: React.FC<RecordingModalOptions> = ({
   onClose,
   backgroundColor = '#83c0e9',
   position = 'bottomRight',
+  isDarkMode,
   confirmRecording,
   startRecording,
   parameters,
@@ -170,7 +202,12 @@ const RecordingModal: React.FC<RecordingModalOptions> = ({
   renderContent,
   renderContainer,
 }) => {
+  if (!isRecordingModalVisible) {
+    return null;
+  }
+
   const { recordPaused } = parameters;
+  const recordingDisplayAdvice = getRecordingDisplayAdvice(parameters);
 
   const screenWidth = Dimensions.get('window').width;
   let modalWidth = 0.75 * screenWidth;
@@ -179,35 +216,43 @@ const RecordingModal: React.FC<RecordingModalOptions> = ({
   }
 
   const dimensions = { width: modalWidth, height: 0 };
+  const themed = typeof isDarkMode === 'boolean';
+  const textColor = themed ? (isDarkMode ? '#f8fafc' : '#0f172a') : 'black';
+  const borderColor = themed ? (isDarkMode ? 'rgba(226, 232, 240, 0.18)' : 'rgba(71, 85, 105, 0.22)') : '#000000';
 
   const defaultContent = (
     <>
       {/* Header */}
       <View style={styles.modalHeader}>
-        <Text style={styles.modalTitle}>
-          <FontAwesome name="bars" size={24} color="black" />
+        <Text style={[styles.modalTitle, { color: textColor }] as any}>
+          <FontAwesome name="bars" size={24} color={textColor} />
           {' Recording Settings'}
         </Text>
         <Pressable onPress={onClose} style={styles.closeButton}>
-          <FontAwesome name="times" size={24} color="black" />
+          <FontAwesome name="times" size={24} color={textColor} />
         </Pressable>
       </View>
 
-      <View style={styles.separator} />
+      <View style={[styles.separator, { backgroundColor: borderColor }] as any} />
 
       {/* Modal Body */}
       <View style={styles.modalBody}>
         <ScrollView style={styles.scrollView}>
           <View style={styles.listGroup}>
-            <StandardPanelComponent parameters={parameters} />
-            <AdvancedPanelComponent parameters={parameters} />
+            <StandardPanelComponent parameters={{ ...parameters, isDarkMode }} />
+            <AdvancedPanelComponent parameters={{ ...parameters, isDarkMode }} />
           </View>
         </ScrollView>
       </View>
 
-      <View style={styles.separator} />
+      <View style={[styles.separator, { backgroundColor: borderColor }] as any} />
 
       {/* Action Buttons */}
+      {recordingDisplayAdvice && (
+        <View style={styles.adviceBox}>
+          <Text style={[styles.adviceText, { color: textColor }] as any}>{recordingDisplayAdvice}</Text>
+        </View>
+      )}
       <View style={styles.buttonRow}>
         <Pressable
           style={[styles.button, styles.confirmButton]}
@@ -221,7 +266,7 @@ const RecordingModal: React.FC<RecordingModalOptions> = ({
             onPress={() => startRecording({ parameters })}
           >
             <Text style={styles.buttonText}>
-              Start <FontAwesome name="play" size={16} color="black" />
+              Start <FontAwesome name="play" size={16} color="#ffffff" />
             </Text>
           </Pressable>
         )}
@@ -317,6 +362,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 20,
+  },
+  adviceBox: {
+    marginTop: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.35)',
+    backgroundColor: 'rgba(245, 158, 11, 0.18)',
+  },
+  adviceText: {
+    color: 'black',
+    fontSize: 13,
+    fontWeight: '600',
+    lineHeight: 19,
   },
   button: {
     flex: 1,

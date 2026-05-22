@@ -1,5 +1,5 @@
 import { Socket } from 'socket.io-client';
-import { CoHostResponsibility, Message, ShowAlert } from '../../@types/types';
+import { CoHostResponsibility, ShowAlert } from '../../@types/types';
 
 export interface SendMessageOptions {
   member: string;
@@ -54,27 +54,29 @@ export type SendMessageType = (options: SendMessageOptions) => Promise<void>;
  */
 
 export const sendMessage = async ({
+  message,
+  receivers,
+  group,
+  messagesLength,
   member,
+  sender,
   islevel,
   showAlert,
   coHostResponsibility,
   coHost,
-  chatSetting,
-  message,
   roomName,
-  messagesLength,
-  receivers,
-  group,
-  sender,
   socket,
+  chatSetting,
 }: SendMessageOptions): Promise<void> => {
   let chatValue = false;
+  const normalizedReceivers = (receivers ?? []).filter(
+    (receiver): receiver is string => typeof receiver === 'string' && receiver.trim().length > 0,
+  );
 
-  // Check message count limit based on the room type
   if (
-    (messagesLength > 100 && roomName.startsWith('d'))
-    || (messagesLength > 500 && roomName.startsWith('s'))
-    || (messagesLength > 100000 && roomName.startsWith('p'))
+    (messagesLength > 100 && roomName.startsWith('d')) ||
+    (messagesLength > 500 && roomName.startsWith('s')) ||
+    (messagesLength > 100000 && roomName.startsWith('p'))
   ) {
     showAlert?.({
       message: 'You have reached the maximum number of messages allowed.',
@@ -84,8 +86,7 @@ export const sendMessage = async ({
     return;
   }
 
-  // Validate message, sender, and receivers
-  if (!message || !receivers || (!member && !sender)) {
+  if (!message || message === '') {
     showAlert?.({
       message: 'Message is not valid.',
       type: 'danger',
@@ -94,37 +95,38 @@ export const sendMessage = async ({
     return;
   }
 
-  // Create the message object
-  const messageObject: Message = {
-    sender: sender || member,
-    receivers,
+  if (normalizedReceivers.length < 1 && group === false && islevel === '2') {
+    showAlert?.({
+      message: 'Please select a message to reply to',
+      type: 'danger',
+      duration: 3000,
+    });
+    return;
+  }
+
+  const messageObject = {
+    sender: sender ? sender : member,
+    receivers: normalizedReceivers,
     message,
     timestamp: new Date().toLocaleTimeString(),
     group: group !== undefined && group !== null ? group : false,
   };
 
   try {
-    // Check co-host responsibility for chat
     chatValue = coHostResponsibility.find((item) => item.name === 'chat')?.value ?? false;
   } catch (error) {
     console.error(error);
   }
 
-  if (islevel === '2' || (coHost === member && chatValue === true)) {
-    // Allow sending message
-  } else {
-    // Check if user is allowed to send a message in the event room
-    if (!chatSetting) {
-      showAlert?.({
-        message: 'You are not allowed to send a message in this event room',
-        type: 'danger',
-        duration: 3000,
-      });
-      return;
-    }
+  if (!(islevel === '2' || (coHost === member && chatValue === true)) && !chatSetting) {
+    showAlert?.({
+      message: 'You are not allowed to send a message in this event room',
+      type: 'danger',
+      duration: 3000,
+    });
+    return;
   }
 
-  // Send the message to the server
   socket.emit('sendMessage', {
     messageObject,
     roomName,

@@ -1,3 +1,4 @@
+import { connectSendTransportAudio as sharedConnectSendTransportAudio } from 'mediasfu-shared';
 import { Transport, Producer, ProducerOptions } from 'mediasoup-client/lib/types';
 
 export interface ConnectSendTransportAudioParameters {
@@ -112,50 +113,6 @@ export const updateMicLevel = async (audioProducer: Producer, updateAudioLevel: 
  *   .catch((error) => console.error('Error connecting audio transport:', error));
  */
 
-export const connectSendTransportAudio: ConnectSendTransportAudioType = async ({
-  parameters,
-  audioParams,
-  targetOption = 'all',
-}: ConnectSendTransportAudioOptions): Promise<void> => {
-  try {
-    let {
-      audioProducer,
-      producerTransport,
-      updateAudioProducer,
-      updateProducerTransport,
-    } = parameters;
-
-    // Attempt to connect the primary send transport
-    if (targetOption === 'all' || targetOption === 'remote') {
-      audioProducer = await producerTransport!.produce(audioParams);
-
-      // Update the audio level
-      updateMicLevel(audioProducer, parameters.updateAudioLevel);
-
-      // Update state with the new producer and transport
-      updateAudioProducer(audioProducer);
-      updateProducerTransport(producerTransport);
-    }
-
-    // Attempt to connect the local send transport
-    if (targetOption === 'all' || targetOption === 'local') {
-      try {
-        await connectLocalSendTransportAudio({ parameters, audioParams });
-
-        // Update the audio level
-        if (targetOption === 'local' && parameters.updateAudioLevel) {
-          if (!parameters.localAudioProducer) {
-            parameters = parameters.getUpdatedAllParams();
-          }
-          updateMicLevel(parameters.localAudioProducer!, parameters.updateAudioLevel);
-        }
-      } catch (localError) {
-        console.error('Local audio transport connection failed:', localError);
-      }
-    }
-
-  } catch (primaryError) {
-    console.error('audio transport connection failed:', primaryError);
-    throw new Error('Failed to connect to audio transport.');
-  }
+export const connectSendTransportAudio: ConnectSendTransportAudioType = async (options): Promise<void> => {
+  await (sharedConnectSendTransportAudio as unknown as ConnectSendTransportAudioType)(options);
 };

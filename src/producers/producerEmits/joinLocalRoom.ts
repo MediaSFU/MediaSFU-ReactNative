@@ -1,8 +1,10 @@
-import { ResponseJoinLocalRoom, PreJoinPageParameters, JoinMediaSFURoomOptions } from '../../@types/types';
-import { validateAlphanumeric } from '../../methods/utils/validateAlphanumeric';
+import {
+  checkMediasfuURL as sharedCheckMediasfuURL,
+  joinLocalRoom as sharedJoinLocalRoom,
+} from 'mediasfu-shared';
+import { ResponseJoinLocalRoom, PreJoinPageParameters } from '../../@types/types';
 import { Socket } from 'socket.io-client';
-import { joinRoomOnMediaSFU, JoinRoomOnMediaSFUType } from '../../methods/utils/joinRoomOnMediaSFU';
-import { checkLimitsAndMakeRequest } from '../../methods/utils/checkLimitsAndMakeRequest';
+import { JoinRoomOnMediaSFUType } from '../../methods/utils/joinRoomOnMediaSFU';
 
 export interface JoinLocalRoomOptions {
   socket: Socket;
@@ -86,92 +88,19 @@ export async function checkMediasfuURL({
   islevel,
   socket,
   parameters,
-  joinMediaSFURoom = joinRoomOnMediaSFU,
+  joinMediaSFURoom,
   localLink = '',
 }: CheckMediasfuURLOptions): Promise<void> {
-
-  if (
-    data.mediasfuURL &&
-    data.mediasfuURL !== '' &&
-    data.mediasfuURL.length > 10
-  ) {
-
-    let link;
-    let secretCode;
-
-    try {
-      const splitTexts = ['/meet/', '/chat/', '/broadcast/'];
-      let splitText = splitTexts.find((text) => data.mediasfuURL.includes(text)) || '/meet/';
-
-      const urlParts = data.mediasfuURL.split(splitText);
-      link = urlParts[0];
-      secretCode = urlParts[1].split('/')[1];
-    } catch {
-      link = data.mediasfuURL;
-      return;
-    }
-
-    await checkLimitsAndMakeRequest({
-      apiUserName: roomName,
-      apiToken: secretCode,
-      link,
-      apiKey: '',
-      userName: member,
-      parameters,
-      validate: false,
-    });
-
-    return;
-  }
-
-  if (
-    (!data.mediasfuURL || data.mediasfuURL.length < 10) &&
-    islevel !== '2' &&
-    data.allowRecord &&
-    (data.allowRecord === true || data.allowRecord === 'true') &&
-    data.apiKey &&
-    data.apiKey.length === 64 &&
-    data.apiUserName &&
-    data.apiUserName.length > 5 &&
-    (roomName.startsWith('s') || roomName.startsWith('p'))
-  ) {
-    const payload:JoinMediaSFURoomOptions = {
-      action: 'join',
-      meetingID: roomName,
-      userName: member,
-    };
-
-    const response = await joinMediaSFURoom({
-      payload,
-      apiKey: data.apiKey,
-      apiUserName: data.apiUserName,
-      localLink,
-    });
-
-    if (response.success && response.data && 'roomName' in response.data) {
-
-      try {
-        socket.emit(
-          'updateMediasfuURL',
-          { eventID: roomName, mediasfuURL: response.data.publicURL },
-          async () => {},
-        );
-      } catch {
-        // Do nothing
-      }
-
-      await checkLimitsAndMakeRequest({
-        apiUserName: response.data.roomName,
-        apiToken: response.data.secret,
-        link: response.data.link,
-        userName: member,
-        parameters: parameters,
-        validate: false,
-      });
-      parameters.updateApiToken(response.data.secret);
-    }
-    return;
-  }
+  return (sharedCheckMediasfuURL as unknown as (options: CheckMediasfuURLOptions) => Promise<void>)({
+    data,
+    member,
+    roomName,
+    islevel,
+    socket,
+    parameters,
+    joinMediaSFURoom,
+    localLink,
+  });
 }
 
 /**
@@ -223,121 +152,20 @@ async function joinLocalRoom
     apiUserName,
     parameters,
     checkConnect = false,
-    joinMediaSFURoom = joinRoomOnMediaSFU,
+    joinMediaSFURoom,
     localLink = '',
   }: JoinLocalRoomOptions): Promise<ResponseJoinLocalRoom> {
-
-  return new Promise((resolve, reject) => {
-    // Validate inputs
-    if (!(sec && roomName && islevel && apiUserName && member)) {
-      const validationError = {
-        success: false,
-        rtpCapabilities: null as any,
-        reason: 'Missing required parameters',
-      };
-      reject(validationError);
-      return;
-    }
-
-    // Validate alphanumeric for roomName, apiUserName, and member
-    try {
-      validateAlphanumeric({ str: roomName });
-      validateAlphanumeric({ str: apiUserName });
-      validateAlphanumeric({ str: member });
-    } catch {
-      const validationError = {
-        success: false,
-        rtpCapabilities: null as any,
-        reason: 'Invalid roomName or apiUserName or member',
-      };
-      reject(validationError);
-      return;
-    }
-
-    // Validate roomName starts with 's' or 'p'
-    if (!(roomName.startsWith('s') || roomName.startsWith('p') || roomName.startsWith('m'))) {
-      const validationError = {
-        success: false,
-        rtpCapabilities: null as any,
-        reason: 'Invalid roomName, must start with s or p',
-      };
-      reject(validationError);
-      return;
-    }
-
-    // Validate other conditions for sec, roomName, islevel, apiUserName
-    if (
-      !(
-        sec.length === 32 &&
-        roomName.length >= 8 &&
-        islevel.length === 1 &&
-        apiUserName.length >= 6 &&
-        (islevel === '0' || islevel === '1' || islevel === '2')
-      )
-    ) {
-      const validationError = {
-        success: false,
-        rtpCapabilities: null as any,
-        reason: 'Invalid roomName or islevel or apiUserName or secret',
-      };
-      reject(validationError);
-      return;
-    }
-
-    socket.emit(
-      'joinRoom',
-      { roomName, islevel, member, sec, apiUserName },
-      async (data: ResponseJoinLocalRoom) => {
-
-        try {
-          // Check if rtpCapabilities is null
-          if (data.rtpCapabilities === null) {
-            // Check if isBanned or hostNotJoined
-            if (data.isBanned) {
-              throw new Error('User is banned.');
-            }
-            if (data.hostNotJoined) {
-              throw new Error('Host has not joined the room yet.');
-            }
-
-            // If not null, create device or perform other actions as needed
-            // ...
-
-            // Resolve with the data received from the 'joinRoom' event
-            resolve(data);
-          } else {
-            if (checkConnect) {
-              await checkMediasfuURL({
-                data,
-                member,
-                roomName,
-                islevel,
-                socket,
-                parameters,
-                joinMediaSFURoom,
-                localLink,
-              });
-            }else {
-              // if mediasfuURL is present, split and get the secret code
-              if (data.mediasfuURL && data.mediasfuURL !== '' && data.mediasfuURL.length > 10) {
-                let secretCode;
-                const splitTexts = ['/meet/', '/chat/', '/broadcast/'];
-                let splitText = splitTexts.find((text) => data.mediasfuURL.includes(text)) || '/meet/';
-                const urlParts = data.mediasfuURL.split(splitText);
-                secretCode = urlParts[1].split('/')[1];
-                parameters.updateApiToken(secretCode);
-              }
-            }
-            // Resolve with the data received from the 'joinRoom' event
-            resolve(data);
-          }
-        } catch (error) {
-          // Handle errors during the joinRoom process
-          console.log('Error joining room:', error);
-          reject(error);
-        }
-      },
-    );
+  return (sharedJoinLocalRoom as unknown as (options: JoinLocalRoomOptions) => Promise<ResponseJoinLocalRoom>)({
+    socket,
+    roomName,
+    islevel,
+    member,
+    sec,
+    apiUserName,
+    parameters,
+    checkConnect,
+    joinMediaSFURoom,
+    localLink,
   });
 }
 

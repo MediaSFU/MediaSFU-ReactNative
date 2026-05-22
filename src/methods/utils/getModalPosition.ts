@@ -1,3 +1,4 @@
+import { getModalPosition as sharedGetModalPosition } from 'mediasfu-shared';
 import { ViewStyle, FlexAlignType } from 'react-native';
 
 export interface ModalPositionStyle extends Pick<ViewStyle, 'justifyContent' | 'alignItems'> {
@@ -30,17 +31,5 @@ export type GetModalPositionType = (options: GetModalPositionOptions) => ModalPo
  */
 
 export const getModalPosition = ({ position }: GetModalPositionOptions): ModalPositionStyle => {
-  switch (position) {
-    case 'center':
-      return { justifyContent: 'center', alignItems: 'center' };
-    case 'topLeft':
-      return { justifyContent: 'flex-start', alignItems: 'flex-start' };
-    case 'topRight':
-      return { justifyContent: 'flex-start', alignItems: 'flex-end' };
-    case 'bottomLeft':
-      return { justifyContent: 'flex-end', alignItems: 'flex-start' };
-    case 'bottomRight':
-    default:
-      return { justifyContent: 'flex-end', alignItems: 'flex-end' };
-  }
+  return sharedGetModalPosition({ position }) as ModalPositionStyle;
 };

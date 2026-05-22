@@ -1,3 +1,4 @@
+import { stopShareScreen as sharedStopShareScreen } from 'mediasfu-shared';
 import {
   DisconnectSendTransportScreenType, PrepopulateUserMediaType, ReorderStreamsType, GetVideosType, DisconnectSendTransportScreenParameters,
    PrepopulateUserMediaParameters, ReorderStreamsParameters, EventType, MediaStream, MediaStreamTrack,
@@ -136,110 +137,6 @@ export type StopShareScreenType = (options: StopShareScreenOptions) => Promise<v
  *   });
  */
 
-export async function stopShareScreen({ parameters }: StopShareScreenOptions): Promise<void> {
-  const { getUpdatedAllParams } = parameters;
-  parameters = getUpdatedAllParams();
-
-  let {
-    shared,
-    shareScreenStarted,
-    shareEnded,
-    updateMainWindow,
-    defer_receive,
-    hostLabel,
-    lock_screen,
-    forceFullDisplay,
-    firstAll,
-    first_round,
-    localStreamScreen,
-    eventType,
-    prevForceFullDisplay,
-    annotateScreenStream,
-
-    updateShared,
-    updateShareScreenStarted,
-    updateShareEnded,
-    updateUpdateMainWindow,
-    updateDefer_receive,
-    updateLock_screen,
-    updateForceFullDisplay,
-    updateFirstAll,
-    updateFirst_round,
-    updateLocalStreamScreen,
-    updateMainHeightWidth,
-    updateAnnotateScreenStream,
-    updateIsScreenboardModalVisible,
-
-    disconnectSendTransportScreen,
-    prepopulateUserMedia,
-    reorderStreams,
-    getVideos,
-  } = parameters;
-
-  shared = false;
-  updateShared(shared);
-  shareScreenStarted = false;
-  updateShareScreenStarted(shareScreenStarted);
-  shareEnded = true;
-  updateShareEnded(shareEnded);
-  updateMainWindow = true;
-  updateUpdateMainWindow(updateMainWindow);
-
-  if (defer_receive) {
-    defer_receive = false;
-    updateDefer_receive(defer_receive);
-    await getVideos({
-      participants: parameters.participants,
-      allVideoStreams: parameters.allVideoStreams,
-      oldAllStreams: parameters.oldAllStreams,
-      adminVidID: parameters.adminVidID,
-      updateAllVideoStreams: parameters.updateAllVideoStreams,
-      updateOldAllStreams: parameters.updateOldAllStreams,
-    });
-  }
-
-  try {
-    localStreamScreen!.getTracks().forEach((track: MediaStreamTrack) => track.stop());
-  } catch {
-    // Do nothing
-  }
-  updateLocalStreamScreen(null);
-  await disconnectSendTransportScreen({ parameters });
-
-  try {
-    if (annotateScreenStream) {
-      annotateScreenStream = false;
-      updateAnnotateScreenStream(annotateScreenStream);
-      updateIsScreenboardModalVisible(true);
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      updateIsScreenboardModalVisible(false);
-    }
-  } catch (error) {
-    console.log('Error handling screen annotation:', error);
-  }
-
-  if (eventType === 'conference') {
-    updateMainHeightWidth(0);
-  }
-
-  try {
-    await prepopulateUserMedia({ name: hostLabel, parameters });
-  } catch (error) {
-    console.log('Error in prepopulateUserMedia', error);
-  }
-
-  try {
-    await reorderStreams({ add: false, screenChanged: true, parameters });
-  } catch (error) {
-    console.log('Error in reorderStreams', error);
-  }
-
-  lock_screen = false;
-  updateLock_screen(lock_screen);
-  forceFullDisplay = prevForceFullDisplay;
-  updateForceFullDisplay(forceFullDisplay);
-  firstAll = false;
-  updateFirstAll(firstAll);
-  first_round = false;
-  updateFirst_round(first_round);
-}
+export const stopShareScreen = async (options: StopShareScreenOptions): Promise<void> => {
+  await (sharedStopShareScreen as unknown as StopShareScreenType)(options);
+};

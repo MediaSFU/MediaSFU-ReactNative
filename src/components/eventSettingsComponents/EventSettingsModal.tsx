@@ -17,6 +17,7 @@ import { Socket } from 'socket.io-client';
 import { ShowAlert } from '../../@types/types';
 import { modifySettings, ModifySettingsOptions } from '../../methods/settingsMethods/modifySettings';
 import { getModalPosition } from '../../methods/utils/getModalPosition';
+import { createThemedPickerSelectStyles, getModalBodyTheme } from '../../components_modern/core/modalBodyTheme';
 
 /**
  * Parameters supplied to `EventSettingsModal` for contextual state and server communication.
@@ -91,6 +92,7 @@ export interface EventSettingsModalOptions {
   onModifyEventSettings?: (options: ModifySettingsOptions) => Promise<void>;
   position?: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
   backgroundColor?: string;
+  isDarkMode?: boolean;
   audioSetting: string;
   videoSetting: string;
   screenshareSetting: string;
@@ -178,6 +180,7 @@ const EventSettingsModal: React.FC<EventSettingsModalOptions> = ({
   chatSetting,
   position = 'topRight',
   backgroundColor = '#83c0e9',
+  isDarkMode,
   updateAudioSetting,
   updateVideoSetting,
   updateScreenshareSetting,
@@ -236,30 +239,33 @@ const EventSettingsModal: React.FC<EventSettingsModalOptions> = ({
   };
 
   const dimensions = { width: modalWidth, height: 0 };
+  const theme = getModalBodyTheme(isDarkMode);
+  const shouldUseModernTheme = typeof isDarkMode === 'boolean';
+  const themedPickerSelectStyles = createThemedPickerSelectStyles(theme);
 
   const defaultContent = (
     <>
       {/* Header */}
       <View style={styles.modalHeader}>
-        <Text style={styles.modalTitle}>Event Settings</Text>
+        <Text style={[styles.modalTitle, { color: theme.textColor }]}>Event Settings</Text>
         <Pressable
           onPress={onEventSettingsClose}
           style={styles.btnCloseSettings}
           accessibilityRole="button"
           accessibilityLabel="Close Event Settings Modal"
         >
-          <FontAwesome name="times" style={styles.icon} />
+          <FontAwesome name="times" style={[styles.icon, { color: theme.iconColor }]} />
         </Pressable>
       </View>
 
       {/* Divider */}
-      <View style={styles.hr} />
+      <View style={[styles.hr, { backgroundColor: theme.dividerColor }]} />
 
       {/* Body */}
       <View style={styles.modalBody}>
         {/* User Audio Setting */}
         <View style={styles.formGroup}>
-          <Text style={styles.label}>User Audio:</Text>
+          <Text style={[styles.label, { color: theme.textColor }]}>User Audio:</Text>
           <RNPickerSelect
             onValueChange={(value: string) => {
               setAudioState(value);
@@ -271,18 +277,18 @@ const EventSettingsModal: React.FC<EventSettingsModalOptions> = ({
               { label: 'Upon approval', value: 'approval' },
             ]}
             value={audioState}
-            style={pickerSelectStyles}
+            style={themedPickerSelectStyles}
             placeholder={{}}
             useNativeAndroidPickerStyle={false}
           />
         </View>
 
         {/* Separator */}
-        <View style={styles.sep} />
+        <View style={[styles.sep, { backgroundColor: theme.dividerColor }]} />
 
         {/* User Video Setting */}
         <View style={styles.formGroup}>
-          <Text style={styles.label}>User Video:</Text>
+          <Text style={[styles.label, { color: theme.textColor }]}>User Video:</Text>
           <RNPickerSelect
             onValueChange={(value: string) => {
               setVideoState(value);
@@ -294,18 +300,18 @@ const EventSettingsModal: React.FC<EventSettingsModalOptions> = ({
               { label: 'Upon approval', value: 'approval' },
             ]}
             value={videoState}
-            style={pickerSelectStyles}
+            style={themedPickerSelectStyles}
             placeholder={{}}
             useNativeAndroidPickerStyle={false}
           />
         </View>
 
         {/* Separator */}
-        <View style={styles.sep} />
+        <View style={[styles.sep, { backgroundColor: theme.dividerColor }]} />
 
         {/* User Screenshare Setting */}
         <View style={styles.formGroup}>
-          <Text style={styles.label}>User Screenshare:</Text>
+          <Text style={[styles.label, { color: theme.textColor }]}>User Screenshare:</Text>
           <RNPickerSelect
             onValueChange={(value: string) => {
               setScreenshareState(value);
@@ -317,18 +323,18 @@ const EventSettingsModal: React.FC<EventSettingsModalOptions> = ({
               { label: 'Upon approval', value: 'approval' },
             ]}
             value={screenshareState}
-            style={pickerSelectStyles}
+            style={themedPickerSelectStyles}
             placeholder={{}}
             useNativeAndroidPickerStyle={false}
           />
         </View>
 
         {/* Separator */}
-        <View style={styles.sep} />
+        <View style={[styles.sep, { backgroundColor: theme.dividerColor }]} />
 
         {/* User Chat Setting */}
         <View style={styles.formGroup}>
-          <Text style={styles.label}>User Chat:</Text>
+          <Text style={[styles.label, { color: theme.textColor }]}>User Chat:</Text>
           <RNPickerSelect
             onValueChange={(value: string) => {
               setChatState(value);
@@ -339,7 +345,7 @@ const EventSettingsModal: React.FC<EventSettingsModalOptions> = ({
               { label: 'Allow', value: 'allow' },
             ]}
             value={chatState}
-            style={pickerSelectStyles}
+            style={themedPickerSelectStyles}
             placeholder={{}}
             useNativeAndroidPickerStyle={false}
           />
@@ -350,11 +356,11 @@ const EventSettingsModal: React.FC<EventSettingsModalOptions> = ({
       <View style={styles.modalFooter}>
         <Pressable
           onPress={handleSaveSettings}
-          style={styles.btnApplySettings}
+          style={[styles.btnApplySettings, { backgroundColor: theme.buttonBackgroundColor }]}
           accessibilityRole="button"
           accessibilityLabel="Save Event Settings"
         >
-          <Text style={styles.btnText}>Save</Text>
+          <Text style={[styles.btnText, { color: theme.buttonTextColor }]}>Save</Text>
         </Pressable>
       </View>
     </>
@@ -371,8 +377,8 @@ const EventSettingsModal: React.FC<EventSettingsModalOptions> = ({
       visible={isEventSettingsModalVisible}
       onRequestClose={onEventSettingsClose}
     >
-      <View style={[styles.modalContainer, getModalPosition({ position })]}>
-        <View style={[styles.modalContent, { backgroundColor, width: modalWidth }, style]}>
+      <View style={[styles.modalContainer, getModalPosition({ position }), shouldUseModernTheme ? { borderColor: theme.borderColor } : null]}>
+        <View style={[styles.modalContent, { backgroundColor, width: modalWidth }, shouldUseModernTheme ? { borderColor: theme.borderColor } : null, style]}>
           {content}
         </View>
       </View>

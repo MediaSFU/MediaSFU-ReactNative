@@ -1,6 +1,7 @@
 import {
   Participant, PrepopulateUserMediaParameters, PrepopulateUserMediaType, ReorderStreamsParameters, ReorderStreamsType,
 } from '../../@types/types';
+import { producerMediaResumed as sharedProducerMediaResumed } from 'mediasfu-shared';
 
 export interface ProducerMediaResumedParameters extends PrepopulateUserMediaParameters, ReorderStreamsParameters {
   meetingDisplayType: string;
@@ -70,39 +71,12 @@ export type ProducerMediaResumedType = (options: ProducerMediaResumedOptions) =>
 
 export const producerMediaResumed = async ({
   name,
+  kind,
   parameters,
 }: ProducerMediaResumedOptions): Promise<void> => {
-  const {
-    meetingDisplayType,
-    participants,
-    shared,
-    shareScreenStarted,
-    mainScreenFilled,
-    hostLabel,
-    updateUpdateMainWindow,
-    reorderStreams,
-    prepopulateUserMedia,
-  } = parameters;
-
-  // Update to resume the audio only of a participant
-  const participant = participants.find((obj) => obj.name === name);
-
-  if (participant && !mainScreenFilled && participant.islevel === '2') {
-    updateUpdateMainWindow(true);
-    await prepopulateUserMedia({ name: hostLabel, parameters });
-    updateUpdateMainWindow(false);
-  }
-
-  let checker: boolean | undefined;
-  if (meetingDisplayType === 'media') {
-    if (participant) {
-      checker = participant.videoID !== null && participant.videoID !== '';
-
-      if (!checker) {
-        if (!(shareScreenStarted || shared)) {
-          await reorderStreams({ add: false, screenChanged: true, parameters });
-        }
-      }
-    }
-  }
+  return sharedProducerMediaResumed({
+    name,
+    kind,
+    parameters,
+  });
 };

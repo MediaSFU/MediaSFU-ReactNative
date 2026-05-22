@@ -61,6 +61,7 @@ export interface MenuModalOptions {
   islevel: string;
   eventType: EventType;
   localLink?: string;
+  isDarkMode?: boolean;
   style?: StyleProp<ViewStyle>;
   renderContent?: (options: {
     defaultContent: JSX.Element;
@@ -157,6 +158,7 @@ const MenuModal: React.FC<MenuModalOptions> = ({
   islevel,
   eventType,
   localLink,
+  isDarkMode,
   style,
   renderContent,
   renderContainer,
@@ -184,13 +186,16 @@ const MenuModal: React.FC<MenuModalOptions> = ({
   }, []);
 
   const dimensions = { width: modalWidth, height: 0 };
+  const themed = typeof isDarkMode === 'boolean';
+  const textColor = themed ? (isDarkMode ? '#f8fafc' : '#0f172a') : 'black';
+  const borderColor = themed ? (isDarkMode ? 'rgba(226, 232, 240, 0.18)' : 'rgba(71, 85, 105, 0.22)') : 'black';
 
   const defaultContent = (
     <>
       {/* Header */}
       <View style={styles.modalHeader}>
-        <Text style={styles.modalTitle}>
-          <FontAwesome5 name="bars" style={styles.icon} /> Menu
+        <Text style={[styles.modalTitle, { color: textColor }] as any}>
+          <FontAwesome5 name="bars" style={[styles.icon, { color: textColor }] as any} /> Menu
         </Text>
         <Pressable
           onPress={onClose}
@@ -198,28 +203,28 @@ const MenuModal: React.FC<MenuModalOptions> = ({
           accessibilityRole="button"
           accessibilityLabel="Close Menu Modal"
         >
-          <FontAwesome5 name="times" style={styles.icon} />
+          <FontAwesome5 name="times" style={[styles.icon, { color: textColor }] as any} />
         </Pressable>
       </View>
 
       {/* Divider */}
-      <View style={styles.hr} />
+      <View style={[styles.hr, { backgroundColor: borderColor }] as any} />
 
       <View style={styles.modalBody}>
         <ScrollView style={styles.scrollView}>
           <View style={styles.listGroup}>
-            <CustomButtons buttons={customButtons} />
+            <CustomButtons buttons={customButtons} isDarkMode={isDarkMode} />
 
             {/* Separator */}
             <View style={styles.separator} />
 
             {/* Meeting Passcode - Visible only for level 2 users */}
             {islevel === '2' && (
-              <MeetingPasscodeComponent meetingPasscode={adminPasscode} />
+              <MeetingPasscodeComponent meetingPasscode={adminPasscode} isDarkMode={isDarkMode} />
             )}
 
             {/* Meeting ID */}
-            <MeetingIdComponent meetingID={roomName} />
+            <MeetingIdComponent meetingID={roomName} isDarkMode={isDarkMode} />
 
             {/* Share Buttons */}
             {shareButtons && (

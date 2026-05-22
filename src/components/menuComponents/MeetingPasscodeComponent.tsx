@@ -16,6 +16,7 @@ export interface MeetingPasscodeComponentOptions {
    * The meeting passcode to display. Defaults to an empty string.
    */
   meetingPasscode?: string;
+  isDarkMode?: boolean;
 }
 
 /**
@@ -43,11 +44,18 @@ export interface MeetingPasscodeComponentOptions {
 
 const MeetingPasscodeComponent: React.FC<MeetingPasscodeComponentOptions> = ({
   meetingPasscode = '',
-}) => (
+  isDarkMode,
+}) => {
+  const themed = typeof isDarkMode === 'boolean';
+  const textColor = themed ? (isDarkMode ? '#f8fafc' : '#0f172a') : '#000000';
+  const inputBackgroundColor = themed ? (isDarkMode ? '#1e293b' : '#ffffff') : '#f0f0f0';
+  const inputBorderColor = themed ? (isDarkMode ? 'rgba(226, 232, 240, 0.22)' : 'rgba(71, 85, 105, 0.28)') : 'gray';
+
+  return (
   <View style={styles.formGroup}>
-    <Text style={styles.label}>Event Passcode (Host):</Text>
+    <Text style={[styles.label, { color: textColor }] as any}>Event Passcode (Host):</Text>
     <TextInput
-      style={styles.disabledInput}
+      style={[styles.disabledInput, { color: textColor, backgroundColor: inputBackgroundColor, borderColor: inputBorderColor }] as any}
       value={meetingPasscode}
       editable={false}
       selectTextOnFocus={false}
@@ -55,7 +63,8 @@ const MeetingPasscodeComponent: React.FC<MeetingPasscodeComponentOptions> = ({
       accessibilityLabel="Event Passcode"
     />
   </View>
-);
+  );
+};
 
 export default MeetingPasscodeComponent;
 

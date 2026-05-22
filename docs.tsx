@@ -10,7 +10,7 @@ export * from './src/components/displayComponents/ControlButtonsComponent';
 export * from './src/components/displayComponents/ControlButtonsAltComponent';
 export * from './src/components/displayComponents/ControlButtonsComponentTouch';
 export * from './src/components/displayComponents/OtherGridComponent';
-// export * from './src/components/displayComponents/MainScreenComponent';
+export * from './src/components/displayComponents/MainScreenComponent';
 export * from './src/components/displayComponents/MainGridComponent';
 export * from './src/components/displayComponents/SubAspectComponent';
 export * from './src/components/displayComponents/MainContainerComponent';
@@ -22,6 +22,8 @@ export * from './src/components/waitingComponents/WaitingModal';
 export * from './src/components/displaySettingsComponents/DisplaySettingsModal';
 export * from './src/components/eventSettingsComponents/EventSettingsModal';
 export * from './src/components/coHostComponents/CoHostModal';
+export * from './src/components/panelistsComponents/PanelistsModal';
+export * from './src/components/permissionsComponents/PermissionsModal';
 export * from './src/components/participantsComponents/ParticipantsModal';
 export * from './src/components/messageComponents/MessagesModal';
 export * from './src/components/mediaSettingsComponents/MediaSettingsModal';
@@ -29,11 +31,59 @@ export * from './src/components/exitComponents/ConfirmExitModal';
 export * from './src/components/miscComponents/ConfirmHereModal';
 export * from './src/components/miscComponents/ShareEventModal';
 export * from './src/components/miscComponents/WelcomePage';
-// export * from './src/components/miscComponents/PreJoinPage';
+export * from './src/components/miscComponents/PreJoinPage';
+
+// Modern React Native UI surfaces
+export * from './src/components_modern/mediasfu_components/ModernMediasfuGeneric';
+export * from './src/components_modern/modernOverrides';
+export * from './src/components_modern/display_components/ModernLoadingModal';
+export * from './src/components_modern/display_components/ModernAlertComponent';
+export * from './src/components_modern/display_components/ModernMainContainerComponent';
+export * from './src/components_modern/display_components/ModernControlButtonsComponent';
+export * from './src/components_modern/display_components/ModernControlButtonsComponentTouch';
+export * from './src/components_modern/display_components/ModernPagination';
+export * from './src/components_modern/display_components/ModernFlexibleGrid';
+export * from './src/components_modern/display_components/ModernFlexibleVideo';
+export * from './src/components_modern/display_components/ModernMeetingProgressTimer';
+export * from './src/components_modern/display_components/ModernVideoCard';
+export * from './src/components_modern/display_components/ModernAudioCard';
+export * from './src/components_modern/display_components/ModernMiniCard';
+export * from './src/components_modern/display_components/ModernMiniAudio';
+export * from './src/components_modern/display_components/ModernMiniAudioPlayer';
+export * from './src/components_modern/display_components/ParticipantsCounterBadge';
+export * from './src/components_modern/menu_components/ModernMenuModal';
+export * from './src/components_modern/recording_components/ModernRecordingModal';
+export * from './src/components_modern/requests_components/ModernRequestsModal';
+export * from './src/components_modern/waiting_components/ModernWaitingModal';
+export * from './src/components_modern/display_settings_components/ModernDisplaySettingsModal';
+export * from './src/components_modern/event_settings_components/ModernEventSettingsModal';
+export * from './src/components_modern/co_host_components/ModernCoHostModal';
+export * from './src/components_modern/panelists_components/ModernPanelistsModal';
+export * from './src/components_modern/permissions_components/ModernPermissionsModal';
+export * from './src/components_modern/participants_components/ModernParticipantsModal';
+export * from './src/components_modern/message_components/ModernMessagesModal';
+export * from './src/components_modern/media_settings_components/ModernMediaSettingsModal';
+export * from './src/components_modern/exit_components/ModernConfirmExitModal';
+export * from './src/components_modern/misc_components/ModernConfirmHereModal';
+export * from './src/components_modern/misc_components/ModernShareEventModal';
+export * from './src/components_modern/misc_components/ModernWelcomePage';
+export * from './src/components_modern/misc_components/ModernPreJoinPage';
+export * from './src/components_modern/polls_components/ModernPollModal';
+export * from './src/components_modern/background_components/ModernBackgroundModal';
+export * from './src/components_modern/breakout_components/ModernBreakoutRoomsModal';
+export * from './src/components_modern/translation_components/ModernTranslationSettingsModal';
+export * from './src/components_modern/whiteboard_components/ModernConfigureWhiteboardModal';
+export * from './src/components_modern/screenboard_components/ModernScreenboardModal';
 
 // Polls and Background
 export * from './src/components/pollsComponents/PollModal';
 export * from './src/components/breakoutComponents/BreakoutRoomsModal';
+export * from './src/components/backgroundComponents/BackgroundModal';
+export * from './src/components/translationComponents/TranslationSettingsModal';
+export * from './src/components/whiteboardComponents/ConfigureWhiteboardModal';
+export * from './src/components/whiteboardComponents/Whiteboard';
+export * from './src/components/screenboardComponents/Screenboard';
+export * from './src/components/screenboardComponents/ScreenboardModal';
 // Pagination and Media Display
 export * from './src/components/displayComponents/Pagination';
 export * from './src/components/displayComponents/FlexibleGrid';
@@ -57,6 +107,12 @@ export * from './src/methods/exitMethods/launchConfirmExit';
 
 // Polls and Background Methods
 export * from './src/methods/pollsMethods/launchPoll';
+export * from './src/methods/panelistsMethods/launchPanelists';
+export * from './src/methods/panelistsMethods/focusPanelists';
+export * from './src/methods/panelistsMethods/updatePanelists';
+export * from './src/methods/permissionsMethods/launchPermissions';
+export * from './src/methods/permissionsMethods/updateParticipantPermission';
+export * from './src/methods/permissionsMethods/updatePermissionConfig';
 export * from './src/methods/backgroundMethods/launchBackground';
 export * from './src/methods/breakoutRoomsMethods/launchBreakoutRooms';
 export * from './src/methods/whiteboardMethods/launchConfigureWhiteboard';
@@ -124,6 +180,7 @@ export * from './src/consumers/autoAdjust';
 export * from './src/consumers/switchUserVideoAlt';
 export * from './src/consumers/switchUserVideo';
 export * from './src/consumers/switchUserAudio';
+export * from './src/consumers/translationConsumerSwitch';
 export * from './src/consumers/receiveRoomMessages';
 export * from './src/methods/utils/formatNumber';
 export * from './src/consumers/connectIps';
@@ -143,7 +200,73 @@ export * from './src/methods/recordingMethods/updateRecording';
 export * from './src/methods/recordingMethods/stopRecording';
 export * from './src/producers/socketReceiveMethods/userWaiting';
 export * from './src/producers/socketReceiveMethods/personJoined';
+export {
+  panelistsUpdated,
+  panelistFocusChanged,
+  controlMedia as panelistControlMedia,
+  addedAsPanelist,
+  removedFromPanelists,
+} from './src/producers/socketReceiveMethods/panelistReceiveMethods';
+export type {
+  PanelistData,
+  PanelistsUpdatedData,
+  PanelistFocusChangedData,
+  ControlMediaData as PanelistControlMediaData,
+  AddedAsPanelistData,
+  RemovedFromPanelistsData,
+  PanelistsUpdatedOptions,
+  PanelistFocusChangedOptions,
+  ControlMediaOptions as PanelistControlMediaOptions,
+  AddedAsPanelistOptions,
+  RemovedFromPanelistsOptions,
+  PanelistsUpdatedType,
+  PanelistFocusChangedType,
+  ControlMediaType as PanelistControlMediaType,
+  AddedAsPanelistType,
+  RemovedFromPanelistsType,
+} from './src/producers/socketReceiveMethods/panelistReceiveMethods';
+export {
+  permissionUpdated,
+  permissionConfigUpdated,
+} from './src/producers/socketReceiveMethods/permissionReceiveMethods';
+export type {
+  PermissionUpdatedData,
+  PermissionConfigUpdatedData,
+  PermissionUpdatedOptions,
+  PermissionConfigUpdatedOptions,
+  PermissionUpdatedType,
+  PermissionConfigUpdatedType,
+  PermissionCapabilities as PermissionReceiveCapabilities,
+  PermissionConfig as PermissionReceiveConfig,
+} from './src/producers/socketReceiveMethods/permissionReceiveMethods';
+export * from './src/producers/socketReceiveMethods/translationReceiveMethods';
 export * from './src/producers/socketReceiveMethods/allWaitingRoomMembers';
+export * from './src/producers/socketReceiveMethods/allMembers';
+export * from './src/producers/socketReceiveMethods/allMembersRest';
+export * from './src/producers/socketReceiveMethods/banParticipant';
+export * from './src/producers/socketReceiveMethods/controlMediaHost';
+export * from './src/producers/socketReceiveMethods/disconnect';
+export * from './src/producers/socketReceiveMethods/disconnectUserSelf';
+export * from './src/producers/socketReceiveMethods/getDomains';
+export * from './src/producers/socketReceiveMethods/hostRequestResponse';
+export * from './src/producers/socketReceiveMethods/meetingEnded';
+export * from './src/producers/socketReceiveMethods/meetingStillThere';
+export * from './src/producers/socketReceiveMethods/meetingTimeRemaining';
+export * from './src/producers/socketReceiveMethods/participantRequested';
+export * from './src/producers/socketReceiveMethods/producerMediaClosed';
+export * from './src/producers/socketReceiveMethods/producerMediaPaused';
+export * from './src/producers/socketReceiveMethods/producerMediaResumed';
+export * from './src/producers/socketReceiveMethods/receiveMessage';
+export * from './src/producers/socketReceiveMethods/recordingNotice';
+export * from './src/producers/socketReceiveMethods/reInitiateRecording';
+export * from './src/producers/socketReceiveMethods/roomRecordParams';
+export * from './src/producers/socketReceiveMethods/screenProducerId';
+export * from './src/producers/socketReceiveMethods/startRecords';
+export * from './src/producers/socketReceiveMethods/stoppedRecording';
+export * from './src/producers/socketReceiveMethods/timeLeftRecording';
+export * from './src/producers/socketReceiveMethods/updateConsumingDomains';
+export * from './src/producers/socketReceiveMethods/updateMediaSettings';
+export * from './src/producers/socketReceiveMethods/updatedCoHost';
 
 // Prebuilt Event Rooms
 export * from './src/components/mediasfuComponents/MediasfuGeneric';
@@ -209,6 +332,12 @@ import PreJoinPage from './src/components/miscComponents/PreJoinPage';
 
 import PollModal from './src/components/pollsComponents/PollModal';
 import BreakoutRoomsModal from './src/components/breakoutComponents/BreakoutRoomsModal';
+import BackgroundModal from './src/components/backgroundComponents/BackgroundModal';
+import TranslationSettingsModal from './src/components/translationComponents/TranslationSettingsModal';
+import ConfigureWhiteboardModal from './src/components/whiteboardComponents/ConfigureWhiteboardModal';
+import Whiteboard from './src/components/whiteboardComponents/Whiteboard';
+import Screenboard from './src/components/screenboardComponents/Screenboard';
+import ScreenboardModal from './src/components/screenboardComponents/ScreenboardModal';
 
 //pagination and display of media (samples)
 import Pagination from './src/components/displayComponents/Pagination';
@@ -557,6 +686,12 @@ export {
   launchBreakoutRooms,
   PollModal,
   BreakoutRoomsModal,
+  BackgroundModal,
+  TranslationSettingsModal,
+  ConfigureWhiteboardModal,
+  Whiteboard,
+  Screenboard,
+  ScreenboardModal,
   joinRoomOnMediaSFU,
   createRoomOnMediaSFU,
   checkLimitsAndMakeRequest,

@@ -23,6 +23,7 @@
 
 import React, { useMemo, useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { getDemoCloudConfig } from './demoCloudConfig';
 import MediasfuGeneric, { MediasfuGenericOptions } from './src/components/mediasfuComponents/MediasfuGeneric';
 import MediasfuBroadcast from './src/components/mediasfuComponents/MediasfuBroadcast';
 import MediasfuChat from './src/components/mediasfuComponents/MediasfuChat';
@@ -82,26 +83,22 @@ const enableContainerStyling = true;   // Applies a custom containerStyle
 const enableBackendProxyHooks = true;  // Hooks create/join calls through helper functions
 const enableDebugPanel = true;         // Renders a JSON panel of live parameters on the right
 
+const demoCloudConfig = getDemoCloudConfig();
+
 const connectionPresets: Record<ConnectionScenario, {
   credentials?: { apiUserName: string; apiKey: string };
   localLink: string;
   connectMediaSFU: boolean;
 }> = {
   cloud: {
-    credentials: {
-      apiUserName: 'yourDevUser',
-      apiKey: 'yourDevApiKey1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
-    },
+    credentials: demoCloudConfig.credentials,
     localLink: '',
-    connectMediaSFU: true,
+    connectMediaSFU: demoCloudConfig.connectMediaSFU,
   },
   hybrid: {
-    credentials: {
-      apiUserName: 'dummyUsr',
-      apiKey: '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
-    },
+    credentials: demoCloudConfig.credentials,
     localLink: 'http://localhost:3000',
-    connectMediaSFU: true,
+    connectMediaSFU: demoCloudConfig.connectMediaSFU,
   },
   ce: {
     credentials: undefined,

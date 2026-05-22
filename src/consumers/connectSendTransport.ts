@@ -1,3 +1,4 @@
+import { connectSendTransport as sharedConnectSendTransport } from 'mediasfu-shared';
 import { ProducerOptions } from 'mediasoup-client/lib/types';
 import {
   ConnectSendTransportAudioType, ConnectSendTransportVideoType, ConnectSendTransportScreenType, ConnectSendTransportAudioParameters, ConnectSendTransportVideoParameters,
@@ -83,72 +84,6 @@ export type ConnectSendTransportType = (options: ConnectSendTransportOptions) =>
  *   });
  */
 
-export const connectSendTransport = async ({ option, targetOption = 'all', parameters }: ConnectSendTransportOptions): Promise<void> => {
-  try {
-    let {
-      audioParams,
-      videoParams,
-      localStreamScreen,
-      canvasStream,
-      whiteboardStarted,
-      whiteboardEnded,
-      shared,
-      islevel,
-
-      //media functions
-      connectSendTransportAudio,
-      connectSendTransportVideo,
-      connectSendTransportScreen,
-    } = parameters;
-
-    // Connect send transport based on the specified option
-    if (option === 'audio') {
-      await connectSendTransportAudio({
-        targetOption,
-        audioParams,
-        parameters,
-      });
-    } else if (option === 'video') {
-      await connectSendTransportVideo({
-        targetOption,
-        videoParams,
-        parameters,
-      });
-    } else if (option === 'screen') {
-      if (
-        whiteboardStarted &&
-        !whiteboardEnded &&
-        canvasStream &&
-        islevel === '2' &&
-        !shared
-      ) {
-        await connectSendTransportScreen({
-          targetOption,
-          stream: canvasStream,
-          parameters,
-        });
-      } else {
-        await connectSendTransportScreen({
-          targetOption,
-          stream: localStreamScreen!,
-          parameters,
-        });
-      }
-    } else {
-      // Connect both audio and video send transports
-      await connectSendTransportAudio({
-        targetOption,
-        audioParams,
-        parameters,
-      });
-      await connectSendTransportVideo({
-        targetOption,
-        videoParams,
-        parameters,
-      });
-    }
-  } catch (error) {
-    console.log('connectSendTransport error', error);
-    // throw error;
-  }
+export const connectSendTransport = async (options: ConnectSendTransportOptions): Promise<void> => {
+  await (sharedConnectSendTransport as unknown as ConnectSendTransportType)(options);
 };

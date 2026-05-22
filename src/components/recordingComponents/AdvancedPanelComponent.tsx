@@ -40,6 +40,7 @@ export interface AdvancedPanelParameters {
   updateRecordingCustomTextPosition: (value: string) => void;
   updateRecordingCustomTextColor: (value: string) => void;
   eventType: string;
+  isDarkMode?: boolean;
   // [key: string]: any; // For additional properties
 }
 
@@ -119,7 +120,14 @@ const AdvancedPanelComponent: React.FC<AdvancedPanelOptions> = ({
     updateRecordingCustomTextPosition,
     updateRecordingCustomTextColor,
     eventType,
+    isDarkMode,
   } = parameters;
+  const themed = typeof isDarkMode === 'boolean';
+  const textColor = themed ? (isDarkMode ? '#f8fafc' : '#0f172a') : 'black';
+  const inputBackgroundColor = themed ? (isDarkMode ? '#1e293b' : '#ffffff') : 'white';
+  const inputBorderColor = themed ? (isDarkMode ? 'rgba(226, 232, 240, 0.22)' : 'rgba(71, 85, 105, 0.28)') : 'gray';
+  const separatorColor = themed ? (isDarkMode ? 'rgba(226, 232, 240, 0.18)' : 'rgba(71, 85, 105, 0.22)') : 'black';
+  const pickerTheme = themed ? createPickerSelectStyles(isDarkMode) : pickerSelectStyles;
 
   // State for selected orientation video
   const [selectedOrientationVideo, setSelectedOrientationVideo] =
@@ -234,9 +242,9 @@ const AdvancedPanelComponent: React.FC<AdvancedPanelOptions> = ({
     <View>
       {/* Video Type */}
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Video Type:</Text>
+        <Text style={[styles.label, { color: textColor }] as any}>Video Type:</Text>
         <RNPickerSelect
-          style={pickerSelectStyles}
+          style={pickerTheme}
           value={recordingVideoType}
           onValueChange={(value: string) => updateRecordingVideoType(value)}
           items={[
@@ -253,9 +261,9 @@ const AdvancedPanelComponent: React.FC<AdvancedPanelOptions> = ({
       {/* Display Type */}
       {eventType !== 'broadcast' && (
         <View style={styles.formGroup}>
-          <Text style={styles.label}>Display Type:</Text>
+          <Text style={[styles.label, { color: textColor }] as any}>Display Type:</Text>
           <RNPickerSelect
-            style={pickerSelectStyles}
+            style={pickerTheme}
             value={recordingDisplayType}
             onValueChange={(value: 'video' | 'media' | 'all') =>
               updateRecordingDisplayType(value)
@@ -274,11 +282,11 @@ const AdvancedPanelComponent: React.FC<AdvancedPanelOptions> = ({
           />
         </View>
       )}
-      <View style={styles.separator} />
+      <View style={[styles.separator, { backgroundColor: separatorColor }] as any} />
 
       {/* Background Color */}
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Background Color:</Text>
+        <Text style={[styles.label, { color: textColor }] as any}>Background Color:</Text>
         <Pressable
           onPress={() => toggleColorPicker('backgroundColor')}
           style={[
@@ -319,13 +327,13 @@ const AdvancedPanelComponent: React.FC<AdvancedPanelOptions> = ({
           </View>
         </Modal>
       </View>
-      <View style={styles.separator} />
+      <View style={[styles.separator, { backgroundColor: separatorColor }] as any} />
 
       {/* Add Text */}
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Add Text:</Text>
+        <Text style={[styles.label, { color: textColor }] as any}>Add Text:</Text>
         <RNPickerSelect
-          style={pickerSelectStyles}
+          style={pickerTheme}
           value={recordingText}
           onValueChange={(value: boolean) => handleTextChange(value)}
           items={[
@@ -336,14 +344,14 @@ const AdvancedPanelComponent: React.FC<AdvancedPanelOptions> = ({
           useNativeAndroidPickerStyle={false}
         />
       </View>
-      <View style={styles.separator} />
+      <View style={[styles.separator, { backgroundColor: separatorColor }] as any} />
 
       {/* Custom Text */}
       {recordingText && (
         <View style={styles.formGroup}>
-          <Text style={styles.label}>Custom Text:</Text>
+          <Text style={[styles.label, { color: textColor }] as any}>Custom Text:</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { color: textColor, borderColor: inputBorderColor, backgroundColor: inputBackgroundColor }] as any}
             value={customText}
             onChangeText={onChangeTextHandler}
             placeholder="Enter custom text"
@@ -351,14 +359,14 @@ const AdvancedPanelComponent: React.FC<AdvancedPanelOptions> = ({
           />
         </View>
       )}
-      {recordingText && <View style={styles.separator} />}
+      {recordingText && <View style={[styles.separator, { backgroundColor: separatorColor }] as any} />}
 
       {/* Custom Text Position */}
       {recordingText && (
         <View style={styles.formGroup}>
-          <Text style={styles.label}>Custom Text Position:</Text>
+          <Text style={[styles.label, { color: textColor }] as any}>Custom Text Position:</Text>
           <RNPickerSelect
-            style={pickerSelectStyles}
+            style={pickerTheme}
             value={recordingCustomTextPosition}
             onValueChange={(value: string) =>
               updateRecordingCustomTextPosition(value)
@@ -373,12 +381,12 @@ const AdvancedPanelComponent: React.FC<AdvancedPanelOptions> = ({
           />
         </View>
       )}
-      {recordingText && <View style={styles.separator} />}
+      {recordingText && <View style={[styles.separator, { backgroundColor: separatorColor }] as any} />}
 
       {/* Custom Text Color */}
       {recordingText && (
         <View style={styles.formGroup}>
-          <Text style={styles.label}>Custom Text Color:</Text>
+          <Text style={[styles.label, { color: textColor }] as any}>Custom Text Color:</Text>
           <Pressable
             onPress={() => toggleColorPicker('customTextColor')}
             style={[
@@ -420,13 +428,13 @@ const AdvancedPanelComponent: React.FC<AdvancedPanelOptions> = ({
           </Modal>
         </View>
       )}
-      {recordingText && <View style={styles.separator} />}
+      {recordingText && <View style={[styles.separator, { backgroundColor: separatorColor }] as any} />}
 
       {/* Add Name Tags */}
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Add Name Tags:</Text>
+        <Text style={[styles.label, { color: textColor }] as any}>Add Name Tags:</Text>
         <RNPickerSelect
-          style={pickerSelectStyles}
+          style={pickerTheme}
           value={recordingNameTags}
           onValueChange={(value: boolean) => updateRecordingNameTags(value)}
           items={[
@@ -437,11 +445,11 @@ const AdvancedPanelComponent: React.FC<AdvancedPanelOptions> = ({
           useNativeAndroidPickerStyle={false}
         />
       </View>
-      <View style={styles.separator} />
+      <View style={[styles.separator, { backgroundColor: separatorColor }] as any} />
 
       {/* Name Tags Color */}
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Name Tags Color:</Text>
+        <Text style={[styles.label, { color: textColor }] as any}>Name Tags Color:</Text>
         <Pressable
           onPress={() => toggleColorPicker('nameTagsColor')}
           style={[
@@ -482,13 +490,13 @@ const AdvancedPanelComponent: React.FC<AdvancedPanelOptions> = ({
           </View>
         </Modal>
       </View>
-      <View style={styles.separator} />
+      <View style={[styles.separator, { backgroundColor: separatorColor }] as any} />
 
       {/* Orientation (Video) */}
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Orientation (Video):</Text>
+        <Text style={[styles.label, { color: textColor }] as any}>Orientation (Video):</Text>
         <RNPickerSelect
-          style={pickerSelectStyles}
+          style={pickerTheme}
           value={selectedOrientationVideo}
           onValueChange={(value: string) => {
             updateRecordingOrientationVideo(value);
@@ -615,4 +623,25 @@ const pickerSelectStyles = StyleSheet.create({
     marginBottom: 10,
   },
 
+});
+
+const createPickerSelectStyles = (isDarkMode: boolean) => StyleSheet.create({
+  inputIOS: {
+    ...pickerSelectStyles.inputIOS,
+    color: isDarkMode ? '#f8fafc' : '#0f172a',
+    borderColor: isDarkMode ? 'rgba(226, 232, 240, 0.22)' : 'rgba(71, 85, 105, 0.28)',
+    backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+  },
+  inputAndroid: {
+    ...pickerSelectStyles.inputAndroid,
+    color: isDarkMode ? '#f8fafc' : '#0f172a',
+    borderColor: isDarkMode ? 'rgba(226, 232, 240, 0.22)' : 'rgba(71, 85, 105, 0.28)',
+    backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+  },
+  inputWeb: {
+    ...pickerSelectStyles.inputWeb,
+    color: isDarkMode ? '#f8fafc' : '#0f172a',
+    borderColor: isDarkMode ? 'rgba(226, 232, 240, 0.22)' : 'rgba(71, 85, 105, 0.28)',
+    backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+  },
 });

@@ -24,6 +24,7 @@ import { Device, RtpCapabilities } from 'mediasoup-client/lib/types';
 import { Socket } from 'socket.io-client';
 import { joinConRoom } from '../../producers/producerEmits/joinConRoom';
 import { ReceiveAllPipedTransportsParameters, ReceiveAllPipedTransportsType, CreateDeviceClientType } from '../../@types/types';
+import { joinConsumeRoom as sharedJoinConsumeRoom } from 'mediasfu-shared';
 
 export interface JoinConsumeRoomParameters extends ReceiveAllPipedTransportsParameters {
   roomName: string;
@@ -109,45 +110,10 @@ export const joinConsumeRoom = async ({
   apiUserName,
   parameters,
 }: JoinConsumeRoomOptions): Promise<JoinConsumeRoomResponse> => {
-  const {
-    roomName,
-    islevel,
-    member,
-    device,
-    updateDevice,
-
-    // Mediasfu functions
-    receiveAllPipedTransports,
-    createDeviceClient,
-  } = parameters;
-
-  try {
-    // Join the consumption room
-    const data: JoinConsumeRoomResponse = await joinConRoom({
-      socket: remote_sock, roomName, islevel, member, sec: apiToken, apiUserName,
-    });
-
-    if (data && data.success) {
-      // Setup media device if not already set
-      if (!device) {
-        if (data.rtpCapabilities) {
-          const device_: Device | null = await createDeviceClient({
-            rtpCapabilities: data.rtpCapabilities,
-          });
-
-          if (device_) {
-            updateDevice(device_);
-          }
-        }
-      }
-
-      // Receive all piped transports
-      await receiveAllPipedTransports({ nsock: remote_sock, parameters });
-    }
-
-    return data;
-  } catch (error) {
-    console.error('Error in joinConsumeRoom:', error);
-    throw new Error('Failed to join the consumption room or set up necessary components.');
-  }
+  return sharedJoinConsumeRoom({
+    remote_sock: remote_sock as any,
+    apiToken,
+    apiUserName,
+    parameters: parameters as any,
+  } as any) as Promise<JoinConsumeRoomResponse>;
 };

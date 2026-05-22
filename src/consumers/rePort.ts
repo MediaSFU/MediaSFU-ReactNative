@@ -1,3 +1,4 @@
+import { rePort as sharedRePort } from 'mediasfu-shared';
 import {
   ScreenState, CompareScreenStatesParameters, CompareScreenStatesType, CompareActiveNamesParameters, CompareActiveNamesType,
 } from '../@types/types';
@@ -70,50 +71,6 @@ export type RePortType = (options: RePortOptions) => Promise<void>;
  * ```
  */
 
-export async function rePort({ restart = false, parameters }: RePortOptions): Promise<void> {
-  const { getUpdatedAllParams } = parameters;
-  parameters = getUpdatedAllParams();
-
-  try {
-    // Destructure parameters
-    const {
-      islevel,
-      mainScreenPerson,
-      adminOnMainScreen,
-      mainScreenFilled,
-      recordStarted,
-      recordStopped,
-      recordPaused,
-      recordResumed,
-      screenStates,
-      updateScreenStates,
-      updatePrevScreenStates,
-      compareActiveNames,
-      compareScreenStates,
-    } = parameters;
-
-    if (recordStarted || recordResumed) {
-      if (recordStopped || recordPaused) {
-        // Recording stopped or paused, do nothing
-      } else if (islevel === '2') {
-        const previousScreenStates = [...screenStates];
-        updatePrevScreenStates(previousScreenStates);
-
-        const currentScreenStates = [
-          { mainScreenPerson, adminOnMainScreen, mainScreenFilled },
-        ];
-        updateScreenStates(currentScreenStates);
-
-        if (restart) {
-          await compareActiveNames({ restart, parameters });
-          return;
-        }
-        await compareActiveNames({ restart, parameters });
-        await compareScreenStates({ restart, parameters });
-      }
-    }
-  } catch (error) {
-    console.log('Error during rePorting: ', error);
-    // throw new Error(`Error during rePorting: ${error.message}`);
-  }
-}
+export const rePort = async (options: RePortOptions): Promise<void> => {
+  await (sharedRePort as unknown as RePortType)(options);
+};

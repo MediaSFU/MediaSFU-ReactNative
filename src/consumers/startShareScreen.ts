@@ -1,3 +1,4 @@
+import { startShareScreen as sharedStartShareScreen } from 'mediasfu-shared';
 import { StreamSuccessScreenType, StreamSuccessScreenParameters, ShowAlert, MediaDevices as RNMediaDevices} from '../@types/types';
 
 
@@ -63,62 +64,6 @@ export type StartShareScreenType = (options: StartShareScreenOptions) => Promise
  *   });
  */
 
-export async function startShareScreen({ parameters }: StartShareScreenOptions): Promise<void> {
-  let {
-    shared,
-    showAlert,
-    updateShared,
-    mediaDevices,
-    onWeb,
-    targetWidth = 1280,
-    targetHeight = 720,
-
-    streamSuccessScreen,
-  } = parameters;
-
-  try {
-    if (!onWeb) {
-      showAlert?.({
-        message: 'You cannot share screen while on mobile',
-        type: 'danger',
-        duration: 3000,
-      });
-      return;
-    }
-
-    if (mediaDevices && mediaDevices.getDisplayMedia) {
-      shared = true;
-      await mediaDevices
-        .getDisplayMedia({
-          video: {
-            width: targetWidth,
-            height: targetHeight,
-            frameRate: 30,
-          },
-          audio: false,
-        })
-        .then(async (stream: any) => {
-          await streamSuccessScreen({ stream, parameters });
-        })
-        .catch(async () => {
-          shared = false;
-          showAlert?.({
-            message: 'Could not share screen, check and retry',
-            type: 'danger',
-            duration: 3000,
-          });
-        });
-    } else {
-      showAlert?.({
-        message: 'Could not share screen, check and retry',
-        type: 'danger',
-        duration: 3000,
-      });
-    }
-
-    // Update the shared variable
-    updateShared(shared);
-  } catch (error) {
-    console.log('Error starting screen share', error);
-  }
-}
+export const startShareScreen = async (options: StartShareScreenOptions): Promise<void> => {
+  await (sharedStartShareScreen as unknown as StartShareScreenType)(options);
+};

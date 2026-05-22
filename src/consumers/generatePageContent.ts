@@ -1,3 +1,4 @@
+import { generatePageContent as sharedGeneratePageContent } from 'mediasfu-shared';
 import {
   Participant, Stream, DispStreamsType, DispStreamsParameters,
 } from '../@types/types';
@@ -70,51 +71,6 @@ export type GeneratePageContentType = (options: GeneratePageContentOptions) => P
  *   });
  */
 
-export async function generatePageContent({
-  page,
-  parameters,
-  breakRoom = -1,
-  inBreakRoom = false,
-}: GeneratePageContentOptions): Promise<void> {
-  try {
-    // Destructure parameters
-    let {
-      paginatedStreams,
-      currentUserPage,
-      updateMainWindow,
-
-      updateCurrentUserPage,
-      updateUpdateMainWindow,
-
-      // mediasfu functions
-      dispStreams,
-    } = parameters;
-
-    // Convert page to an integer
-    page = typeof page === 'string' ? parseInt(page, 10) : page;
-
-    // Update current user page
-    currentUserPage = page;
-    updateCurrentUserPage(currentUserPage);
-
-    // Update main window flag
-    updateMainWindow = true;
-    updateUpdateMainWindow(updateMainWindow);
-
-    // Display streams for the specified page
-    await dispStreams({
-      lStreams: paginatedStreams[page],
-      ind: page,
-      parameters,
-      breakRoom,
-      inBreakRoom,
-    });
-  } catch (error) {
-    // Handle errors during content generation
-    if (error instanceof Error) {
-      console.log('Error generating page content:', error.message);
-    } else {
-      console.log('Error generating page content:', error);
-    }
-  }
-}
+export const generatePageContent = async (options: GeneratePageContentOptions): Promise<void> => {
+  await (sharedGeneratePageContent as unknown as GeneratePageContentType)(options);
+};

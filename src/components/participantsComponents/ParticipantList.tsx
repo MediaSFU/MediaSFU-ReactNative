@@ -32,6 +32,7 @@ export interface ParticipantListOptions {
   updateDirectMessageDetails: (participant: Participant | null) => void;
   updateStartDirectMessage: (start: boolean) => void;
   updateParticipants: (participants: Participant[]) => void;
+  isDarkMode?: boolean;
 }
 
 /**
@@ -101,6 +102,7 @@ const ParticipantList: React.FC<ParticipantListOptions> = ({
   updateDirectMessageDetails,
   updateStartDirectMessage,
   updateParticipants,
+  isDarkMode,
 }) => (
   <ScrollView>
     {participants.map((participant, index) => (
@@ -123,8 +125,18 @@ const ParticipantList: React.FC<ParticipantListOptions> = ({
           updateStartDirectMessage={updateStartDirectMessage}
           participants={participants}
           updateParticipants={updateParticipants}
+          isDarkMode={isDarkMode}
         />
-        {index < participants.length - 1 && <View style={styles.separator} />}
+        {index < participants.length - 1 && (
+          <View
+            style={[
+              styles.separator,
+              typeof isDarkMode === 'boolean'
+                ? { backgroundColor: isDarkMode ? 'rgba(226, 232, 240, 0.18)' : 'rgba(71, 85, 105, 0.22)' }
+                : null,
+            ] as any}
+          />
+        )}
       </React.Fragment>
     ))}
   </ScrollView>

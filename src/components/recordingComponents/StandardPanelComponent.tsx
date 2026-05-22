@@ -25,6 +25,7 @@ export interface StandardPanelParameters {
   updateRecordingVideoOptions: (value: string) => void;
   updateRecordingAddHLS: (value: boolean) => void;
   eventType: string; // Assuming EventType is a string type
+  isDarkMode?: boolean;
   // [key: string]: any; // For additional parameters
 }
 
@@ -73,15 +74,20 @@ const StandardPanelComponent: React.FC<StandardPanelOptions> = ({ parameters }) 
     updateRecordingVideoOptions,
     updateRecordingAddHLS,
     eventType,
+    isDarkMode,
   } = parameters;
+  const themed = typeof isDarkMode === 'boolean';
+  const textColor = themed ? (isDarkMode ? '#f8fafc' : '#0f172a') : 'black';
+  const borderColor = themed ? (isDarkMode ? 'rgba(226, 232, 240, 0.18)' : 'rgba(71, 85, 105, 0.22)') : 'white';
+  const pickerTheme = themed ? createPickerSelectStyles(isDarkMode) : pickerSelectStyles;
 
   return (
     <View>
       {/* Media Options */}
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Media Options:</Text>
+        <Text style={[styles.label, { color: textColor }] as any}>Media Options:</Text>
         <RNPickerSelect
-          style={pickerSelectStyles}
+          style={pickerTheme}
           value={recordingMediaOptions}
           onValueChange={(value: string) => updateRecordingMediaOptions(value)}
           items={[
@@ -92,15 +98,15 @@ const StandardPanelComponent: React.FC<StandardPanelOptions> = ({ parameters }) 
           useNativeAndroidPickerStyle={false}
         />
       </View>
-      <View style={styles.separator} />
+      <View style={[styles.separator, { backgroundColor: borderColor }] as any} />
 
       {/* Specific Audios */}
       {eventType !== 'broadcast' && (
         <>
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Specific Audios:</Text>
+            <Text style={[styles.label, { color: textColor }] as any}>Specific Audios:</Text>
             <RNPickerSelect
-              style={pickerSelectStyles}
+              style={pickerTheme}
               value={recordingAudioOptions}
               onValueChange={(value: string) => updateRecordingAudioOptions(value)}
               items={[
@@ -112,13 +118,13 @@ const StandardPanelComponent: React.FC<StandardPanelOptions> = ({ parameters }) 
               useNativeAndroidPickerStyle={false}
             />
           </View>
-          <View style={styles.separator} />
+          <View style={[styles.separator, { backgroundColor: borderColor }] as any} />
 
           {/* Specific Videos */}
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Specific Videos:</Text>
+            <Text style={[styles.label, { color: textColor }] as any}>Specific Videos:</Text>
             <RNPickerSelect
-              style={pickerSelectStyles}
+              style={pickerTheme}
               value={recordingVideoOptions}
               onValueChange={(value: string) => updateRecordingVideoOptions(value)}
               items={[
@@ -129,15 +135,15 @@ const StandardPanelComponent: React.FC<StandardPanelOptions> = ({ parameters }) 
               useNativeAndroidPickerStyle={false}
             />
           </View>
-          <View style={styles.separator} />
+          <View style={[styles.separator, { backgroundColor: borderColor }] as any} />
         </>
       )}
 
       {/* Add HLS */}
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Add HLS:</Text>
+        <Text style={[styles.label, { color: textColor }] as any}>Add HLS:</Text>
         <RNPickerSelect
-          style={pickerSelectStyles}
+          style={pickerTheme}
           value={recordingAddHLS}
           onValueChange={(value: boolean) => updateRecordingAddHLS(value)}
           items={[
@@ -148,10 +154,10 @@ const StandardPanelComponent: React.FC<StandardPanelOptions> = ({ parameters }) 
           useNativeAndroidPickerStyle={false}
                   />
       </View>
-      <View style={styles.separator} />
+      <View style={[styles.separator, { backgroundColor: borderColor }] as any} />
 
       {/* Separator */}
-      <View style={styles.hr} />
+      <View style={[styles.hr, { backgroundColor: borderColor }] as any} />
     </View>
   );
 };
@@ -221,5 +227,26 @@ const pickerSelectStyles = StyleSheet.create({
     paddingRight: 30, // To ensure the text is never behind the icon
     backgroundColor: 'white',
     marginBottom: 10,
+  },
+});
+
+const createPickerSelectStyles = (isDarkMode: boolean) => StyleSheet.create({
+  inputIOS: {
+    ...pickerSelectStyles.inputIOS,
+    color: isDarkMode ? '#f8fafc' : '#0f172a',
+    borderColor: isDarkMode ? 'rgba(226, 232, 240, 0.22)' : 'rgba(71, 85, 105, 0.28)',
+    backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+  },
+  inputAndroid: {
+    ...pickerSelectStyles.inputAndroid,
+    color: isDarkMode ? '#f8fafc' : '#0f172a',
+    borderColor: isDarkMode ? 'rgba(226, 232, 240, 0.22)' : 'rgba(71, 85, 105, 0.28)',
+    backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+  },
+  inputWeb: {
+    ...pickerSelectStyles.inputWeb,
+    color: isDarkMode ? '#f8fafc' : '#0f172a',
+    borderColor: isDarkMode ? 'rgba(226, 232, 240, 0.22)' : 'rgba(71, 85, 105, 0.28)',
+    backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
   },
 });

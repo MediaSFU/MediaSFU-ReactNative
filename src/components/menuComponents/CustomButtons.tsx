@@ -71,6 +71,7 @@ export interface CustomButtonsOptions {
    * An array of button configurations to be rendered.
    */
   buttons: CustomButton[];
+  isDarkMode?: boolean;
 }
 
 export type CustomButtonsType = (options: CustomButtonsOptions) => JSX.Element;
@@ -119,45 +120,60 @@ export type CustomButtonsType = (options: CustomButtonsOptions) => JSX.Element;
  * ```
  */
 
-const CustomButtons: React.FC<CustomButtonsOptions> = ({ buttons }) => (
-  <View style={styles.customButtonsContainer}>
-    {buttons.map((button, index) => (
-      <Pressable
-        key={index}
-        onPress={button.action}
-        style={[
-          styles.customButton,
-          {
-            backgroundColor: button.backgroundColor || 'transparent',
-            display: button.show ? 'flex' : 'none',
-            opacity: button.disabled ? 0.6 : 1,
-          },
-        ]}
-        disabled={button.disabled}
-        accessibilityRole="button"
-        accessibilityLabel={button.text || 'Custom Button'}
-      >
-        <View style={styles.buttonContent}>
-          {button.icon ? (
-            <>
-              <FontAwesome5
-                name={button.icon}
-                style={styles.customButtonIcon}
-              />
-              {button.text && (
-              <Text style={[styles.customButtonText, button.textStyle]}>
-                {button.text}
-              </Text>
-              )}
-            </>
-          ) : button.customComponent ? (
-            button.customComponent
-          ) : null}
-        </View>
-      </Pressable>
-    ))}
-  </View>
-);
+const CustomButtons: React.FC<CustomButtonsOptions> = ({ buttons, isDarkMode }) => {
+  const themed = typeof isDarkMode === 'boolean';
+  const textColor = themed ? (isDarkMode ? '#f8fafc' : '#0f172a') : '#000000';
+  const defaultBackgroundColor = themed
+    ? isDarkMode
+      ? 'rgba(255,255,255,0.06)'
+      : 'rgba(15,23,42,0.04)'
+    : 'transparent';
+  const borderColor = themed
+    ? isDarkMode
+      ? 'rgba(226,232,240,0.14)'
+      : 'rgba(71,85,105,0.16)'
+    : 'transparent';
+
+  return (
+    <View style={styles.customButtonsContainer}>
+      {buttons.filter((button) => button.show !== false).map((button, index) => (
+        <Pressable
+          key={index}
+          onPress={button.action}
+          style={[
+            styles.customButton,
+            {
+              backgroundColor: button.backgroundColor || defaultBackgroundColor,
+              borderColor,
+              opacity: button.disabled ? 0.6 : 1,
+            },
+          ]}
+          disabled={button.disabled}
+          accessibilityRole="button"
+          accessibilityLabel={button.text || 'Custom Button'}
+        >
+          <View style={styles.buttonContent}>
+            {button.icon ? (
+              <>
+                <FontAwesome5
+                  name={button.icon}
+                  style={[styles.customButtonIcon, { color: textColor }, button.iconStyle as any]}
+                />
+                {button.text && (
+                <Text style={[styles.customButtonText, { color: textColor }, button.textStyle]}>
+                  {button.text}
+                </Text>
+                )}
+              </>
+            ) : button.customComponent ? (
+              button.customComponent
+            ) : null}
+          </View>
+        </Pressable>
+      ))}
+    </View>
+  );
+};
 
 export default CustomButtons;
 
@@ -173,9 +189,10 @@ const styles = StyleSheet.create({
   },
   customButton: {
     width: '100%',
-    marginVertical: 15,
-    padding: 15,
+    marginVertical: 6,
+    padding: 12,
     borderRadius: 6,
+    borderWidth: 1,
     alignItems: 'flex-start',
     justifyContent: 'flex-start',
     // Shadow for iOS

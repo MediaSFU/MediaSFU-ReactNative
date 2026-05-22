@@ -1,3 +1,4 @@
+import { connectSendTransportVideo as sharedConnectSendTransportVideo } from 'mediasfu-shared';
 import {
   Device, Producer, ProducerOptions, Transport,
 } from 'mediasoup-client/lib/types';
@@ -105,47 +106,6 @@ const connectLocalSendTransportVideo = async ({
  *   .catch((error) => console.error('Error connecting video transport:', error));
  */
 
-export const connectSendTransportVideo: ConnectSendTransportVideoType = async ({
-  videoParams,
-  parameters,
-  targetOption = 'all',
-}: ConnectSendTransportVideoOptions): Promise<void> => {
-  try {
-    let {
-      videoProducer,
-      producerTransport,
-      islevel,
-      updateMainWindow,
-      updateVideoProducer,
-      updateProducerTransport,
-      updateUpdateMainWindow,
-    } = parameters;
-
-    // Produce video data using the primary transport
-    if (targetOption === 'all' || targetOption === 'remote'){
-      videoProducer = await producerTransport!.produce(videoParams);
-
-      // Update main window state based on the video connection level
-      if (islevel === '2') {
-        updateMainWindow = true;
-      }
-
-      // Update video producer, transport, and UI state
-      updateVideoProducer(videoProducer);
-      updateProducerTransport(producerTransport);
-      updateUpdateMainWindow(updateMainWindow);
-    }
-
-    // Handle local video transport regardless of primary success or
-    if (targetOption === 'all' || targetOption === 'local') {
-      try {
-        await connectLocalSendTransportVideo({ videoParams, parameters });
-      } catch (localError) {
-        console.log('Error connecting local video transport:', localError);
-      }
-    }
-  } catch (error) {
-    console.log('connectSendTransportVideo error', error);
-    throw error;
-  }
+export const connectSendTransportVideo: ConnectSendTransportVideoType = async (options): Promise<void> => {
+  await (sharedConnectSendTransportVideo as unknown as ConnectSendTransportVideoType)(options);
 };

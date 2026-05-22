@@ -1,3 +1,4 @@
+import { onScreenChanges as sharedOnScreenChanges } from 'mediasfu-shared';
 import { ReorderStreamsType, ReorderStreamsParameters, EventType } from '../@types/types';
 
 export interface OnScreenChangesParameters extends ReorderStreamsParameters {
@@ -61,43 +62,6 @@ export type OnScreenChangesType = (options: OnScreenChangesOptions) => Promise<v
  * });
  * ```
  */
-export async function onScreenChanges({ changed, parameters }: OnScreenChangesOptions): Promise<void> {
-  try {
-    // Destructure parameters
-    let {
-      eventType,
-      shareScreenStarted,
-      shared,
-      addForBasic,
-      updateMainHeightWidth,
-      updateAddForBasic,
-      itemPageLimit,
-      updateItemPageLimit,
-
-      // mediasfu functions
-      reorderStreams,
-    } = parameters;
-
-    // Remove element with id 'controlButtons'
-    addForBasic = false;
-    updateAddForBasic(addForBasic);
-
-    if (eventType === 'broadcast' || eventType === 'chat') {
-      addForBasic = true;
-      updateAddForBasic(addForBasic);
-
-      itemPageLimit = eventType === 'broadcast' ? 1 : 2;
-      updateItemPageLimit(itemPageLimit);
-      updateMainHeightWidth(eventType === 'broadcast' ? 100 : 0);
-    } else if (eventType === 'conference' && !(shareScreenStarted || shared)) {
-      updateMainHeightWidth(0);
-    }
-
-    // Update the mini cards grid
-    await reorderStreams({ add: false, screenChanged: changed, parameters });
-  } catch (error) {
-    // Handle errors during the process of handling screen changes
-    console.log('Error handling screen changes:', (error as Error).message);
-    // throw error;
-  }
-}
+export const onScreenChanges = async (options: OnScreenChangesOptions): Promise<void> => {
+  await sharedOnScreenChanges(options);
+};

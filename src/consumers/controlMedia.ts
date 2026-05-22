@@ -1,3 +1,4 @@
+import { controlMedia as sharedControlMedia } from 'mediasfu-shared';
 import { Socket } from 'socket.io-client';
 import { CoHostResponsibility, Participant, ShowAlert } from '../@types/types';
 
@@ -61,55 +62,6 @@ export type ControlMediaType = (options: ControlMediaOptions) => Promise<void>;
  *   });
  */
 
-export async function controlMedia({
-  participantId,
-  participantName,
-  type,
-  socket,
-  coHostResponsibility,
-  participants,
-  member,
-  islevel,
-  showAlert,
-  coHost,
-  roomName,
-}: ControlMediaOptions): Promise<void> {
-  try {
-    let mediaValue = false;
-
-    try {
-      mediaValue = coHostResponsibility.find((item) => item.name === 'media')?.value ?? false;
-    } catch (error) {
-      console.log('Error retrieving media control value', error);
-    }
-
-    const participant = participants.find((obj) => obj.name === participantName);
-
-    if (!participant) {
-      console.log('Participant not found');
-      return;
-    }
-
-    if (islevel === '2' || (coHost === member && mediaValue === true)) {
-      if (
-        (!participant.muted && participant.islevel !== '2' && type === 'audio')
-        || (participant.islevel !== '2' && type === 'video' && participant.videoOn)
-      ) {
-        socket.emit('controlMedia', {
-          participantId,
-          participantName,
-          type,
-          roomName,
-        });
-      }
-    } else if (showAlert) {
-      showAlert({
-        message: 'You are not allowed to control media for other participants.',
-        type: 'danger',
-        duration: 3000,
-      });
-    }
-  } catch (error) {
-    console.log('controlMedia error', error);
-  }
-}
+export const controlMedia = async (options: ControlMediaOptions): Promise<void> => {
+  await (sharedControlMedia as unknown as ControlMediaType)(options);
+};

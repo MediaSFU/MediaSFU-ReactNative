@@ -4,6 +4,15 @@ import { signalNewConsumerTransport } from '../../consumers/signalNewConsumerTra
 import {
   ReorderStreamsParameters, ReorderStreamsType, SignalNewConsumerTransportParameters, ConnectRecvTransportParameters, ConnectRecvTransportType, ShowAlert,
 } from '../../@types/types';
+import { newPipeProducer as sharedNewPipeProducer } from 'mediasfu-shared';
+
+export interface TranslationMeta {
+  speakerId: string;
+  speakerName: string;
+  language: string;
+  originalProducerId?: string;
+  isSpeakerControlled?: boolean;
+}
 
 export interface NewPipeProducerParameters extends ReorderStreamsParameters, SignalNewConsumerTransportParameters, ConnectRecvTransportParameters {
 
@@ -24,6 +33,15 @@ export interface NewPipeProducerParameters extends ReorderStreamsParameters, Sig
   connectRecvTransport: ConnectRecvTransportType;
   reorderStreams: ReorderStreamsType;
   getUpdatedAllParams: () => NewPipeProducerParameters;
+
+  startConsumingTranslation?: (producerId: string, speakerId: string, language: string, originalProducerId?: string, nsock?: Socket) => Promise<void>;
+  translationSubscriptions?: Map<string, { speakerId: string; language: string }>;
+  speakerTranslationStates?: Map<string, { speakerId: string; speakerName: string; inputLanguage: string; outputLanguage: string; originalProducerId: string; enabled: boolean }>;
+  listenerTranslationOverrides?: Map<string, { speakerId: string; wantOriginal: boolean; preferredLanguage?: string }>;
+  listenerTranslationPreferences?: {
+    perSpeaker: Map<string, { speakerId: string; language: string | null; wantOriginal: boolean }>;
+    globalLanguage: string | null;
+  };
   [key: string]: any;
 
 }
@@ -33,6 +51,8 @@ export interface NewPipeProducerOptions {
   islevel: string;
   nsock: Socket;
   parameters: NewPipeProducerParameters;
+  isTranslation?: boolean;
+  translationMeta?: TranslationMeta;
 }
 
 // Export the type definition for the function
@@ -99,43 +119,15 @@ export const newPipeProducer = async ({
   islevel,
   nsock,
   parameters,
+  isTranslation,
+  translationMeta,
 }: NewPipeProducerOptions): Promise<void> => {
-  const {
-    shareScreenStarted,
-    shared,
-    landScaped,
-    showAlert,
-    isWideScreen,
-    updateFirst_round,
-    updateLandScaped,
-  } = parameters;
-
-  // Signal new consumer transport
-  await signalNewConsumerTransport({
-    remoteProducerId: producerId,
+  return sharedNewPipeProducer({
+    producerId,
     islevel,
-    nsock,
-    parameters,
-  });
-
-  // Modify first_round and landscape status
-  let updatedFirstRound = false;
-
-  if (shareScreenStarted || shared) {
-    if (!isWideScreen) {
-      if (!landScaped) {
-        if (showAlert) {
-          showAlert({
-            message: 'Please rotate your device to landscape mode for better experience',
-            type: 'success',
-            duration: 3000,
-          });
-        }
-        updateLandScaped(true);
-      }
-    }
-
-    updatedFirstRound = true;
-    updateFirst_round(updatedFirstRound);
-  }
+    nsock: nsock as any,
+    parameters: parameters as any,
+    isTranslation,
+    translationMeta,
+  } as any);
 };

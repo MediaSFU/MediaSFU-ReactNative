@@ -16,6 +16,7 @@ import MeetingIdComponent from '../menuComponents/MeetingIDComponent';
 import MeetingPasscodeComponent from '../menuComponents/MeetingPasscodeComponent';
 import ShareButtonsComponent from '../menuComponents/ShareButtonsComponent';
 import { EventType } from '../../@types/types';
+import { getModalBodyTheme } from '../../components_modern/core/modalBodyTheme';
 
 /**
  * Options for configuring `ShareEventModal`.
@@ -48,6 +49,7 @@ import { EventType } from '../../@types/types';
  */
 export interface ShareEventModalOptions {
   backgroundColor?: string;
+  isDarkMode?: boolean;
   isShareEventModalVisible: boolean;
   onShareEventClose: () => void;
   shareButtons?: boolean;
@@ -113,6 +115,7 @@ export type ShareEventModalType = (options: ShareEventModalOptions) => JSX.Eleme
 
 const ShareEventModal: React.FC<ShareEventModalOptions> = ({
   backgroundColor = 'rgba(255, 255, 255, 0.25)',
+  isDarkMode,
   isShareEventModalVisible,
   onShareEventClose,
   shareButtons = true,
@@ -133,16 +136,18 @@ const ShareEventModal: React.FC<ShareEventModalOptions> = ({
   }
 
   const dimensions = { width: modalWidth, height: 0 };
+  const theme = getModalBodyTheme(isDarkMode);
+  const shouldUseModernTheme = typeof isDarkMode === 'boolean';
 
   const defaultContent = (
     <>
       <View style={styles.modalHeader}>
         <Pressable onPress={onShareEventClose} style={styles.closeButton}>
-          <FontAwesome name="times" style={styles.icon} />
+          <FontAwesome name="times" style={[styles.icon, { color: theme.iconColor }]} />
         </Pressable>
       </View>
 
-      <View style={styles.separator} />
+      <View style={[styles.separator, { backgroundColor: theme.dividerColor }]} />
 
       {/* Modal Body */}
       <View style={styles.modalBody}>
@@ -150,13 +155,13 @@ const ShareEventModal: React.FC<ShareEventModalOptions> = ({
           {/* Conditionally render MeetingPasscodeComponent based on islevel */}
           {islevel === '2' && adminPasscode && (
             <View style={styles.componentContainer}>
-              <MeetingPasscodeComponent meetingPasscode={adminPasscode} />
+              <MeetingPasscodeComponent meetingPasscode={adminPasscode} isDarkMode={isDarkMode} />
             </View>
           )}
 
           {/* Meeting ID */}
           <View style={styles.componentContainer}>
-            <MeetingIdComponent meetingID={roomName} />
+            <MeetingIdComponent meetingID={roomName} isDarkMode={isDarkMode} />
           </View>
 
           {/* Share Buttons */}
@@ -187,7 +192,7 @@ const ShareEventModal: React.FC<ShareEventModalOptions> = ({
     >
       <View style={[styles.modalContainer, getModalPosition({ position })]}>
         <View
-          style={[styles.modalContent, { backgroundColor, width: modalWidth }, style]}
+          style={[styles.modalContent, { backgroundColor, width: modalWidth }, shouldUseModernTheme ? { borderColor: theme.borderColor, borderWidth: 1 } : null, style]}
         >
           {content}
         </View>

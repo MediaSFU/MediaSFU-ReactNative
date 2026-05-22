@@ -1,3 +1,4 @@
+import { receiveAllPipedTransports as sharedReceiveAllPipedTransports } from 'mediasfu-shared';
 
 import { Socket } from 'socket.io-client';
 import { GetPipedProducersAltType, GetPipedProducersAltParameters } from '../@types/types';
@@ -49,29 +50,6 @@ export type ReceiveAllPipedTransportsType = (options: ReceiveAllPipedTransportsO
  * ```
  */
 
-export const receiveAllPipedTransports = async ({ nsock, community = false, parameters }: ReceiveAllPipedTransportsOptions): Promise<void> => {
-  try {
-    // Destructure parameters
-    const { roomName, member, getPipedProducersAlt } = parameters;
-    const emitName = community ? 'createReceiveAllTransports' : 'createReceiveAllTransportsPiped';
-    const emitData = community ? { islevel:'0' } : { roomName, member };
-    // Emit createReceiveAllTransportsPiped event to the server
-    await nsock.emit(
-      emitName,
-      emitData,
-      async ({ producersExist }: { producersExist: boolean }) => {
-        // Array of options representing different levels
-        const options = ['0', '1', '2'];
-
-        // If producers exist, loop through each level and get producers
-        if (producersExist) {
-          for (const islevel of options) {
-            await getPipedProducersAlt({ nsock, community, islevel, parameters });
-          }
-        }
-      },
-    );
-  } catch (error) {
-    console.log('receiveAllPipedTransports error', error);
-  }
+export const receiveAllPipedTransports = async (options: ReceiveAllPipedTransportsOptions): Promise<void> => {
+  await (sharedReceiveAllPipedTransports as unknown as ReceiveAllPipedTransportsType)(options);
 };

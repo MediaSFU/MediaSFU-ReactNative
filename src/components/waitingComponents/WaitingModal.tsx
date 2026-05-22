@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { Socket } from 'socket.io-client';
+import { getModalBodyTheme } from '../../components_modern/core/modalBodyTheme';
 import { getModalPosition } from '../../methods/utils/getModalPosition';
 import {
   respondToWaiting,
@@ -85,6 +86,7 @@ export interface WaitingRoomModalOptions {
   socket: Socket;
   position?: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' | 'center';
   backgroundColor?: string;
+  isDarkMode?: boolean;
   parameters: WaitingRoomModalParameters;
   onWaitingRoomItemPress?: RespondToWaitingType;
   style?: StyleProp<ViewStyle>;
@@ -183,6 +185,7 @@ const WaitingRoomModal: React.FC<WaitingRoomModalOptions> = ({
   onWaitingRoomItemPress = respondToWaiting,
   position = 'topRight',
   backgroundColor = '#83c0e9',
+  isDarkMode,
   parameters,
   style,
   renderContent,
@@ -202,35 +205,53 @@ const WaitingRoomModal: React.FC<WaitingRoomModalOptions> = ({
   const [filterText, setFilterText] = useState<string>('');
 
   useEffect(() => {
+    if (!isWaitingModalVisible) {
+      return;
+    }
+
     const { getUpdatedAllParams } = parameters;
     const updatedParams = getUpdatedAllParams();
     setFilteredWaitingRoomList(updatedParams.filteredWaitingRoomList);
     setWaitingRoomCounter_s(updatedParams.filteredWaitingRoomList.length);
-  }, [waitingRoomList, parameters]);
+  }, [isWaitingModalVisible, waitingRoomList, parameters]);
+
+  if (!isWaitingModalVisible) {
+    return null;
+  }
 
   const dimensions = { width: modalWidth, height: 0 };
+  const theme = getModalBodyTheme(isDarkMode);
+  const shouldUseModernTheme = typeof isDarkMode === 'boolean';
 
   const defaultContent = (
     <>
       {/* Header */}
       <View style={styles.modalHeader}>
-        <Text style={styles.modalTitle}>
-          Waiting <Text style={styles.badge}>{waitingRoomCounter_s}</Text>
+        <Text style={[styles.modalTitle, { color: theme.textColor }]}> 
+          Waiting <Text style={[styles.badge, { backgroundColor: theme.badgeBackgroundColor, color: theme.badgeTextColor }]}>{waitingRoomCounter_s}</Text>
         </Text>
         <Pressable onPress={onWaitingRoomClose} style={styles.closeButton}>
-          <FontAwesome name="times" size={24} color="black" />
+          <FontAwesome name="times" size={24} color={theme.iconColor} />
         </Pressable>
       </View>
 
-      <View style={styles.separator} />
+      <View style={[styles.separator, { backgroundColor: theme.dividerColor }]} />
 
       {/* Search Input */}
 
       <View style={styles.modalBody}>
         <View style={styles.formGroup}>
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackgroundColor,
+                borderColor: theme.borderColor,
+                color: theme.inputTextColor,
+              },
+            ]}
             placeholder="Search ..."
+            placeholderTextColor={theme.placeholderTextColor}
             value={filterText}
             onChangeText={(text) => {
               setFilterText(text);
@@ -245,9 +266,9 @@ const WaitingRoomModal: React.FC<WaitingRoomModalOptions> = ({
             {filteredWaitingRoomList &&
             filteredWaitingRoomList.length > 0 ? (
               filteredWaitingRoomList.map((participant, index) => (
-                <View key={index} style={styles.waitingItem}>
+                <View key={index} style={[styles.waitingItem, { borderBottomColor: theme.dividerColor }]}> 
                   <View style={styles.participantName}>
-                    <Text style={styles.participantText}>
+                    <Text style={[styles.participantText, { color: theme.textColor }]}> 
                       {participant.name}
                     </Text>
                   </View>
@@ -267,7 +288,7 @@ const WaitingRoomModal: React.FC<WaitingRoomModalOptions> = ({
                         })
                       }
                     >
-                      <FontAwesome name="check" size={24} color="green" />
+                      <FontAwesome name="check" size={24} color={theme.successColor} />
                     </Pressable>
 
                     {/* Reject Button */}
@@ -285,13 +306,13 @@ const WaitingRoomModal: React.FC<WaitingRoomModalOptions> = ({
                         })
                       }
                     >
-                      <FontAwesome name="times" size={24} color="red" />
+                      <FontAwesome name="times" size={24} color={theme.dangerColor} />
                     </Pressable>
                   </View>
                 </View>
               ))
             ) : (
-              <Text style={styles.noParticipantsText}>
+              <Text style={[styles.noParticipantsText, { color: theme.mutedTextColor }]}> 
                 No participants found.
               </Text>
             )}
@@ -312,9 +333,14 @@ const WaitingRoomModal: React.FC<WaitingRoomModalOptions> = ({
       visible={isWaitingModalVisible}
       onRequestClose={onWaitingRoomClose}
     >
-      <View style={[styles.modalContainer, getModalPosition({ position })]}>
+      <View style={[styles.modalContainer, getModalPosition({ position }), shouldUseModernTheme ? { borderColor: theme.borderColor } : null]}>
         <View
-          style={[styles.modalContent, { backgroundColor, width: modalWidth }, style]}
+          style={[
+            styles.modalContent,
+            { backgroundColor, width: modalWidth },
+            shouldUseModernTheme ? { borderColor: theme.borderColor } : null,
+            style,
+          ]}
         >
           {content}
         </View>

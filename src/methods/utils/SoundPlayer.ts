@@ -4,7 +4,7 @@ export interface SoundPlayerOptions {
   soundUrl: string;
 }
 // Export the type definition for the function
-export type SoundPlayerType = (options: SoundPlayerOptions) => void;
+export type SoundPlayerType = (options: SoundPlayerOptions) => void | Promise<void>;
 
 /**
  * Plays a sound from a given URL.
@@ -12,7 +12,7 @@ export type SoundPlayerType = (options: SoundPlayerOptions) => void;
  * @param {SoundPlayerOptions} options - The options for the sound player.
  * @param {string} options.soundUrl - The URL of the sound to play.
  *
- * @returns {void}
+ * @returns {void | Promise<void>}
  *
  * @example
  * ```typescript

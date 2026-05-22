@@ -8,7 +8,7 @@ import {
   ViewStyle,
   DimensionValue,
 } from 'react-native';
-import MeetingProgressTimer from './MeetingProgressTimer';
+import MeetingProgressTimer, { MeetingProgressTimerOptions } from './MeetingProgressTimer';
 
 /**
  * Interface defining the props for the OtherGridComponent.
@@ -48,6 +48,7 @@ export interface OtherGridComponentOptions {
   timeBackgroundColor?: string;
   showTimer: boolean;
   meetingProgressTime: string;
+  timerComponent?: React.ComponentType<MeetingProgressTimerOptions>;
   style?: StyleProp<ViewStyle>;
   renderContent?: (options: {
     defaultContent: JSX.Element;
@@ -146,6 +147,7 @@ const OtherGridComponent: React.FC<OtherGridComponentOptions> = ({
   timeBackgroundColor = 'rgba(0,0,0,0.5)', // Default value if not provided
   showTimer,
   meetingProgressTime,
+  timerComponent: TimerComponent = MeetingProgressTimer,
   style,
   renderContent,
   renderContainer,
@@ -157,7 +159,7 @@ const OtherGridComponent: React.FC<OtherGridComponentOptions> = ({
 
   const defaultContent = (
     <>
-      <MeetingProgressTimer
+      <TimerComponent
         meetingProgressTime={meetingProgressTime}
         initialBackgroundColor={timeBackgroundColor}
         showTimer={showTimer}

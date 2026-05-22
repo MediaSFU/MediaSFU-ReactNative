@@ -280,16 +280,22 @@ const ControlButtonsComponent: React.FC<ControlButtonsComponentOptions> = ({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    marginVertical: 10,
+    marginVertical: 6,
+    width: '100%',
+    maxWidth: '100%',
+    alignItems: 'center',
   },
   verticalContainer: {
     flexDirection: 'column',
   },
   buttonContainer: {
     alignItems: 'center',
-    padding: 6,
+    justifyContent: 'center',
+    padding: 4,
     borderRadius: 5,
-    marginHorizontal: 4,
+    marginHorizontal: 2,
+    minWidth: 32,
+    flexShrink: 1,
   },
   verticalButton: {
     flexDirection: 'column',

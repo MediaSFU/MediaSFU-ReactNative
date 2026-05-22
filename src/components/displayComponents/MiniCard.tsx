@@ -48,6 +48,7 @@ import { CustomMiniCardType } from '../../@types/types';
 export interface MiniCardOptions {
   initials?: string;
   fontSize?: number;
+  textColor?: string;
   customStyle?: StyleProp<ViewStyle>;
   imageSource?: string;
   roundedImage?: boolean;
@@ -85,6 +86,7 @@ export type MiniCardType = (options: MiniCardOptions) => JSX.Element;
 const MiniCard: React.FC<MiniCardOptions> = ({
   initials,
   fontSize = 14,
+  textColor,
   customStyle,
   imageSource,
   roundedImage = true,
@@ -99,24 +101,62 @@ const MiniCard: React.FC<MiniCardOptions> = ({
   renderContainer,
 }) => {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const isDarkMode = typeof parameters?.isDarkModeValue === 'boolean'
+    ? parameters.isDarkModeValue
+    : true;
+
+  const resolveAvatarLabel = useCallback(() => {
+    const rawValue = initials?.trim() || name?.trim() || '';
+    if (!rawValue) {
+      return '?';
+    }
+
+    return rawValue.slice(0, 10);
+  }, [initials, name]);
 
   const cardStyle: StyleProp<ViewStyle> = useMemo(
     () => [styles.miniCard, customStyle, style],
     [customStyle, style],
   );
 
-  const resolvedInitials = useMemo(() => {
-    if (initials && initials.trim().length > 0) {
-      return initials.trim().slice(0, 3).toUpperCase();
+  const resolvedInitials = useMemo(() => resolveAvatarLabel(), [resolveAvatarLabel]);
+
+  const resolvedFontSize = useMemo(() => {
+    if (!dimensions.width || !dimensions.height) {
+      return fontSize;
     }
 
-    if (name && name.trim().length > 0) {
-      const parts = name.trim().split(/\s+/).slice(0, 3);
-      return parts.map((part) => part.charAt(0).toUpperCase()).join('');
+    const labelLength = Math.max(resolvedInitials.length, 1);
+    const availableWidth = Math.max(dimensions.width - 12, 1);
+    const availableHeight = Math.max(dimensions.height - 12, 1);
+    const widthFit = availableWidth / Math.max(labelLength * 0.58, 1);
+    const heightFit = availableHeight * 0.55;
+
+    return Math.max(8, Math.min(fontSize, Math.floor(widthFit), Math.floor(heightFit)));
+  }, [dimensions.height, dimensions.width, fontSize, resolvedInitials]);
+
+  const resolvedTextColor = useMemo(
+    () => textColor ?? (isDarkMode ? '#f8fafc' : '#0f172a'),
+    [isDarkMode, textColor],
+  );
+
+  const resolvedBadgeBackgroundColor = useMemo(
+    () => (isDarkMode ? 'rgba(0, 0, 0, 0.35)' : 'rgba(255, 255, 255, 0.8)'),
+    [isDarkMode],
+  );
+
+  const resolvedBadgeIconColor = useMemo(
+    () => (isDarkMode ? '#ffffff' : '#0f172a'),
+    [isDarkMode],
+  );
+
+  const badgeIconSize = useMemo(() => {
+    if (!dimensions.width || !dimensions.height) {
+      return 14;
     }
 
-    return '??';
-  }, [initials, name]);
+    return Math.max(10, Math.min(14, Math.floor(Math.min(dimensions.width, dimensions.height) * 0.16)));
+  }, [dimensions.height, dimensions.width]);
 
   const accessibilityLabel = useMemo(() => {
     const base = name || resolvedInitials;
@@ -146,7 +186,8 @@ const MiniCard: React.FC<MiniCardOptions> = ({
     if (customMiniCard) {
       return customMiniCard({
         initials: resolvedInitials,
-        fontSize,
+        fontSize: resolvedFontSize,
+        textColor: resolvedTextColor,
         customStyle,
         name: name || resolvedInitials,
         showVideoIcon,
@@ -173,22 +214,35 @@ const MiniCard: React.FC<MiniCardOptions> = ({
             />
           </View>
         ) : (
-          <Text style={[styles.initials, { fontSize }]}>{resolvedInitials}</Text>
+          <Text
+            style={[
+              styles.initials,
+              isDarkMode ? styles.initialsDarkMode : styles.initialsLightMode,
+              { fontSize: resolvedFontSize, color: resolvedTextColor },
+            ]}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.5}
+          >
+            {resolvedInitials}
+          </Text>
         )}
 
         {(showVideoIcon || showAudioIcon) && (
-          <View style={styles.badgeContainer}>
+          <View style={[styles.badgeContainer, { backgroundColor: resolvedBadgeBackgroundColor }]}>
             {showVideoIcon && (
               <FontAwesome
                 name="video-camera"
-                size={14}
+                size={badgeIconSize}
+                color={resolvedBadgeIconColor}
                 style={[styles.badgeIcon, styles.badgeIconFirst]}
               />
             )}
             {showAudioIcon && (
               <FontAwesome
                 name="microphone"
-                size={14}
+                size={badgeIconSize}
+                color={resolvedBadgeIconColor}
                 style={[styles.badgeIcon, showVideoIcon ? null : styles.badgeIconFirst]}
               />
             )}
@@ -199,7 +253,8 @@ const MiniCard: React.FC<MiniCardOptions> = ({
   }, [
     customMiniCard,
     resolvedInitials,
-    fontSize,
+    resolvedFontSize,
+    textColor,
     customStyle,
     name,
     showVideoIcon,
@@ -208,6 +263,11 @@ const MiniCard: React.FC<MiniCardOptions> = ({
     roundedImage,
     imageStyle,
     parameters,
+    badgeIconSize,
+    isDarkMode,
+    resolvedBadgeBackgroundColor,
+    resolvedBadgeIconColor,
+    resolvedTextColor,
   ]);
 
   const content = useMemo(() => (
@@ -270,20 +330,29 @@ const styles = StyleSheet.create({
   },
   initials: {
     textAlign: 'center',
-    color: 'black',
+    fontWeight: '800',
+    maxWidth: '92%',
+  },
+  initialsDarkMode: {
+    textShadowColor: 'rgba(15, 23, 42, 0.55)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  initialsLightMode: {
+    textShadowColor: 'rgba(248, 250, 252, 0.85)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
   },
   badgeContainer: {
     position: 'absolute',
     bottom: 6,
     right: 6,
     flexDirection: 'row',
-    backgroundColor: 'rgba(0, 0, 0, 0.35)',
     paddingHorizontal: 6,
     paddingVertical: 4,
     borderRadius: 12,
   },
   badgeIcon: {
-    color: '#ffffff',
     marginLeft: 6,
   },
   badgeIconFirst: {

@@ -1,6 +1,7 @@
 
 /* eslint-disable eqeqeq */
 import React from 'react';
+import { Platform } from 'react-native';
 import { Socket } from 'socket.io-client';
 import MiniAudioPlayer from '../methods/utils/MiniAudioPlayer/MiniAudioPlayer';
 import MiniAudio from '../components/displayComponents/MiniAudio';
@@ -18,7 +19,11 @@ import {
   EventType,
   MediaStream as MediaStreamType,
 } from '../@types/types';
-import { MediaStream as NativeMediaStream, MediaStreamTrack } from '../methods/utils/webrtc/webrtc';
+import {
+  MediaStream as NativeMediaStream,
+  MediaStreamTrack,
+  RTCView,
+} from '../methods/utils/webrtc/webrtc';
 import { Consumer } from 'mediasoup-client/lib/types';
 
 
@@ -262,17 +267,37 @@ export const consumerResume = async ({
 
     const MiniAudioComponentToUse = miniAudioComponent ?? MiniAudio;
     const MiniAudioPlayerComponentToUse = miniAudioPlayerComponent ?? MiniAudioPlayer;
+    const isDarkMode = typeof parameters?.isDarkModeValue === 'boolean'
+      ? parameters.isDarkModeValue
+      : true;
+    const participantCardTextColor = isDarkMode ? '#f8fafc' : '#0f172a';
 
     if (params.kind === 'audio') {
       // Audio resumed
+
+      const activeTranslationProducerIds = (parameters as any).activeTranslationProducerIds as Set<string> | undefined;
+      const isTranslationAudio =
+        activeTranslationProducerIds?.has(remoteProducerId)
+        || consumer.appData?.type === 'translation'
+        || consumer.appData?.isTranslation;
 
       // Check if the participant with audioID == remoteProducerId has a valid videoID
       const participant = participants.filter(
         (p) => p.audioID === remoteProducerId,
       );
-      const name__ = participant.length > 0 ? participant[0].name || '' : '';
+      let name__ = participant.length > 0 ? participant[0].name || '' : '';
 
-      if (name__ === member) {return;}
+      if (isTranslationAudio && !name__) {
+        const translationMeta = consumer.appData?.translationMeta as {
+          speakerName?: string;
+          speakerId?: string;
+          language?: string;
+        } | undefined;
+
+        name__ = translationMeta?.speakerName || `Translation-${remoteProducerId.slice(0, 8)}`;
+      }
+
+      if (name__ === member && !isTranslationAudio) {return;}
 
       // find any participants with ScreenID not null and ScreenOn == true
       const screenParticipant_alt = participants.filter(
@@ -299,6 +324,44 @@ export const consumerResume = async ({
       nStream = new NativeMediaStream([track]);
       updateNStream(nStream);
 
+      if (isTranslationAudio) {
+        const addTranslationStream = (parameters as any).addTranslationStream as
+          | ((element: JSX.Element) => void)
+          | undefined;
+
+        const translationTrack = Platform.OS === 'web' ? (
+          <RTCView
+            key={`translation-${remoteProducerId}`}
+            stream={nStream}
+            style={{ width: 0, height: 0 }}
+          />
+        ) : (
+          <RTCView
+            key={`translation-${remoteProducerId}`}
+            streamURL={nStream.toURL()}
+            style={{ width: 0, height: 0 }}
+          />
+        );
+
+        if (addTranslationStream) {
+          addTranslationStream(translationTrack);
+        }
+
+        allAudioStreams = [
+          ...allAudioStreams,
+          { producerId: remoteProducerId, stream: nStream },
+        ];
+        updateAllAudioStreams(allAudioStreams);
+
+        audStreamNames = [
+          ...audStreamNames,
+          { producerId: remoteProducerId, name: name__ },
+        ];
+        updateAudStreamNames(audStreamNames);
+
+        return;
+      }
+
       // Create MiniAudioPlayer track
       const nTrack = (
         <MiniAudioPlayerComponentToUse
@@ -312,8 +375,8 @@ export const consumerResume = async ({
             name: name__,
             showWaveform: true,
             overlayPosition: 'topRight',
-            barColor: 'white',
-            textColor: 'white',
+            barColor: participantCardTextColor,
+            textColor: participantCardTextColor,
             imageSource: 'https://mediasfu.com/images/logo192.png',
             roundedImage: true,
             imageStyle: {},
@@ -427,7 +490,7 @@ export const consumerResume = async ({
         updateRemoteScreenStream(remoteScreenStream);
 
         if (eventType == 'conference') {
-          if (shared || shareScreenStarted) {
+          if (shared || shareScreenStarted || (whiteboardStarted && !whiteboardEnded)) {
             if (mainHeightWidth == 0) {
               updateMainHeightWidth(84);
             }

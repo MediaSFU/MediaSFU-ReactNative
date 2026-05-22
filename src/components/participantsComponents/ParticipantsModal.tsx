@@ -127,6 +127,7 @@ export interface ParticipantsModalOptions {
   parameters: ParticipantsModalParameters;
   backgroundColor?: string;
   position?: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' | 'center';
+  isDarkMode?: boolean;
   style?: StyleProp<ViewStyle>;
   renderContent?: (options: {
     defaultContent: JSX.Element;
@@ -211,6 +212,7 @@ const ParticipantsModal: React.FC<ParticipantsModalOptions> = ({
   RenderParticipantListOthers = ParticipantListOthers,
   position = 'topRight',
   backgroundColor = '#83c0e9',
+  isDarkMode,
   parameters,
   style,
   renderContent,
@@ -252,36 +254,53 @@ const ParticipantsModal: React.FC<ParticipantsModalOptions> = ({
   }
 
   useEffect(() => {
+    if (!isParticipantsModalVisible) {
+      return;
+    }
+
     const updatedParams = parameters.getUpdatedAllParams();
     setParticipantList(updatedParams.filteredParticipants);
     setParticipantsCounter_s(updatedParams.filteredParticipants.length);
-  }, [participants, parameters]);
+  }, [isParticipantsModalVisible, participants, parameters]);
+
+  if (!isParticipantsModalVisible) {
+    return null;
+  }
 
   const dimensions = { width: modalWidth, height: 0 };
+  const themed = typeof isDarkMode === 'boolean';
+  const textColor = themed ? (isDarkMode ? '#f8fafc' : '#0f172a') : 'black';
+  const mutedTextColor = themed ? (isDarkMode ? '#cbd5e1' : '#475569') : 'gray';
+  const borderColor = themed ? (isDarkMode ? 'rgba(226, 232, 240, 0.18)' : 'rgba(71, 85, 105, 0.22)') : '#000000';
+  const inputBackgroundColor = themed ? (isDarkMode ? '#1e293b' : '#ffffff') : 'white';
+  const inputBorderColor = themed ? (isDarkMode ? 'rgba(226, 232, 240, 0.22)' : 'rgba(71, 85, 105, 0.28)') : 'gray';
+  const badgeBackgroundColor = themed ? (isDarkMode ? '#38bdf8' : '#2563eb') : '#fff';
+  const badgeTextColor = themed ? '#ffffff' : '#000';
 
   const defaultContent = (
     <ScrollView style={styles.scrollView}>
       <View style={styles.modalHeader}>
-        <Text style={styles.modalTitle}>
+        <Text style={[styles.modalTitle, { color: textColor }] as any}>
           Participants
           {' '}
-          <Text style={styles.badge}>{participantsCounter_s}</Text>
+          <Text style={[styles.badge, { backgroundColor: badgeBackgroundColor, color: badgeTextColor }] as any}>{participantsCounter_s}</Text>
         </Text>
         <Pressable
           onPress={onParticipantsClose}
           style={styles.closeButton}
         >
-          <FontAwesome name="times" size={24} color="black" />
+          <FontAwesome name="times" size={24} color={textColor} />
         </Pressable>
       </View>
 
-      <View style={styles.separator} />
+      <View style={[styles.separator, { backgroundColor: borderColor }] as any} />
       <View style={styles.modalBody}>
         {/* Search Input */}
         <View style={styles.formGroup}>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { color: textColor, borderColor: inputBorderColor, backgroundColor: inputBackgroundColor }] as any}
             placeholder="Search ..."
+            placeholderTextColor={mutedTextColor}
             value={filterText}
             onChangeText={(text) => {
               setFilterText(text);
@@ -311,15 +330,17 @@ const ParticipantsModal: React.FC<ParticipantsModalOptions> = ({
             updateDirectMessageDetails={updateDirectMessageDetails}
             updateStartDirectMessage={updateStartDirectMessage}
             updateParticipants={updateParticipants}
+            isDarkMode={isDarkMode}
           />
           ) : participantList ? (
             <RenderParticipantListOthers
               participants={participantList}
               coHost={coHost}
               member={member}
+              isDarkMode={isDarkMode}
             />
           ) : (
-            <Text style={styles.noParticipantsText}>No participants</Text>
+            <Text style={[styles.noParticipantsText, { color: mutedTextColor }] as any}>No participants</Text>
           )}
       </View>
     </ScrollView>

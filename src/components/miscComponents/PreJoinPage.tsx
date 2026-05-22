@@ -28,6 +28,7 @@ import RNPickerSelect from 'react-native-picker-select';
 import { checkLimitsAndMakeRequest } from '../../methods/utils/checkLimitsAndMakeRequest';
 import { createRoomOnMediaSFU } from '../../methods/utils/createRoomOnMediaSFU';
 import { CreateRoomOnMediaSFUType, JoinRoomOnMediaSFUType, joinRoomOnMediaSFU } from '../../methods/utils/joinRoomOnMediaSFU';
+import { validateAlphanumeric } from '../../methods/utils/validateAlphanumeric';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 /**
  * Interface defining the parameters for joining a local event room.
@@ -200,6 +201,11 @@ export interface PreJoinPageOptions {
   noUIPreJoinOptions?: CreateMediaSFURoomOptions | JoinMediaSFURoomOptions;
 
   /**
+   * When true, automatically runs the pre-join flow even if the room UI should render after validation.
+   */
+  autoProceedPreJoin?: boolean;
+
+  /**
    * Function to create a room on MediaSFU.
    */
   createMediaSFURoom?: CreateRoomOnMediaSFUType;
@@ -299,6 +305,7 @@ const PreJoinPage: React.FC<PreJoinPageOptions> = ({
   credentials,
   returnUI = false,
   noUIPreJoinOptions,
+  autoProceedPreJoin,
   createMediaSFURoom = createRoomOnMediaSFU,
   joinMediaSFURoom = joinRoomOnMediaSFU,
 }) => {
@@ -311,10 +318,18 @@ const PreJoinPage: React.FC<PreJoinPageOptions> = ({
   const [eventID, setEventID] = useState<string>('');
   const [error, setError] = useState<string>('');
   const pending = useRef(false);
+  const lastAutoProceedKey = useRef<string | null>(null);
 
   const localConnected = useRef(false);
   const localData = useRef<ResponseLocalConnectionData | undefined>(undefined);
   const initSocket = useRef<Socket | undefined>(undefined);
+  const shouldAutoProceed = autoProceedPreJoin ?? !returnUI;
+
+  const autoProceedKey = !shouldAutoProceed || !noUIPreJoinOptions
+    ? null
+    : noUIPreJoinOptions.action === 'create'
+      ? `create:${noUIPreJoinOptions.userName}:${noUIPreJoinOptions.eventType}:${noUIPreJoinOptions.duration}:${noUIPreJoinOptions.capacity}`
+      : `join:${noUIPreJoinOptions.userName}:${noUIPreJoinOptions.meetingID}`;
 
   const {
     showAlert,
@@ -329,17 +344,46 @@ const PreJoinPage: React.FC<PreJoinPageOptions> = ({
     updateMember,
   } = parameters;
 
-  const handleCreateRoom = async () => {
+  const validateDisplayName = async (displayName: string) => {
+    const isValidDisplayName =
+      displayName.length >= 2 &&
+      displayName.length <= 10 &&
+      (await validateAlphanumeric({ str: displayName }));
+
+    if (isValidDisplayName) {
+      return true;
+    }
+
+    const message =
+      'Display Name must be alphanumeric and between 2 and 10 characters.';
+    pending.current = false;
+
+    if (returnUI) {
+      setError(message);
+      return false;
+    }
+
+    throw new Error(message);
+  };
+
+  const handleCreateRoom = async (
+    providedPayload?: CreateMediaSFURoomOptions,
+  ) => {
     if (pending.current) {
       return;
     }
     pending.current = true;
+    setError('');
     let payload = {} as CreateMediaSFURoomOptions;
-    if (returnUI) {
+    if (providedPayload) {
+      payload = providedPayload;
+    } else if (returnUI) {
       if (!name || !duration || !eventType || !capacity) {
         setError('Please fill all the fields.');
+        pending.current = false;
         return;
       }
+
       payload = {
         action: 'create',
         duration: parseInt(duration, 10),
@@ -361,6 +405,10 @@ const PreJoinPage: React.FC<PreJoinPageOptions> = ({
           'Invalid options provided for creating a room without UI.',
         );
       }
+    }
+
+    if (!(await validateDisplayName(payload.userName))) {
+      return;
     }
 
     updateIsLoadingModalVisible(true);
@@ -594,15 +642,21 @@ const PreJoinPage: React.FC<PreJoinPageOptions> = ({
     }
   };
 
-  const handleJoinRoom = async () => {
+  const handleJoinRoom = async (
+    providedPayload?: JoinMediaSFURoomOptions,
+  ) => {
     if (pending.current) {
       return;
     }
     pending.current = true;
+    setError('');
     let payload = {} as JoinMediaSFURoomOptions;
-    if (returnUI) {
+    if (providedPayload) {
+      payload = providedPayload;
+    } else if (returnUI) {
       if (!name || !eventID) {
         setError('Please fill all the fields.');
+        pending.current = false;
         return;
       }
 
@@ -619,10 +673,15 @@ const PreJoinPage: React.FC<PreJoinPageOptions> = ({
       ) {
         payload = noUIPreJoinOptions as JoinMediaSFURoomOptions;
       } else {
+        pending.current = false;
         throw new Error(
           'Invalid options provided for joining a room without UI.',
         );
       }
+    }
+
+    if (!(await validateDisplayName(payload.userName))) {
+      return;
     }
 
     if (localLink.length > 0 && !localLink.includes('mediasfu.com')) {
@@ -661,14 +720,10 @@ const PreJoinPage: React.FC<PreJoinPageOptions> = ({
     } else {
       pending.current = false;
       updateIsLoadingModalVisible(false);
+      const joinErrorMessage =
+        response.data && 'error' in response.data ? response.data.error : '';
       setError(
-        `Unable to join room. ${
-          response.data
-            ? 'error' in response.data
-              ? response.data.error
-              : ''
-            : ''
-        }`,
+        formatRequestError('Unable to join room', joinErrorMessage),
       );
     }
   };
@@ -754,26 +809,20 @@ const PreJoinPage: React.FC<PreJoinPageOptions> = ({
       return response;
     } else {
       updateIsLoadingModalVisible(false);
+      const createErrorMessage =
+        response.data && 'error' in response.data ? response.data.error : '';
       setError(
-        `Unable to create room. ${
-          response.data
-            ? 'error' in response.data
-              ? response.data.error
-              : ''
-            : ''
-        }`,
+        formatRequestError('Unable to create room', createErrorMessage),
       );
     }
   };
 
   const checkProceed = async ({
-    returnUI,
     noUIPreJoinOptions,
   }: {
-    returnUI: boolean;
     noUIPreJoinOptions: CreateMediaSFURoomOptions | JoinMediaSFURoomOptions;
   }) => {
-    if (!returnUI && noUIPreJoinOptions) {
+    if (shouldAutoProceed && noUIPreJoinOptions) {
       if (
         'action' in noUIPreJoinOptions &&
         noUIPreJoinOptions.action === 'create'
@@ -792,7 +841,7 @@ const PreJoinPage: React.FC<PreJoinPageOptions> = ({
           );
         }
 
-        await handleCreateRoom();
+        await handleCreateRoom(createOptions);
       } else if (
         'action' in noUIPreJoinOptions &&
         noUIPreJoinOptions.action === 'join'
@@ -806,7 +855,7 @@ const PreJoinPage: React.FC<PreJoinPageOptions> = ({
           );
         }
 
-        await handleJoinRoom();
+        await handleJoinRoom(joinOptions);
       } else {
         throw new Error(
           'Invalid options provided for creating/joining a room without UI.',
@@ -827,10 +876,6 @@ const PreJoinPage: React.FC<PreJoinPageOptions> = ({
             localData.current = response!.data;
             initSocket.current = response!.socket;
             localConnected.current = true;
-
-            if (!returnUI && noUIPreJoinOptions) {
-              checkProceed({ returnUI, noUIPreJoinOptions });
-            }
           })
           .catch((error) => {
             showAlert?.({
@@ -846,16 +891,57 @@ const PreJoinPage: React.FC<PreJoinPageOptions> = ({
           duration: 3000,
         });
       }
-    } else if (localLink.length === 0 && !initSocket.current) {
-      if (!returnUI && noUIPreJoinOptions) {
-        checkProceed({ returnUI, noUIPreJoinOptions });
-      }
     }
   }, []);
+
+  useEffect(() => {
+    if (!autoProceedKey || !noUIPreJoinOptions) {
+      return;
+    }
+
+    if (lastAutoProceedKey.current === autoProceedKey) {
+      return;
+    }
+
+    if (localLink.length > 0 && !localConnected.current) {
+      return;
+    }
+
+    lastAutoProceedKey.current = autoProceedKey;
+
+    void checkProceed({ noUIPreJoinOptions }).catch((caughtError) => {
+      pending.current = false;
+      lastAutoProceedKey.current = null;
+
+      const message = caughtError instanceof Error
+        ? caughtError.message
+        : 'Unable to proceed with the room request.';
+
+      if (returnUI) {
+        setError(message);
+      } else {
+        showAlert?.({
+          message,
+          type: 'danger',
+          duration: 3000,
+        });
+      }
+    });
+  }, [autoProceedKey, localLink, noUIPreJoinOptions, returnUI, showAlert]);
 
   const handleToggleMode = () => {
     setIsCreateMode(!isCreateMode);
     setError('');
+  };
+
+  const formatRequestError = (prefix: string, errorMessage: string) => {
+    if (!errorMessage) {
+      return `${prefix}.`;
+    }
+
+    return errorMessage.startsWith(prefix)
+      ? errorMessage
+      : `${prefix}. ${errorMessage}`;
   };
 
   /**
@@ -873,33 +959,32 @@ const PreJoinPage: React.FC<PreJoinPageOptions> = ({
     return <></>;
   }
 
-  return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={styles.keyboardAvoidingContainer}
+  const content = (
+    <ScrollView
+      contentContainerStyle={styles.scrollContainer}
+      keyboardShouldPersistTaps="handled"
     >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View
-          style={[
-            styles.container,
-            Platform.OS === 'web' && { maxWidth: 600, alignSelf: 'center' },
-          ]}
-        >
-          {/* Logo */}
-          <View style={styles.logoContainer}>
-            <Image
-              source={{
-                uri:
-                  parameters.imgSrc ||
-                  'https://mediasfu.com/images/logo192.png',
-              }}
-              style={styles.logoImage}
-            />
-          </View>
+      <View
+        style={[
+          styles.container,
+          Platform.OS === 'web' && { maxWidth: 600, alignSelf: 'center' },
+        ]}
+      >
+        {/* Logo */}
+        <View style={styles.logoContainer}>
+          <Image
+            source={{
+              uri:
+                parameters.imgSrc ||
+                'https://mediasfu.com/images/logo192.png',
+            }}
+            style={styles.logoImage}
+          />
+        </View>
 
-          {/* Input Fields */}
-          <View style={styles.inputContainer}>
-            {isCreateMode ? (
+        {/* Input Fields */}
+        <View style={styles.inputContainer}>
+          {isCreateMode ? (
               <>
                 <TextInput
                   style={styles.inputField}
@@ -956,7 +1041,9 @@ const PreJoinPage: React.FC<PreJoinPageOptions> = ({
                 />
                 <Pressable
                   style={styles.actionButton}
-                  onPress={handleCreateRoom}
+                  onPress={() => {
+                    void handleCreateRoom();
+                  }}
                   accessibilityRole="button"
                   accessibilityLabel="Create Room"
                 >
@@ -987,7 +1074,9 @@ const PreJoinPage: React.FC<PreJoinPageOptions> = ({
                 />
                 <Pressable
                   style={styles.actionButton}
-                  onPress={handleJoinRoom}
+                  onPress={() => {
+                    void handleJoinRoom();
+                  }}
                   accessibilityRole="button"
                   accessibilityLabel="Join Room"
                 >
@@ -1018,9 +1107,19 @@ const PreJoinPage: React.FC<PreJoinPageOptions> = ({
               </Text>
             </Pressable>
           </View>
-        </View>
-      </ScrollView>
+      </View>
+    </ScrollView>
+  );
+
+  return Platform.OS === 'ios' ? (
+    <KeyboardAvoidingView
+      behavior="padding"
+      style={styles.keyboardAvoidingContainer}
+    >
+      {content}
     </KeyboardAvoidingView>
+  ) : (
+    <View style={styles.keyboardAvoidingContainer}>{content}</View>
   );
 };
 

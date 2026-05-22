@@ -13,6 +13,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { Socket } from 'socket.io-client';
+import { getModalBodyTheme } from '../../components_modern/core/modalBodyTheme';
 
 /**
  * Configuration options for the `ConfirmHereModal` component.
@@ -44,6 +45,7 @@ export interface ConfirmHereModalOptions {
   isConfirmHereModalVisible: boolean;
   onConfirmHereClose: () => void;
   backgroundColor?: string;
+  isDarkMode?: boolean;
   countdownDuration?: number;
   socket: Socket;
   localSocket?: Socket;
@@ -159,6 +161,7 @@ const ConfirmHereModal: React.FC<ConfirmHereModalOptions> = ({
   isConfirmHereModalVisible,
   onConfirmHereClose,
   backgroundColor = '#83c0e9',
+  isDarkMode,
   countdownDuration = 120,
   socket,
   localSocket,
@@ -204,29 +207,31 @@ const ConfirmHereModal: React.FC<ConfirmHereModalOptions> = ({
   };
 
   const dimensions = { width: modalWidth, height: 0 };
+  const theme = getModalBodyTheme(isDarkMode);
+  const shouldUseModernTheme = typeof isDarkMode === 'boolean';
 
   const defaultContent = (
     <View style={styles.modalBody}>
       {/* Spinner */}
       <ActivityIndicator
         size="large"
-        color={'#000000'}
+        color={theme.iconColor}
         style={styles.spinnerContainer}
       />
 
       {/* Modal Content */}
-      <Text style={styles.modalTitle}>Are you still there?</Text>
-      <Text style={styles.modalMessage}>
+      <Text style={[styles.modalTitle, { color: theme.textColor }]}>Are you still there?</Text>
+      <Text style={[styles.modalMessage, { color: theme.textColor }]}> 
         Please confirm if you are still present.
       </Text>
-      <Text style={styles.modalCounter}>
-        Time remaining: <Text style={styles.counterText}>{counter}</Text>{' '}
+      <Text style={[styles.modalCounter, { color: theme.mutedTextColor }]}> 
+        Time remaining: <Text style={[styles.counterText, { color: theme.textColor }]}>{counter}</Text>{' '}
         seconds
       </Text>
 
       {/* Confirm Button */}
-      <Pressable onPress={handleConfirmHere} style={styles.confirmButton}>
-        <Text style={styles.confirmButtonText}>Yes</Text>
+      <Pressable onPress={handleConfirmHere} style={[styles.confirmButton, { backgroundColor: theme.buttonBackgroundColor }]}> 
+        <Text style={[styles.confirmButtonText, { color: theme.buttonTextColor }]}>Yes</Text>
       </Pressable>
     </View>
   );
@@ -244,7 +249,7 @@ const ConfirmHereModal: React.FC<ConfirmHereModalOptions> = ({
     >
       <View style={styles.modalContainer}>
         <View
-          style={[styles.modalContent, { backgroundColor, width: modalWidth }, style]}
+          style={[styles.modalContent, { backgroundColor, width: modalWidth }, shouldUseModernTheme ? { borderColor: theme.borderColor, borderWidth: 1 } : null, style]}
         >
           {content}
         </View>

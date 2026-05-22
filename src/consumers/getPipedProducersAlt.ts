@@ -1,11 +1,32 @@
+import { getPipedProducersAlt as sharedGetPipedProducersAlt } from 'mediasfu-shared';
 import { Socket } from 'socket.io-client';
 import { SignalNewConsumerTransportParameters, SignalNewConsumerTransportType } from '../@types/types';
 
-export interface GetPipedProducersAltParameters extends SignalNewConsumerTransportParameters {
+interface TranslationMeta {
+  speakerId: string;
+  speakerName: string;
+  language: string;
+  originalProducerId?: string;
+  isSpeakerControlled?: boolean;
+}
+
+export interface GetPipedProducersAltParameters extends Omit<SignalNewConsumerTransportParameters, 'getUpdatedAllParams'> {
   member: string;
+  listenerTranslationPreferences?: {
+    perSpeaker: Map<string, { speakerId: string; language: string | null; wantOriginal: boolean }>;
+    globalLanguage: string | null;
+  };
 
   // mediasfu functions
   signalNewConsumerTransport: SignalNewConsumerTransportType;
+  startConsumingTranslation?: (
+    producerId: string,
+    speakerId: string,
+    language: string,
+    originalProducerId?: string,
+    nsock?: Socket
+  ) => Promise<void>;
+  getUpdatedAllParams?: () => GetPipedProducersAltParameters;
   [key: string]: any;
 }
 
@@ -56,41 +77,6 @@ export type GetPipedProducersAltType = (options: GetPipedProducersAltOptions) =>
  *   });
  */
 
-export const getPipedProducersAlt = async ({
-  community = false,
-  nsock,
-  islevel,
-  parameters,
-}: GetPipedProducersAltOptions): Promise<void> => {
-  try {
-    // Destructure parameters
-    const { member, signalNewConsumerTransport } = parameters;
-
-    const emitName = community ? 'getProducersAlt' : 'getProducersPipedAlt';
-
-    // Emit request to get piped producers using WebSocket
-    await nsock.emit(
-      emitName,
-      { islevel, member },
-      async (producerIds: string[]) => {
-        // Check if producers are retrieved
-        if (producerIds.length > 0) {
-          // Signal new consumer transport for each retrieved producer
-          await Promise.all(
-            producerIds.map((id) =>
-              signalNewConsumerTransport({
-                nsock,
-                remoteProducerId: id,
-                islevel,
-                parameters,
-              }),
-            ),
-          );
-        }
-      },
-    );
-  } catch (error) {
-    // Handle errors during the process of retrieving producers
-    console.log('Error getting piped producers:', (error as Error).message);
-  }
+export const getPipedProducersAlt = async (options: GetPipedProducersAltOptions): Promise<void> => {
+  await (sharedGetPipedProducersAlt as unknown as GetPipedProducersAltType)(options);
 };

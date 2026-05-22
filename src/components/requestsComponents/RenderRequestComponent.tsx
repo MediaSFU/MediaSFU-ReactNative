@@ -7,6 +7,7 @@ import {
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { Socket } from 'socket.io-client';
 import { Request, RespondToRequestsType } from '../../@types/types';
+import { getModalBodyTheme } from '../../components_modern/core/modalBodyTheme';
 
 export interface RenderRequestComponentOptions {
   /**
@@ -38,6 +39,7 @@ export interface RenderRequestComponentOptions {
    * The socket instance for real-time communication.
    */
   socket: Socket;
+  isDarkMode?: boolean;
 }
 
 /**
@@ -90,7 +92,9 @@ const RenderRequestComponent: React.FC<RenderRequestComponentOptions> = ({
   updateRequestList,
   roomName,
   socket,
+  isDarkMode,
 }) => {
+  const theme = getModalBodyTheme(isDarkMode);
   /**
    * Maps the request.icon to the corresponding FontAwesome icon name.
    */
@@ -118,15 +122,15 @@ const RenderRequestComponent: React.FC<RenderRequestComponentOptions> = ({
   };
 
   return (
-    <View style={styles.requestRow}>
+    <View style={[styles.requestRow, { borderBottomColor: theme.dividerColor }]}> 
       {/* Request Name */}
       <View style={styles.requestNameContainer}>
-        <Text style={styles.requestNameText}>{request.name}</Text>
+        <Text style={[styles.requestNameText, { color: theme.textColor }]}>{request.name}</Text>
       </View>
 
       {/* Icon */}
       <View style={styles.iconContainer}>
-        <FontAwesome name={keyMap[request.icon]} size={24} color="black" />
+        <FontAwesome name={keyMap[request.icon]} size={24} color={theme.iconColor} />
       </View>
 
       {/* Accept Button */}
@@ -134,7 +138,7 @@ const RenderRequestComponent: React.FC<RenderRequestComponentOptions> = ({
         onPress={() => handleRequestAction('accepted')}
         style={styles.actionButton}
       >
-        <FontAwesome name="check" size={24} color="green" />
+        <FontAwesome name="check" size={24} color={theme.successColor} />
       </Pressable>
 
       {/* Reject Button */}
@@ -142,7 +146,7 @@ const RenderRequestComponent: React.FC<RenderRequestComponentOptions> = ({
         onPress={() => handleRequestAction('rejected')}
         style={styles.actionButton}
       >
-        <FontAwesome name="times" size={24} color="red" />
+        <FontAwesome name="times" size={24} color={theme.dangerColor} />
       </Pressable>
     </View>
   );

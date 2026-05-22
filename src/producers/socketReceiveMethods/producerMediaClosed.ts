@@ -1,6 +1,7 @@
 import {
   CloseAndResizeParameters, CloseAndResizeType, PrepopulateUserMediaParameters, PrepopulateUserMediaType, ReorderStreamsParameters, ReorderStreamsType, Transport,
 } from '../../@types/types';
+import { producerMediaClosed as sharedProducerMediaClosed } from 'mediasfu-shared';
 
 export interface ProducerMediaClosedParameters extends CloseAndResizeParameters, PrepopulateUserMediaParameters, ReorderStreamsParameters {
   consumerTransports: Transport[];
@@ -80,60 +81,9 @@ export const producerMediaClosed = async ({
   kind,
   parameters,
 }: ProducerMediaClosedOptions): Promise<void> => {
-  // Get updated parameters
-  const updatedParameters = parameters.getUpdatedAllParams();
-
-  const {
-    consumerTransports,
-    updateConsumerTransports,
-    hostLabel,
-    shared,
-    updateShared,
-    updateShareScreenStarted,
-    updateScreenId,
-    updateShareEnded,
-    closeAndResize,
-    prepopulateUserMedia,
-    reorderStreams,
-  } = updatedParameters;
-
-  // Find the transport for the producer to close
-  const producerToClose = consumerTransports.find(
-    (transportData) => transportData.producerId === producerId,
-  );
-
-  if (producerToClose) {
-    try {
-      await producerToClose.consumerTransport.close();
-    } catch (error) {
-      console.error('Error closing consumer transport:', error);
-    }
-
-    try {
-      producerToClose.consumer.close();
-    } catch (error) {
-      console.error('Error closing consumer:', error);
-    }
-
-    const updatedTransports = consumerTransports.filter(
-      (transportData) => transportData.producerId !== producerId,
-    );
-    updateConsumerTransports(updatedTransports);
-
-    await closeAndResize({
-      producerId,
-      kind,
-      parameters: updatedParameters,
-    });
-  } else if (kind === 'screenshare' || kind === 'screen') {
-    if (shared) {
-      updateShared(false);
-    } else {
-      updateShareScreenStarted(false);
-      updateScreenId('');
-    }
-    updateShareEnded(true);
-    await prepopulateUserMedia({ name: hostLabel, parameters: updatedParameters });
-    await reorderStreams({ add: false, screenChanged: true, parameters: updatedParameters });
-  }
+  return sharedProducerMediaClosed({
+    producerId,
+    kind,
+    parameters,
+  });
 };

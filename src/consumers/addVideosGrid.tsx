@@ -8,6 +8,7 @@ import {
   Participant, Stream, UpdateMiniCardsGridType, UpdateMiniCardsGridParameters, AudioCardParameters, EventType,
   MediaStream as MediaStreamType, CustomVideoCardType, CustomAudioCardType, CustomMiniCardType,
 } from '../@types/types';
+import { buildAddVideosGridPlan } from 'mediasfu-shared';
 
 export interface AddVideosGridParameters extends UpdateMiniCardsGridParameters, AudioCardParameters {
   eventType: EventType;
@@ -146,18 +147,60 @@ export async function addVideosGrid({
     forceFullDisplay,
     otherGridStreams,
     updateOtherGridStreams,
-  updateMiniCardsGrid,
-  customVideoCard,
-  customMiniCard,
+    updateMiniCardsGrid,
+    customVideoCard,
+    customAudioCard,
+    customMiniCard,
     videoCardComponent,
     audioCardComponent,
     miniCardComponent,
+    translationTranscripts = [],
+    showSubtitlesOnCards = true,
   } = parameters;
+
+  const getSubtitleForSpeaker = (
+    speakerId: string,
+    speakerName?: string,
+  ): string | null => {
+    if (!showSubtitlesOnCards || !Array.isArray(translationTranscripts)) {
+      return null;
+    }
+
+    const now = Date.now();
+    const ttlMs = 8000;
+    for (let i = translationTranscripts.length - 1; i >= 0; i -= 1) {
+      const entry = translationTranscripts[i] as {
+        speakerId?: string;
+        speakerName?: string;
+        translatedText?: string;
+        originalText?: string;
+        timestamp?: number;
+      };
+
+      if (!entry) continue;
+      const matches =
+        (speakerId && entry.speakerId === speakerId) ||
+        (speakerName && entry.speakerName === speakerName);
+      if (!matches) continue;
+
+      if (!entry.timestamp || now - entry.timestamp > ttlMs) {
+        continue;
+      }
+
+      return entry.translatedText || entry.originalText || null;
+    }
+
+    return null;
+  };
 
   // Create component overrides with fallbacks
   const VideoCardComponentToUse = videoCardComponent ?? VideoCard;
   const AudioCardComponentToUse = audioCardComponent ?? AudioCard;
   const MiniCardComponentToUse = miniCardComponent ?? MiniCard;
+  const isDarkMode = typeof parameters?.isDarkModeValue === 'boolean'
+    ? parameters.isDarkModeValue
+    : true;
+  const participantCardTextColor = isDarkMode ? '#f8fafc' : '#0f172a';
 
   // Helper functions to build cards with proper override handling
   const buildVideoCard = ({
@@ -188,6 +231,10 @@ export async function addVideosGrid({
     doMirror?: boolean;
   }) => {
     if (customVideoCard) {
+      const subtitle = getSubtitleForSpeaker(
+        cardParticipant.id || '',
+        cardParticipant.name,
+      );
       return React.createElement(customVideoCard as any, {
         key,
         videoStream: videoStream || new MediaStream(),
@@ -201,9 +248,16 @@ export async function addVideosGrid({
         showInfo,
         name,
         doMirror,
+        liveSubtitleText: subtitle,
+        showSubtitles: showSubtitlesOnCards,
         parameters,
       });
     }
+
+    const subtitle = getSubtitleForSpeaker(
+      cardParticipant.id || '',
+      cardParticipant.name,
+    );
 
     return (
       <VideoCardComponentToUse
@@ -219,7 +273,9 @@ export async function addVideosGrid({
         showInfo={showInfo}
         name={name}
         doMirror={doMirror}
-        parameters={parameters}
+        liveSubtitleText={subtitle}
+        showSubtitles={showSubtitlesOnCards}
+        {...({ parameters } as any)}
       />
     );
   };
@@ -245,6 +301,30 @@ export async function addVideosGrid({
     showControls?: boolean;
     participant: Participant;
   }) => {
+    const subtitle = getSubtitleForSpeaker(
+      cardParticipant.id || '',
+      cardParticipant.name,
+    );
+
+    if (customAudioCard) {
+      return React.createElement(customAudioCard as any, {
+        key,
+        name,
+        barColor,
+        textColor,
+        customStyle,
+        controlsPosition: 'topLeft',
+        infoPosition: 'topRight',
+        roundedImage,
+        parameters,
+        backgroundColor,
+        showControls,
+        participant: cardParticipant,
+        liveSubtitleText: subtitle,
+        showSubtitles: showSubtitlesOnCards,
+      });
+    }
+
     return (
       <AudioCardComponentToUse
         key={key}
@@ -259,6 +339,8 @@ export async function addVideosGrid({
         backgroundColor={backgroundColor}
         showControls={showControls}
         participant={cardParticipant}
+        liveSubtitleText={subtitle}
+        showSubtitles={showSubtitlesOnCards}
       />
     );
   };
@@ -278,7 +360,7 @@ export async function addVideosGrid({
       return React.createElement(customMiniCard as any, {
         key,
         initials,
-        fontSize: `${fontSize}px`,
+        fontSize,
         name: initials,
         showVideoIcon: false,
         showAudioIcon: false,
@@ -295,6 +377,7 @@ export async function addVideosGrid({
         initials={initials}
         fontSize={fontSize}
         customStyle={customStyle}
+        parameters={parameters}
       />
     );
   };
@@ -303,7 +386,16 @@ export async function addVideosGrid({
   let participant: any;
   let remoteProducerId: string = '';
 
-  numtoadd = mainGridStreams.length;
+  const gridPlan = buildAddVideosGridPlan({
+    mainGridStreams,
+    altGridStreams,
+    numToAdd: numtoadd,
+  });
+
+  const mainEntries = gridPlan.mainEntries;
+  const altEntries = gridPlan.altEntries;
+
+  numtoadd = mainEntries.length;
 
   if (removeAltGrid) {
     updateAddAltGrid(false);
@@ -311,7 +403,7 @@ export async function addVideosGrid({
 
   // Add participants to the main grid
   for (let i = 0; i < numtoadd; i++) {
-    participant = mainGridStreams[i];
+    participant = mainEntries[i].stream;
     remoteProducerId = participant.producerId;
 
     const pseudoName = !remoteProducerId || remoteProducerId === '';
@@ -325,7 +417,7 @@ export async function addVideosGrid({
             key: `audio-${participant.id}`,
             name: participant.name || '',
             barColor: 'red',
-            textColor: 'white',
+            textColor: participantCardTextColor,
             customStyle: {
               backgroundColor: 'transparent',
               borderWidth: eventType !== 'broadcast' ? 2 : 0,
@@ -452,8 +544,8 @@ export async function addVideosGrid({
 
   // Handle the alternate grid streams
   if (!removeAltGrid) {
-    for (let i = 0; i < altGridStreams.length; i++) {
-      participant = altGridStreams[i];
+    for (let i = 0; i < altEntries.length; i++) {
+      participant = altEntries[i].stream;
       remoteProducerId = participant.producerId;
 
       const pseudoName = !remoteProducerId || remoteProducerId === '';
@@ -465,7 +557,7 @@ export async function addVideosGrid({
               key: `audio-alt-${participant.id}`,
               name: participant.name,
               barColor: 'red',
-              textColor: 'white',
+              textColor: participantCardTextColor,
               customStyle: {
                 backgroundColor: 'transparent',
                 borderWidth: eventType !== 'broadcast' ? 2 : 0,

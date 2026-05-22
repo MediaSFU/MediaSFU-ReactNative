@@ -3,6 +3,7 @@ import {
   OnScreenChangesParameters, StopShareScreenParameters, DisconnectSendTransportVideoParameters, DisconnectSendTransportAudioParameters, DisconnectSendTransportScreenParameters,
   MediaStream,
 } from '../../@types/types';
+import { controlMediaHost as sharedControlMediaHost } from 'mediasfu-shared';
 
 export interface ControlMediaHostParameters extends OnScreenChangesParameters, StopShareScreenParameters, DisconnectSendTransportVideoParameters, DisconnectSendTransportAudioParameters, DisconnectSendTransportScreenParameters {
   updateAdminRestrictSetting: (value: boolean) => void;
@@ -90,98 +91,8 @@ export type ControlMediaHostType = (options: ControlMediaHostOptions) => Promise
  */
 
 export const controlMediaHost = async ({ type, parameters }: ControlMediaHostOptions): Promise<void> => {
-  const {
-    updateAdminRestrictSetting,
-    updateLocalStream,
-    updateAudioAlreadyOn,
-    updateLocalStreamScreen,
-    updateLocalStreamVideo,
-    updateScreenAlreadyOn,
-    updateVideoAlreadyOn,
-    updateChatAlreadyOn,
-    onScreenChanges,
-    stopShareScreen,
-    disconnectSendTransportVideo,
-    disconnectSendTransportAudio,
-    disconnectSendTransportScreen,
-  } = parameters;
-
-  const { localStream, localStreamScreen, localStreamVideo } = parameters.getUpdatedAllParams();
-
-  try {
-    updateAdminRestrictSetting(true);
-
-    if (type === 'audio') {
-      if (localStream){
-        localStream!.getAudioTracks()[0].enabled = false;
-        updateLocalStream(localStream);
-      }
-      await disconnectSendTransportAudio({ parameters });
-      updateAudioAlreadyOn(false);
-    } else if (type === 'video') {
-      try {
-        localStream.getVideoTracks()[0].enabled = false;
-        updateLocalStream(localStream);
-        await disconnectSendTransportVideo({ parameters });
-        await onScreenChanges({ changed: true, parameters });
-        updateVideoAlreadyOn(false);
-      } catch { /* empty */ }
-      try {
-        localStreamVideo!.getVideoTracks()[0].enabled = false;
-        updateLocalStreamVideo(localStreamVideo);
-        await disconnectSendTransportVideo({ parameters });
-        await onScreenChanges({ changed: true, parameters });
-        updateVideoAlreadyOn(false);
-      } catch {
-        onScreenChanges({ changed: true, parameters });
-      }
-    } else if (type === 'screenshare') {
-      localStreamScreen!.getVideoTracks()[0].enabled = false;
-      updateLocalStreamScreen(localStreamScreen);
-      await disconnectSendTransportScreen({ parameters });
-      await stopShareScreen({ parameters });
-      updateScreenAlreadyOn(false);
-    } else if (type === 'chat') {
-      updateChatAlreadyOn(false);
-    } else if (type === 'all') {
-      try {
-        if (localStream){
-          localStream!.getAudioTracks()[0].enabled = false;
-          updateLocalStream(localStream);
-        }
-        await disconnectSendTransportAudio({ parameters });
-        updateAudioAlreadyOn(false);
-      } catch { /* empty */
-      }
-
-      try {
-        localStreamScreen!.getVideoTracks()[0].enabled = false;
-        updateLocalStreamScreen(localStreamScreen);
-        await disconnectSendTransportScreen({ parameters });
-        await stopShareScreen({ parameters });
-        updateScreenAlreadyOn(false);
-      } catch { /* empty */
-      }
-
-      try {
-        localStream!.getVideoTracks()[0].enabled = false;
-        updateLocalStream(localStream);
-        await disconnectSendTransportVideo({ parameters });
-        await onScreenChanges({ changed: true, parameters });
-        updateVideoAlreadyOn(false);
-      } catch { /* empty */
-      }
-      try {
-        localStreamVideo!.getVideoTracks()[0].enabled = false;
-        updateLocalStreamVideo(localStreamVideo);
-        await disconnectSendTransportVideo({ parameters });
-        await onScreenChanges({ changed: true, parameters });
-        updateVideoAlreadyOn(false);
-      } catch {
-        onScreenChanges({ changed: true, parameters });
-      }
-    }
-  } catch (error) {
-    console.error('Error in controlMediaHost:', error);
-  }
+  return sharedControlMediaHost({
+    type,
+    parameters,
+  });
 };

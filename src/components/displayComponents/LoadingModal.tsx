@@ -90,6 +90,10 @@ const LoadingModal: React.FC<LoadingModalOptions> = ({
   renderContent,
   renderContainer,
 }) => {
+  if (!isVisible) {
+    return null;
+  }
+
   /**
    * Styles for the modal overlay container.
    */

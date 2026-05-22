@@ -1,4 +1,3 @@
-import * as mediasoupClient from 'mediasoup-client';
 import { RtpCapabilities, Device } from 'mediasoup-client/lib/types';
 
 export interface CreateDeviceClientOptions {
@@ -29,34 +28,29 @@ export const createDeviceClient = async ({
   rtpCapabilities,
 }: CreateDeviceClientOptions): Promise<Device | null> => {
   try {
-    // Validate input parameters
     if (!rtpCapabilities) {
       throw new Error(
         'Both rtpCapabilities and mediasoupClient must be provided.',
       );
     }
 
-    // Create a mediasoup client device
-    const device: (Device | null) = new mediasoupClient.Device();
+    const mediasoupClient = require('mediasoup-client') as typeof import('mediasoup-client');
+    const device = new mediasoupClient.Device();
 
-    // Remove orientation capabilities
-    rtpCapabilities.headerExtensions = rtpCapabilities!.headerExtensions!.filter(
+    rtpCapabilities.headerExtensions = rtpCapabilities.headerExtensions?.filter(
       (ext) => ext.uri !== 'urn:3gpp:video-orientation',
     );
 
-    // Load the provided RTP capabilities into the device
-    await device!.load({
+    await device.load({
       routerRtpCapabilities: rtpCapabilities,
     });
 
     return device;
   } catch (error) {
-    // Handle specific errors, e.g., UnsupportedError
-    if (error as Error && (error as Error).name === 'UnsupportedError') {
-      // Handle unsupported device creation
+    if (error instanceof Error && error.name === 'UnsupportedError') {
       console.error('Device creation is not supported by this browser.');
     }
 
-    throw error; // Propagate other errors
+    throw error;
   }
 };

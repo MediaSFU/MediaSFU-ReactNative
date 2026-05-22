@@ -19,6 +19,7 @@ import {
   ModifyDisplaySettingsParameters,
 } from '../../methods/displaySettingsMethods/modifyDisplaySettings';
 import { getModalPosition } from '../../methods/utils/getModalPosition';
+import { createThemedPickerSelectStyles, getModalBodyTheme } from '../../components_modern/core/modalBodyTheme';
 
 /**
  * Configuration parameters for `DisplaySettingsModal`.
@@ -76,6 +77,7 @@ export interface DisplaySettingsModalOptions {
   parameters: DisplaySettingsModalParameters;
   position?: 'topRight' | 'topLeft' | 'bottomRight' | 'bottomLeft';
   backgroundColor?: string;
+  isDarkMode?: boolean;
 
   // Render props for enhanced customization
   style?: StyleProp<ViewStyle>;
@@ -161,6 +163,7 @@ const DisplaySettingsModal: React.FC<DisplaySettingsModalOptions> = ({
   parameters,
   position = 'topRight',
   backgroundColor = '#83c0e9',
+  isDarkMode,
   style,
   renderContent,
   renderContainer,
@@ -169,12 +172,14 @@ const DisplaySettingsModal: React.FC<DisplaySettingsModalOptions> = ({
     meetingDisplayType,
     autoWave,
     forceFullDisplay,
+    showSubtitlesOnCards,
     meetingVideoOptimized,
   } = parameters;
 
   const [meetingDisplayTypeState, setMeetingDisplayTypeState] = useState<string>(meetingDisplayType);
   const [autoWaveState, setAutoWaveState] = useState<boolean>(autoWave);
   const [forceFullDisplayState, setForceFullDisplayState] = useState<boolean>(forceFullDisplay);
+  const [showSubtitlesOnCardsState, setShowSubtitlesOnCardsState] = useState<boolean>(showSubtitlesOnCards ?? true);
   const [meetingVideoOptimizedState, setMeetingVideoOptimizedState] = useState<boolean>(meetingVideoOptimized);
 
   const screenWidth = Dimensions.get('window').width;
@@ -193,6 +198,7 @@ const DisplaySettingsModal: React.FC<DisplaySettingsModalOptions> = ({
         meetingDisplayType: meetingDisplayTypeState,
         autoWave: autoWaveState,
         forceFullDisplay: forceFullDisplayState,
+        showSubtitlesOnCards: showSubtitlesOnCardsState,
         meetingVideoOptimized: meetingVideoOptimizedState,
       },
     });
@@ -200,25 +206,28 @@ const DisplaySettingsModal: React.FC<DisplaySettingsModalOptions> = ({
   };
 
   const dimensions = { width: modalWidth, height: 0 };
+  const theme = getModalBodyTheme(isDarkMode);
+  const shouldUseModernTheme = typeof isDarkMode === 'boolean';
+  const themedPickerSelectStyles = createThemedPickerSelectStyles(theme);
 
   const defaultContent = (
     <>
       {/* Header */}
       <View style={styles.modalHeader}>
-        <Text style={styles.modalTitle}>Display Settings</Text>
+        <Text style={[styles.modalTitle, { color: theme.textColor }]}>Display Settings</Text>
         <Pressable onPress={onDisplaySettingsClose} style={styles.btnCloseSettings} accessibilityRole="button" accessibilityLabel="Close Display Settings">
-          <FontAwesome name="times" style={styles.icon} />
+          <FontAwesome name="times" style={[styles.icon, { color: theme.iconColor }]} />
         </Pressable>
       </View>
 
       {/* Divider */}
-      <View style={styles.hr} />
+      <View style={[styles.hr, { backgroundColor: theme.dividerColor }]} />
 
       {/* Body */}
       <View style={styles.modalBody}>
         {/* Display Option Picker */}
         <View style={styles.formGroup}>
-          <Text style={styles.label}>Display Option:</Text>
+          <Text style={[styles.label, { color: theme.textColor }]}>Display Option:</Text>
           <RNPickerSelect
             onValueChange={(value) => setMeetingDisplayTypeState(value)}
             items={[
@@ -227,70 +236,85 @@ const DisplaySettingsModal: React.FC<DisplaySettingsModalOptions> = ({
               { label: 'Show All Participants', value: 'all' },
             ]}
             value={meetingDisplayTypeState}
-            style={pickerSelectStyles}
+            style={themedPickerSelectStyles}
             placeholder={{}}
             useNativeAndroidPickerStyle={false}
           />
         </View>
 
         {/* Separator */}
-        <View style={styles.sep} />
+        <View style={[styles.sep, { backgroundColor: theme.dividerColor }]} />
 
         {/* Display Audiographs Toggle */}
         <View style={styles.formCheck}>
-          <Text style={styles.label}>Display Audiographs</Text>
+          <Text style={[styles.label, { color: theme.textColor }]}>Display Audiographs</Text>
           <Pressable onPress={() => setAutoWaveState(!autoWaveState)} accessibilityRole="switch" accessibilityLabel="Toggle Display Audiographs">
             <FontAwesome
               name="check"
               size={24}
-              color={autoWaveState ? 'green' : 'black'}
+              color={autoWaveState ? theme.successColor : theme.iconColor}
             />
           </Pressable>
         </View>
 
         {/* Separator */}
-        <View style={styles.sep} />
+        <View style={[styles.sep, { backgroundColor: theme.dividerColor }]} />
 
         {/* Force Full Display Toggle */}
         <View style={styles.formCheck}>
-          <Text style={styles.label}>Force Full Display</Text>
+          <Text style={[styles.label, { color: theme.textColor }]}>Force Full Display</Text>
           <Pressable onPress={() => setForceFullDisplayState(!forceFullDisplayState)} accessibilityRole="switch" accessibilityLabel="Toggle Force Full Display">
             <FontAwesome
               name="check"
               size={24}
-              color={forceFullDisplayState ? 'green' : 'black'}
+              color={forceFullDisplayState ? theme.successColor : theme.iconColor}
             />
           </Pressable>
         </View>
 
         {/* Separator */}
-        <View style={styles.sep} />
+        <View style={[styles.sep, { backgroundColor: theme.dividerColor }]} />
 
         {/* Force Video Participants Toggle */}
         <View style={styles.formCheck}>
-          <Text style={styles.label}>Force Video Participants</Text>
+          <Text style={[styles.label, { color: theme.textColor }]}>Force Video Participants</Text>
           <Pressable onPress={() => setMeetingVideoOptimizedState(!meetingVideoOptimizedState)} accessibilityRole="switch" accessibilityLabel="Toggle Force Video Participants">
             <FontAwesome
               name="check"
               size={24}
-              color={meetingVideoOptimizedState ? 'green' : 'black'}
+              color={meetingVideoOptimizedState ? theme.successColor : theme.iconColor}
             />
           </Pressable>
         </View>
 
         {/* Separator */}
-        <View style={styles.sep} />
+        <View style={[styles.sep, { backgroundColor: theme.dividerColor }]} />
+
+        {/* Show Subtitles on Cards Toggle */}
+        <View style={styles.formCheck}>
+          <Text style={[styles.label, { color: theme.textColor }]}>Show Subtitles on Cards</Text>
+          <Pressable onPress={() => setShowSubtitlesOnCardsState(!showSubtitlesOnCardsState)} accessibilityRole="switch" accessibilityLabel="Toggle Show Subtitles on Cards">
+            <FontAwesome
+              name="check"
+              size={24}
+              color={showSubtitlesOnCardsState ? theme.successColor : theme.iconColor}
+            />
+          </Pressable>
+        </View>
+
+        {/* Separator */}
+        <View style={[styles.sep, { backgroundColor: theme.dividerColor }]} />
       </View>
 
       {/* Footer */}
       <View style={styles.modalFooter}>
         <Pressable
           onPress={handleSaveSettings}
-          style={styles.btnApplySettings}
+          style={[styles.btnApplySettings, { backgroundColor: theme.buttonBackgroundColor }]}
           accessibilityRole="button"
           accessibilityLabel="Save Display Settings"
         >
-          <Text style={styles.btnText}>Save</Text>
+          <Text style={[styles.btnText, { color: theme.buttonTextColor }]}>Save</Text>
         </Pressable>
       </View>
     </>
@@ -307,8 +331,8 @@ const DisplaySettingsModal: React.FC<DisplaySettingsModalOptions> = ({
       visible={isDisplaySettingsModalVisible}
       onRequestClose={onDisplaySettingsClose}
     >
-  <View style={[styles.modalContainer, getModalPosition({ position })]}>
-        <View style={[styles.modalContent, { backgroundColor, width: modalWidth }, style]}>
+    <View style={[styles.modalContainer, getModalPosition({ position })]}>
+      <View style={[styles.modalContent, { backgroundColor, width: modalWidth }, shouldUseModernTheme ? { borderColor: theme.borderColor } : null, style]}>
           {content}
         </View>
       </View>

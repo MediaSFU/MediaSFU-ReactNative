@@ -4,13 +4,23 @@ import React from 'react';
  * Custom component override type
  * Allows replacing default components with custom implementations
  */
-export type CustomComponentOverride<P = any> = React.ComponentType<P>;
+export type CustomComponentOverride<P = any> =
+  | React.ComponentType<P>
+  | {
+      component?: React.ComponentType<P>;
+      render?: (props: P) => React.ReactNode;
+    };
 
 /**
  * Custom function override type
  * Allows replacing default functions with custom implementations
  */
-export type CustomFunctionOverride<F extends (...args: any[]) => any> = F;
+export type CustomFunctionOverride<F extends (...args: any[]) => any> =
+  | F
+  | {
+      implementation?: F;
+      wrap?: (defaultImplementation: F) => F;
+    };
 
 /**
  * Helper function to apply component overrides
@@ -24,7 +34,23 @@ export function withOverride<P = any>(
   override: CustomComponentOverride<P> | undefined,
   defaultComponent: React.ComponentType<P>,
 ): React.ComponentType<P> {
-  return override || defaultComponent;
+  if (!override) {
+    return defaultComponent;
+  }
+
+  if (typeof override === 'function') {
+    return override;
+  }
+
+  if (override.component) {
+    return override.component;
+  }
+
+  if (override.render) {
+    return ((props: P) => override.render!(props)) as React.ComponentType<P>;
+  }
+
+  return defaultComponent;
 }
 
 /**
@@ -39,5 +65,21 @@ export function withFunctionOverride<F extends (...args: any[]) => any>(
   override: CustomFunctionOverride<F> | undefined,
   defaultFunction: F,
 ): F {
-  return override || defaultFunction;
+  if (!override) {
+    return defaultFunction;
+  }
+
+  if (typeof override === 'function') {
+    return override;
+  }
+
+  if (override.implementation) {
+    return override.implementation;
+  }
+
+  if (override.wrap) {
+    return override.wrap(defaultFunction);
+  }
+
+  return defaultFunction;
 }

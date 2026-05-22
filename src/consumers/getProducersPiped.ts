@@ -1,3 +1,4 @@
+import { getProducersPiped as sharedGetProducersPiped } from 'mediasfu-shared';
 import { Socket } from 'socket.io-client';
 import { SignalNewConsumerTransportParameters, SignalNewConsumerTransportType } from '../@types/types';
 
@@ -53,36 +54,6 @@ export type GetProducersPipedType = (options: GetProducersPipedOptions) => Promi
  *   });
  */
 
-export const getProducersPiped = async ({
-  nsock,
-  islevel,
-  parameters,
-}: GetProducersPipedOptions): Promise<void> => {
-  try {
-    // Destructure parameters
-    const { member, signalNewConsumerTransport } = parameters;
-
-    // Emit request to get piped producers using WebSocket
-    await nsock.emit(
-      'getProducersPipedAlt',
-      { islevel, member },
-      async (producerIds: string[]) => {
-        // Check if producers are retrieved
-        if (producerIds.length > 0) {
-          // Signal new consumer transport for each retrieved producer
-          await Promise.all(
-            producerIds.map((id) => signalNewConsumerTransport({
-              remoteProducerId: id,
-              islevel,
-              nsock,
-              parameters,
-            })),
-          );
-        }
-      },
-    );
-  } catch (error) {
-    // Handle errors during the process of retrieving producers
-    console.log('Error getting piped producers:', (error as Error).message);
-  }
+export const getProducersPiped = async (options: GetProducersPipedOptions): Promise<void> => {
+  await (sharedGetProducersPiped as unknown as GetProducersPipedType)(options);
 };

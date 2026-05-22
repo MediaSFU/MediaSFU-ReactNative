@@ -263,15 +263,21 @@ const ControlButtonsAltComponent: React.FC<ControlButtonsAltComponentOptions> = 
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 5,
+    marginVertical: 4,
+    width: '100%',
+    maxWidth: '100%',
+    alignItems: 'center',
     elevation: 9,
     zIndex: 9,
   },
   buttonContainer: {
     alignItems: 'center',
-    padding: 10,
+    justifyContent: 'center',
+    padding: 6,
     borderRadius: 5,
-    marginHorizontal: 5,
+    marginHorizontal: 2,
+    minWidth: 32,
+    flexShrink: 1,
   },
   verticalButton: {
     flexDirection: 'column',

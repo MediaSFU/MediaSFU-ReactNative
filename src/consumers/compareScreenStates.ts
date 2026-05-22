@@ -1,3 +1,4 @@
+import { compareScreenStates as sharedCompareScreenStates } from 'mediasfu-shared';
 import { ScreenState, TriggerType, TriggerParameters } from '../@types/types';
 
 export interface CompareScreenStatesParameters extends TriggerParameters {
@@ -59,59 +60,6 @@ export type CompareScreenStatesType = (options: CompareScreenStatesOptions) => P
  *   });
  */
 
-export async function compareScreenStates({
-  restart = false,
-  parameters,
-}: CompareScreenStatesOptions): Promise<void> {
-  try {
-    const { getUpdatedAllParams } = parameters;
-    parameters = getUpdatedAllParams();
-
-    const {
-      recordingDisplayType,
-      recordingVideoOptimized,
-      screenStates,
-      prevScreenStates,
-      activeNames,
-
-      // mediasfu functions
-      trigger,
-    } = parameters;
-
-    // Restart the comparison if needed
-    if (restart) {
-      // Perform necessary actions on restart
-      return;
-    }
-
-    // Compare each key-value pair in the screenStates objects
-    for (let i = 0; i < screenStates.length; i++) {
-      const currentScreenState = screenStates[i];
-      const prevScreenState = prevScreenStates[i];
-
-      // Check if any value has changed
-      const hasChanged = (Object.keys(currentScreenState) as (keyof ScreenState)[]).some(
-        (key) => currentScreenState[key] !== prevScreenState[key],
-      );
-
-      // Signal change if any value has changed
-      if (hasChanged) {
-        // Perform actions or trigger events based on the change
-        if (recordingDisplayType === 'video') {
-          if (recordingVideoOptimized) {
-            await trigger({
-              ref_ActiveNames: activeNames,
-              parameters,
-            });
-            break;
-          }
-        }
-        await trigger({ ref_ActiveNames: activeNames, parameters });
-        break;
-      }
-    }
-  } catch (error) {
-    console.log('compareScreenStates error', error);
-    // Optionally re-throw the error for further handling
-  }
-}
+export const compareScreenStates = async (options: CompareScreenStatesOptions): Promise<void> => {
+  await (sharedCompareScreenStates as unknown as CompareScreenStatesType)(options);
+};

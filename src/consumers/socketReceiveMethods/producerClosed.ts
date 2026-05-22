@@ -1,4 +1,5 @@
 import { Transport, CloseAndResizeParameters, CloseAndResizeType } from '../../@types/types';
+import { producerClosed as sharedProducerClosed } from 'mediasfu-shared';
 
 export interface ProducerClosedParameters extends CloseAndResizeParameters {
   consumerTransports: Transport[];
@@ -63,44 +64,8 @@ export const producerClosed = async ({
   remoteProducerId,
   parameters,
 }: ProducerClosedOptions): Promise<void> => {
-  let {
-    consumerTransports, closeAndResize, screenId, updateConsumerTransports,
-  } = parameters;
-
-  // Handle producer closed
-  const producerToClose = consumerTransports.find(
-    (transportData: any) => transportData.producerId === remoteProducerId,
-  );
-
-  if (!producerToClose) {
-    return;
-  }
-
-  // Check if the ID of the producer to close is the same as the screenId
-  let { kind } = producerToClose.consumer as { kind: string }; // Allow 'screenshare' as well
-
-  if (producerToClose.producerId === screenId) {
-    kind = 'screenshare' as string;
-  }
-
-  try {
-    await producerToClose.consumerTransport.close();
-  } catch (error) {
-    console.error('Error closing consumer transport:', error);
-  }
-
-  try {
-    producerToClose.consumer.close();
-  } catch (error) {
-    console.error('Error closing consumer:', error);
-  }
-
-  // Filter out the closed producer
-  consumerTransports = consumerTransports.filter(
-    (transportData: any) => transportData.producerId !== remoteProducerId,
-  );
-  updateConsumerTransports(consumerTransports);
-
-  // Close and resize the videos
-  await closeAndResize({ producerId: remoteProducerId, kind, parameters });
+  return sharedProducerClosed({
+    remoteProducerId,
+    parameters: parameters as any,
+  } as any);
 };

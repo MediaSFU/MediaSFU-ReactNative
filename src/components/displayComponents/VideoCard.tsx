@@ -15,6 +15,7 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { Socket } from 'socket.io-client';
 import { controlMedia } from '../../consumers/controlMedia';
 import { getOverlayPosition } from '../../methods/utils/getOverlayPosition';
+import { SubtitleOverlay } from '../../components_modern/display_components/SubtitleOverlay';
 import CardVideoDisplay from './CardVideoDisplay';
 import {
   EventType,
@@ -125,6 +126,8 @@ export interface VideoCardOptions {
   backgroundColor?: string;
   audioDecibels?: AudioDecibels[];
   doMirror?: boolean;
+  liveSubtitleText?: string;
+  showSubtitles?: boolean;
   parameters: VideoCardParameters;
   customVideoCard?: CustomVideoCardType;
   style?: StyleProp<ViewStyle>;
@@ -201,6 +204,8 @@ const VideoCard: React.FC<VideoCardOptions> = ({
   backgroundColor = '#2c678f',
   audioDecibels = [],
   doMirror = false,
+  liveSubtitleText,
+  showSubtitles = true,
   parameters,
   customVideoCard,
   style,
@@ -500,6 +505,14 @@ const VideoCard: React.FC<VideoCardOptions> = ({
           {/* Participant Information */}
           {renderInfo()}
 
+          <SubtitleOverlay
+            speakerId={participant?.id || ''}
+            speakerName={participant?.name || name || ''}
+            fallbackText={liveSubtitleText}
+            showSubtitles={showSubtitles}
+            isDarkMode={backgroundColor !== '#ffffff' && backgroundColor !== 'white'}
+          />
+
           {/* Video Controls */}
           {renderControls()}
         </>
@@ -522,6 +535,8 @@ const VideoCard: React.FC<VideoCardOptions> = ({
       showControls,
       showInfo,
       textColor,
+      liveSubtitleText,
+      showSubtitles,
       videoControlsComponent,
       videoInfoComponent,
       videoStream,
@@ -677,5 +692,20 @@ const styles = StyleSheet.create({
 
   roundedImage: {
     borderRadius: 40, // Fully rounded for a 80x80 image
+  },
+  subtitleContainer: {
+    position: 'absolute',
+    left: 8,
+    right: 8,
+    bottom: 8,
+    backgroundColor: 'rgba(0,0,0,0.65)',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+  },
+  subtitleText: {
+    color: 'white',
+    fontSize: 12,
+    textAlign: 'center',
   },
 });

@@ -1,5 +1,6 @@
 import { SoundPlayer } from '../../methods/utils/SoundPlayer';
 import { EventType, UserRecordingParams } from '../../@types/types';
+import { recordingNotice as sharedRecordingNotice } from 'mediasfu-shared';
 
 export interface RecordingNoticeParameters {
   islevel: string;
@@ -144,165 +145,14 @@ export const recordingNotice = async ({
   timeDone,
   parameters,
 }: RecordingNoticeOptions): Promise<void> => {
-  let {
-    islevel,
-    userRecordingParams,
-    pauseRecordCount,
-    recordElapsedTime,
-    recordStartTime,
-    recordStarted,
-    recordPaused,
-    canLaunchRecord,
-    stopLaunchRecord,
-    recordStopped,
-    isTimerRunning,
-    canPauseResume,
-    eventType,
-
-    updateRecordingProgressTime,
-    updateShowRecordButtons,
-    updateUserRecordingParams,
-    updateRecordingMediaOptions,
-    updateRecordingAudioOptions,
-    updateRecordingVideoOptions,
-    updateRecordingVideoType,
-    updateRecordingVideoOptimized,
-    updateRecordingDisplayType,
-    updateRecordingAddHLS,
-    updateRecordingNameTags,
-    updateRecordingBackgroundColor,
-    updateRecordingNameTagsColor,
-    updateRecordingOrientationVideo,
-    updateRecordingAddText,
-    updateRecordingCustomText,
-    updateRecordingCustomTextPosition,
-    updateRecordingCustomTextColor,
-    updatePauseRecordCount,
-    updateRecordElapsedTime,
-    updateRecordStartTime,
-    updateRecordStarted,
-    updateRecordPaused,
-    updateCanLaunchRecord,
-    updateStopLaunchRecord,
-    updateRecordStopped,
-    updateIsTimerRunning,
-    updateCanPauseResume,
-    updateRecordState,
-  } = parameters;
-
-  try {
-    if (islevel !== '2') {
-      if (state === 'pause') {
-        updateRecordStarted(true);
-        updateRecordPaused(true);
-        updateRecordState('yellow');
-        if (eventType !== 'broadcast') {
-          SoundPlayer({ soundUrl: 'https://www.mediasfu.com/sounds/record-paused.mp3' });
-        }
-      } else if (state === 'stop') {
-        updateRecordStarted(true);
-        updateRecordStopped(true);
-        updateRecordState('green');
-        if (eventType !== 'broadcast') {
-          SoundPlayer({ soundUrl: 'https://www.mediasfu.com/sounds/record-stopped.mp3' });
-        }
-      } else {
-        updateRecordState('red');
-        updateRecordStarted(true);
-        updateRecordPaused(false);
-        if (eventType !== 'broadcast') {
-          SoundPlayer({ soundUrl: 'https://www.mediasfu.com/sounds/record-progress.mp3' });
-        }
-      }
-    } else {
-
-      if (state === 'pause') {
-        updateRecordState('yellow');
-        if (userRecordingParam) {
-          userRecordingParams.mainSpecs = userRecordingParam.mainSpecs;
-          userRecordingParams.dispSpecs = userRecordingParam.dispSpecs;
-          userRecordingParams.textSpecs = userRecordingParam.textSpecs;
-
-          updateUserRecordingParams(userRecordingParams);
-          updateRecordingMediaOptions(userRecordingParams.mainSpecs.mediaOptions);
-          updateRecordingAudioOptions(userRecordingParams.mainSpecs.audioOptions);
-          updateRecordingVideoOptions(userRecordingParams.mainSpecs.videoOptions);
-          updateRecordingVideoType(userRecordingParams.mainSpecs.videoType);
-          updateRecordingVideoOptimized(userRecordingParams.mainSpecs.videoOptimized);
-          updateRecordingDisplayType(userRecordingParams.mainSpecs.recordingDisplayType);
-          updateRecordingAddHLS(userRecordingParams.mainSpecs.addHLS);
-          updateRecordingNameTags(userRecordingParams.dispSpecs.nameTags);
-          updateRecordingBackgroundColor(userRecordingParams.dispSpecs.backgroundColor);
-          updateRecordingNameTagsColor(userRecordingParams.dispSpecs.nameTagsColor);
-          updateRecordingOrientationVideo(userRecordingParams.dispSpecs.orientationVideo);
-          updateRecordingAddText(userRecordingParams.textSpecs?.addText ?? false);
-          updateRecordingCustomText(userRecordingParams.textSpecs?.customText ?? '');
-          updateRecordingCustomTextPosition(userRecordingParams.textSpecs?.customTextPosition ?? '');
-          updateRecordingCustomTextColor(userRecordingParams.textSpecs?.customTextColor ?? '');
-
-          pauseRecordCount = pauseCount;
-          updatePauseRecordCount(pauseRecordCount);
-
-          recordElapsedTime = timeDone;
-          recordElapsedTime = Math.floor(recordElapsedTime / 1000);
-          recordStartTime = Math.floor(Date.now() / 1000) - recordElapsedTime;
-          updateRecordStartTime(recordStartTime);
-          updateRecordElapsedTime(recordElapsedTime);
-
-          recordStarted = true;
-          recordPaused = true;
-          canLaunchRecord = false;
-          recordStopped = false;
-
-          updateRecordStarted(recordStarted);
-          updateRecordPaused(recordPaused);
-          updateCanLaunchRecord(canLaunchRecord);
-          updateRecordStopped(recordStopped);
-          updateShowRecordButtons(true);
-
-          isTimerRunning = false;
-          canPauseResume = true;
-
-          updateIsTimerRunning(isTimerRunning);
-          updateCanPauseResume(canPauseResume);
-
-          const formattedTime = formatElapsedTime(recordElapsedTime);
-          updateRecordingProgressTime(formattedTime);
-        }
-        SoundPlayer({ soundUrl: 'https://www.mediasfu.com/sounds/record-paused.mp3' });
-      } else if (state === 'stop') {
-        updateRecordStarted(true);
-        updateRecordStopped(true);
-        canLaunchRecord = false;
-        stopLaunchRecord = true;
-
-        updateRecordStarted(recordStarted);
-        updateRecordStopped(recordStopped);
-        updateCanLaunchRecord(canLaunchRecord);
-        updateStopLaunchRecord(stopLaunchRecord);
-        updateShowRecordButtons(false);
-
-        updateRecordState('green');
-        SoundPlayer({ soundUrl: 'https://www.mediasfu.com/sounds/record-stopped.mp3' });
-      } else {
-        updateRecordState('red');
-        updateRecordStarted(true);
-        updateRecordPaused(false);
-        SoundPlayer({ soundUrl: 'https://www.mediasfu.com/sounds/record-progress.mp3' });
-      }
-    }
-  } catch (error) {
-    console.log('Error in RecordingNotice: ', error);
-    // throw new Error("Failed to handle recording state and status.");
-  }
+  return sharedRecordingNotice({
+    state,
+    userRecordingParam,
+    pauseCount,
+    timeDone,
+    parameters,
+    soundPlayer: async ({ soundUrl }) => {
+      await Promise.resolve(SoundPlayer({ soundUrl }));
+    },
+  });
 };
-
-const formatElapsedTime = (recordElapsedTime: number): string => {
-  const hours = Math.floor(recordElapsedTime / 3600);
-  const minutes = Math.floor((recordElapsedTime % 3600) / 60);
-  const seconds = recordElapsedTime % 60;
-
-  return `${padNumber(hours)}:${padNumber(minutes)}:${padNumber(seconds)}`;
-};
-
-const padNumber = (number: number): string => number.toString().padStart(2, '0');

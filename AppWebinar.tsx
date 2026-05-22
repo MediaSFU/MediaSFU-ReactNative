@@ -23,6 +23,7 @@ import { generateRandomParticipants } from './src/methods/utils/generateRandomPa
 import { generateRandomMessages } from './src/methods/utils/generateRandomMessages';
 import { generateRandomRequestList } from './src/methods/utils/generateRandomRequestList';
 import { generateRandomWaitingRoomList } from './src/methods/utils/generateRandomWaitingRoomList';
+import { getDemoCloudConfig } from './demoCloudConfig';
 
 // Import custom "create" and "join" room functions
 import { createRoomOnMediaSFU } from './src/methods/utils/createRoomOnMediaSFU';
@@ -75,12 +76,7 @@ const App = () => {
   // Scenario C: Using MediaSFU Cloud without your own server.
   // - For development, use your actual or dummy credentials.
   // - In production, securely handle credentials server-side and use custom room functions.
-  const credentials = {
-    apiUserName: 'yourDevUser', // 8 chars recommended for dummy
-    apiKey: 'yourDevApiKey1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef', // 64 chars
-  };
-  const localLink = ''; // Leave empty if not using your own server
-  const connectMediaSFU = true; // Set to true if using MediaSFU Cloud since localLink is empty
+  const { credentials, localLink, connectMediaSFU } = getDemoCloudConfig();
 
   // =========================================================
   //                    UI RENDERING OPTIONS
@@ -348,7 +344,7 @@ export default App;
  *       return res.status(401).json({ error: "Invalid or expired credentials" });
  *     }
  *
- *     const response = await fetch("https://mediasfu.com/v1/rooms", {
+ *     const response = await fetch("https://mediasfu.com/v1/rooms/", {
  *       method: "POST",
  *       headers: {
  *         "Content-Type": "application/json",
@@ -437,7 +433,7 @@ export default App;
  *     localLink = '',
  * }) => {
  *     try {
- *         let finalLink = 'https://mediasfu.com/v1/rooms/join';
+ *         let finalLink = 'https://mediasfu.com/v1/rooms/';
  *
  *         // Update finalLink if using a local server
  *         if (localLink) {

@@ -47,6 +47,7 @@ export interface ConfirmExitModalOptions {
   onConfirmExitClose: () => void;
   position?: 'topRight' | 'topLeft' | 'bottomRight' | 'bottomLeft';
   backgroundColor?: string;
+  isDarkMode?: boolean;
   exitEventOnConfirm?: (options: ConfirmExitOptions) => void;
   member: string;
   ban?: boolean;
@@ -114,6 +115,7 @@ const ConfirmExitModal: React.FC<ConfirmExitModalOptions> = ({
   onConfirmExitClose,
   position = 'topRight',
   backgroundColor = '#83c0e9',
+  isDarkMode,
   exitEventOnConfirm = confirmExit,
   member,
   ban = false,
@@ -158,28 +160,31 @@ const ConfirmExitModal: React.FC<ConfirmExitModalOptions> = ({
   };
 
   const dimensions = { width: modalWidth, height: 0 };
+  const themed = typeof isDarkMode === 'boolean';
+  const textColor = themed ? (isDarkMode ? '#f8fafc' : '#0f172a') : 'black';
+  const borderColor = themed ? (isDarkMode ? 'rgba(226, 232, 240, 0.18)' : 'rgba(71, 85, 105, 0.22)') : 'black';
 
   const defaultContent = (
     <>
       {/* Header */}
       <View style={styles.modalHeader}>
-        <Text style={styles.modalTitle}>Confirm Exit</Text>
+        <Text style={[styles.modalTitle, { color: textColor }] as any}>Confirm Exit</Text>
         <Pressable
           onPress={onConfirmExitClose}
           style={styles.btnCloseConfirmExit}
           accessibilityRole="button"
           accessibilityLabel="Close Confirm Exit Modal"
         >
-          <FontAwesome5 name="times" style={styles.icon} />
+          <FontAwesome5 name="times" style={[styles.icon, { color: textColor }] as any} />
         </Pressable>
       </View>
 
       {/* Divider */}
-      <View style={styles.hr} />
+      <View style={[styles.hr, { borderBottomColor: borderColor }] as any} />
 
       {/* Body */}
       <View style={styles.modalBody}>
-        <Text style={styles.confirmExitText}>
+        <Text style={[styles.confirmExitText, { color: textColor }] as any}>
           {islevel === '2'
             ? 'This will end the event for all. Confirm exit.'
             : 'Are you sure you want to exit?'}
@@ -187,7 +192,7 @@ const ConfirmExitModal: React.FC<ConfirmExitModalOptions> = ({
       </View>
 
       {/* Divider */}
-      <View style={styles.hr} />
+      <View style={[styles.hr, { borderBottomColor: borderColor }] as any} />
 
       {/* Footer */}
       <View style={styles.modalFooter}>
@@ -202,7 +207,7 @@ const ConfirmExitModal: React.FC<ConfirmExitModalOptions> = ({
         </Pressable>
 
         {/* Separator */}
-        <View style={styles.doubleBorder} />
+        <View style={[styles.doubleBorder, { backgroundColor: borderColor }] as any} />
 
         {/* Exit/End Event Button */}
         <Pressable

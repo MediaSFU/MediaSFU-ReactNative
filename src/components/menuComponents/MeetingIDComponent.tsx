@@ -17,6 +17,7 @@ export interface MeetingIdComponentOptions {
    * The meeting ID to display. Defaults to an empty string.
    */
   meetingID?: string;
+  isDarkMode?: boolean;
 }
 
 /**
@@ -42,7 +43,12 @@ export interface MeetingIdComponentOptions {
  * ```
  */
 
-const MeetingIdComponent: React.FC<MeetingIdComponentOptions> = ({ meetingID = '' }) => {
+const MeetingIdComponent: React.FC<MeetingIdComponentOptions> = ({ meetingID = '', isDarkMode }) => {
+  const themed = typeof isDarkMode === 'boolean';
+  const textColor = themed ? (isDarkMode ? '#f8fafc' : '#0f172a') : '#000000';
+  const inputBackgroundColor = themed ? (isDarkMode ? '#1e293b' : '#ffffff') : '#f0f0f0';
+  const inputBorderColor = themed ? (isDarkMode ? 'rgba(226, 232, 240, 0.22)' : 'rgba(71, 85, 105, 0.28)') : 'gray';
+
   /**
    * Copies the meeting ID to the clipboard and alerts the user.
    */
@@ -56,17 +62,17 @@ const MeetingIdComponent: React.FC<MeetingIdComponentOptions> = ({ meetingID = '
 
   return (
     <View style={styles.formGroup}>
-      <Text style={styles.label}>Event ID:</Text>
+      <Text style={[styles.label, { color: textColor }] as any}>Event ID:</Text>
       <View style={styles.inputContainer}>
         <TextInput
-          style={styles.disabledInput}
+          style={[styles.disabledInput, { color: textColor, backgroundColor: inputBackgroundColor, borderColor: inputBorderColor }] as any}
           value={meetingID}
           editable={false}
           selectTextOnFocus={false}
           accessibilityLabel="Event ID"
         />
         <TouchableOpacity onPress={handleCopy} style={styles.copyButton}>
-          <FontAwesome5 name="copy" style={styles.copyIcon} />
+          <FontAwesome5 name="copy" style={[styles.copyIcon, { color: textColor }] as any} />
         </TouchableOpacity>
       </View>
     </View>

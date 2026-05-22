@@ -1,4 +1,5 @@
 import { ShowAlert } from '../../@types/types';
+import { timeLeftRecording as sharedTimeLeftRecording } from 'mediasfu-shared';
 
 export interface TimeLeftRecordingOptions {
   timeLeft: number;
@@ -30,16 +31,8 @@ export type TimeLeftRecordingType = (options: TimeLeftRecordingOptions) => void;
  */
 
 export const timeLeftRecording = ({ timeLeft, showAlert }: TimeLeftRecordingOptions): void => {
-  try {
-    // Display alert message
-
-    showAlert?.({
-      message: `The recording will stop in less than ${timeLeft} seconds.`,
-      duration: 3000,
-      type: 'danger',
-    });
-  } catch (error) {
-    console.log('Error in timeLeftRecording: ', error);
-    // throw new Error("Failed to display the time left alert message.");
-  }
+  sharedTimeLeftRecording({
+    timeLeft,
+    showAlert,
+  });
 };

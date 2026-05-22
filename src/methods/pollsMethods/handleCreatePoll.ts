@@ -1,5 +1,6 @@
 import { Socket } from 'socket.io-client';
 import { ShowAlert } from '../../@types/types';
+import { handleCreatePoll as sharedHandleCreatePoll } from 'mediasfu-shared';
 
 interface NewPoll {
   question: string;
@@ -47,20 +48,11 @@ export const handleCreatePoll = async ({
   showAlert,
   updateIsPollModalVisible,
 }: HandleCreatePollOptions): Promise<void> => {
-  try {
-    socket.emit(
-      'createPoll',
-      { roomName, poll },
-      (response: { success: boolean; reason?: string }) => {
-        if (response.success) {
-          showAlert?.({ message: 'Poll created successfully', type: 'success' });
-          updateIsPollModalVisible(false);
-        } else {
-          showAlert?.({ message: response.reason || 'Failed to create poll', type: 'danger' });
-        }
-      },
-    );
-  } catch (error) {
-    console.error('Error creating poll:', error);
-  }
+  await sharedHandleCreatePoll({
+    poll,
+    socket,
+    roomName,
+    showAlert,
+    updateIsPollModalVisible,
+  } as any);
 };

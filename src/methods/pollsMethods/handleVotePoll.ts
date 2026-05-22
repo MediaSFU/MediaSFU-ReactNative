@@ -1,5 +1,6 @@
 import { Socket } from 'socket.io-client';
 import { ShowAlert } from '../../@types/types';
+import { handleVotePoll as sharedHandleVotePoll } from 'mediasfu-shared';
 
 export interface HandleVotePollOptions {
   pollId: string;
@@ -49,28 +50,13 @@ export const handleVotePoll = async ({
   roomName,
   updateIsPollModalVisible,
 }: HandleVotePollOptions): Promise<void> => {
-  try {
-    socket.emit(
-      'votePoll',
-      {
-        roomName,
-        poll_id: pollId,
-        member,
-        choice: optionIndex,
-      },
-      (response: { success: boolean; reason?: string }) => {
-        if (response.success) {
-          showAlert?.({
-            message: 'Vote submitted successfully',
-            type: 'success',
-          });
-          updateIsPollModalVisible(false);
-        } else {
-          showAlert?.({ message: response.reason || 'Failed to submit vote', type: 'danger' });
-        }
-      },
-    );
-  } catch (error) {
-    console.error('Error submitting vote:', error);
-  }
+  await sharedHandleVotePoll({
+    pollId,
+    optionIndex,
+    socket,
+    showAlert,
+    member,
+    roomName,
+    updateIsPollModalVisible,
+  } as any);
 };

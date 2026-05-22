@@ -121,6 +121,8 @@ export interface AudioCardOptions {
   participant: Participant;
   backgroundColor?: string;
   audioDecibels?: AudioDecibels;
+  liveSubtitleText?: string;
+  showSubtitles?: boolean;
   parameters: AudioCardParameters;
   customAudioCard?: CustomAudioCardType;
   style?: StyleProp<ViewStyle>;
@@ -192,6 +194,8 @@ const AudioCard: React.FC<AudioCardOptions> = ({
   participant,
   backgroundColor,
   audioDecibels: _audioDecibels,
+  liveSubtitleText,
+  showSubtitles = true,
   parameters,
   customAudioCard,
   style,
@@ -474,12 +478,24 @@ const AudioCard: React.FC<AudioCardOptions> = ({
           ) : (
             <MiniCard
               initials={name}
+              name={name}
               fontSize={20}
+              textColor={textColor}
+              showAudioIcon={!participant?.muted}
+              showVideoIcon={Boolean(participant?.videoOn || participant?.videoID)}
               customStyle={fallbackMiniCardBorder}
             />
           )}
 
           {infoContent}
+
+          {showSubtitles && liveSubtitleText ? (
+            <View style={styles.subtitleContainer}>
+              <Text style={styles.subtitleText} numberOfLines={2}>
+                {liveSubtitleText}
+              </Text>
+            </View>
+          ) : null}
 
           {controlsContent}
         </>
@@ -497,6 +513,8 @@ const AudioCard: React.FC<AudioCardOptions> = ({
     roundedImage,
     textColor,
     currentParameters,
+    liveSubtitleText,
+    showSubtitles,
   ]);
 
   const content = useMemo(
@@ -623,5 +641,20 @@ const styles = StyleSheet.create({
     flex: 1,
     opacity: 0.7,
     marginHorizontal: 1,
+  },
+  subtitleContainer: {
+    position: 'absolute',
+    left: 8,
+    right: 8,
+    bottom: 8,
+    backgroundColor: 'rgba(0,0,0,0.65)',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+  },
+  subtitleText: {
+    color: 'white',
+    fontSize: 12,
+    textAlign: 'center',
   },
 });

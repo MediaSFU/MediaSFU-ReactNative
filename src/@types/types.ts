@@ -1,9 +1,13 @@
+import type { ComponentProps } from 'react';
 import { Socket } from 'socket.io-client';
 
 import {
   Consumer, DtlsParameters, IceCandidate, IceParameters, RtpCapabilities,
 } from 'mediasoup-client/lib/types';
 import { mediaDevices, MediaStreamTrack as MediaStreamTrackType, MediaStream as NativeMediaStream  } from '../methods/utils/webrtc/webrtc';
+import type TranslationSettingsModal from '../components/translationComponents/TranslationSettingsModal';
+
+type TranslationSettingsModalProps = ComponentProps<typeof TranslationSettingsModal>;
 
 
 
@@ -813,12 +817,14 @@ export interface CustomAudioCardOptions {
   imageSource?: string;
   roundedImage?: boolean;
   imageStyle?: any;
+  backgroundColor?: string;
   parameters?: any;
 }
 
 export interface CustomMiniCardOptions {
   initials: string;
   fontSize: number;
+  textColor?: string;
   customStyle?: any;
   name: string;
   showVideoIcon?: boolean;
@@ -826,6 +832,7 @@ export interface CustomMiniCardOptions {
   imageSource?: string;
   roundedImage?: boolean;
   imageStyle?: any;
+  style?: any;
   parameters?: any;
 }
 
@@ -915,10 +922,13 @@ export interface MediasfuUICustomOverrides {
   requestsModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
   waitingRoomModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
   coHostModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  panelistsModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  permissionsModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
   mediaSettingsModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
   participantsModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
   messagesModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
   displaySettingsModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
+  translationSettingsModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<TranslationSettingsModalProps>;
   confirmExitModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
   confirmHereModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;
   shareEventModal?: import('../components/mediasfuComponents/overrideHelpers').CustomComponentOverride<any>;

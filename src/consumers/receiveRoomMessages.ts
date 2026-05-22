@@ -1,3 +1,4 @@
+import { receiveRoomMessages as sharedReceiveRoomMessages } from 'mediasfu-shared';
 import { Socket } from 'socket.io-client';
 import { Message } from '../@types/types';
 
@@ -33,22 +34,6 @@ export type ReceiveRoomMessagesType = (options: ReceiveRoomMessagesOptions) => P
  */
 
 
-export async function receiveRoomMessages({
-  socket,
-  roomName,
-  updateMessages,
-}: ReceiveRoomMessagesOptions): Promise<void> {
-  try {
-    // Retrieve messages from the server
-    socket.emit('getMessage', { roomName }, async ({ messages_ }: { messages_: Message[]; }) => {
-      updateMessages(messages_);
-    });
-  } catch (error) {
-    // Handle errors if any
-    if (error instanceof Error) {
-      console.log('Error tuning messages:', error.message);
-    } else {
-      console.log('Error tuning messages:', error);
-    }
-  }
-}
+export const receiveRoomMessages = async (options: ReceiveRoomMessagesOptions): Promise<void> => {
+  await (sharedReceiveRoomMessages as unknown as ReceiveRoomMessagesType)(options);
+};

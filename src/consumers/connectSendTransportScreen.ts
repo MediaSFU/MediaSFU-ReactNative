@@ -1,3 +1,4 @@
+import { connectSendTransportScreen as sharedConnectSendTransportScreen } from 'mediasfu-shared';
 import {
   Transport, Producer, Device, ProducerOptions,
 } from 'mediasoup-client/lib/types';
@@ -51,7 +52,7 @@ const connectLocalSendTransportScreen = async ({
     // Produce local screen share data
     if (localProducerTransport) {
       localScreenProducer = await localProducerTransport.produce({
-        track: stream.getVideoTracks()[0],
+        track: stream.getVideoTracks()[0] as unknown as MediaStreamTrack,
         codec,
         appData: { mediaTag: 'screen-video' },
       });
@@ -114,59 +115,6 @@ const connectLocalSendTransportScreen = async ({
  * ```
  */
 
-export const connectSendTransportScreen: ConnectSendTransportScreenType = async ({
-  stream,
-  parameters,
-  targetOption = 'all',
-}: ConnectSendTransportScreenOptions): Promise<void> => {
-  try {
-    let {
-      screenProducer,
-      device,
-      screenParams,
-      producerTransport,
-      params,
-      updateScreenProducer,
-      updateProducerTransport,
-    } = parameters;
-
-    // Fetch updated device information
-    device = parameters.getUpdatedAllParams().device;
-
-    // Retrieve screen share parameters
-    params = screenParams;
-
-    // Find VP9 codec for screen share
-    const codec = device?.rtpCapabilities?.codecs?.find(
-      (codec: { mimeType: string }) =>
-        codec.mimeType.toLowerCase() === 'video/vp9',
-    );
-
-    // Produce screen share data using the producer transport
-    if (targetOption === 'remote' || targetOption === 'all') {
-      screenProducer = await producerTransport!.produce({
-        track: stream.getVideoTracks()[0],
-        ...params,
-        codec,
-        appData: { mediaTag: 'screen-video' },
-      });
-
-      // Update the screen producer and producer transport objects
-      updateScreenProducer(screenProducer);
-      updateProducerTransport(producerTransport);
-    }
-
-    // Produce screen share data using the local producer transport
-    if (targetOption === 'local' || targetOption === 'all') {
-      try {
-        await connectLocalSendTransportScreen({ stream, parameters });
-      } catch (localError) {
-        console.log('Error connecting local screen transport:', localError);
-      }
-    }
-
-  } catch (error) {
-    console.log('connectSendTransportScreen error', error);
-    throw error;
-  }
+export const connectSendTransportScreen: ConnectSendTransportScreenType = async (options): Promise<void> => {
+  await (sharedConnectSendTransportScreen as unknown as ConnectSendTransportScreenType)(options);
 };

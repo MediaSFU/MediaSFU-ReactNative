@@ -7,7 +7,7 @@ import {
   StyleProp,
   ViewStyle,
 } from 'react-native';
-import MeetingProgressTimer from './MeetingProgressTimer';
+import MeetingProgressTimer, { MeetingProgressTimerOptions } from './MeetingProgressTimer';
 
 /**
  * Interface defining the props for the MainGridComponent.
@@ -47,6 +47,7 @@ export interface MainGridComponentOptions {
   timeBackgroundColor?: string;
   showTimer?: boolean;
   meetingProgressTime: string;
+  timerComponent?: React.ComponentType<MeetingProgressTimerOptions>;
   style?: StyleProp<ViewStyle>;
   renderContent?: (options: {
     defaultContent: JSX.Element;
@@ -144,6 +145,7 @@ const MainGridComponent: React.FC<MainGridComponentOptions> = ({
   timeBackgroundColor = 'transparent',
   showTimer = true,
   meetingProgressTime,
+  timerComponent: TimerComponent = MeetingProgressTimer,
   style,
   renderContent,
   renderContainer,
@@ -153,7 +155,7 @@ const MainGridComponent: React.FC<MainGridComponentOptions> = ({
   const defaultContent = (
     <>
       {showTimer && (
-        <MeetingProgressTimer
+        <TimerComponent
           meetingProgressTime={meetingProgressTime}
           initialBackgroundColor={timeBackgroundColor}
           showTimer={showTimer}

@@ -1,3 +1,5 @@
+import { checkGrid as sharedCheckGrid } from 'mediasfu-shared';
+
 export interface CheckGridOptions {
   rows: number;
   cols: number;
@@ -41,60 +43,6 @@ export type CheckGridType = (options: CheckGridOptions) => Promise<[boolean, num
  *   });
  */
 
-export async function checkGrid({ rows, cols, actives }: CheckGridOptions): Promise<[boolean, number, number, number, number, number, number] | void> {
-  try {
-    let numRows = 0;
-    let numCols = 0;
-    let lastrow = 0;
-    let lastrowcols = 0;
-    let remainingVideos = 0;
-    let numtoadd = 0;
-    let actualRows = 0;
-    let removeAltGrid = false;
-
-    if (rows * cols !== actives) {
-      if (rows * cols > actives) {
-        const res = actives - (rows - 1) * cols;
-        if (cols * 0.5 < res) {
-          lastrow = rows;
-          lastrowcols = res;
-          remainingVideos = lastrowcols;
-        } else {
-          lastrowcols = res + cols;
-          lastrow = rows - 1;
-          remainingVideos = lastrowcols;
-        }
-
-        numRows = lastrow - 1;
-        numCols = cols;
-        numtoadd = (lastrow - 1) * numCols;
-        actualRows = lastrow;
-
-        removeAltGrid = false;
-      }
-    } else {
-      // Perfect fit
-      numCols = cols;
-      numRows = rows;
-      lastrow = rows;
-      lastrowcols = cols;
-      remainingVideos = 0;
-      numtoadd = lastrow * numCols;
-      actualRows = lastrow;
-      removeAltGrid = true;
-    }
-
-    return [
-      removeAltGrid,
-      numtoadd,
-      numRows,
-      numCols,
-      remainingVideos,
-      actualRows,
-      lastrowcols,
-    ];
-  } catch (error) {
-    console.log('checkGrid error', error);
-    // throw error;
-  }
-}
+export const checkGrid = async (options: CheckGridOptions): Promise<[boolean, number, number, number, number, number, number] | void> => {
+  return (sharedCheckGrid as unknown as CheckGridType)(options);
+};

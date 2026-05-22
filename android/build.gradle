@@ -18,4 +18,19 @@ buildscript {
     }
 }
 
+subprojects { subproject ->
+    subproject.afterEvaluate {
+        def androidExtension = subproject.extensions.findByName("android")
+        if (androidExtension != null && ["app", "react-native-reanimated"].contains(subproject.name)) {
+            def isWindows = System.getProperty("os.name").toLowerCase().contains("windows")
+            def shortCxxDir = isWindows
+                ? new File("C:/tmp/mediasfu-rn-cxx/${subproject.name}")
+                : new File(rootProject.buildDir, "cxx/${subproject.name}")
+            androidExtension.externalNativeBuild.cmake {
+                buildStagingDirectory shortCxxDir
+            }
+        }
+    }
+}
+
 apply plugin: "com.facebook.react.rootproject"

@@ -7,6 +7,7 @@ export interface ParticipantListOthersItemOptions {
   participant: Participant;
   member: string;
   coHost: string;
+  isDarkMode?: boolean;
 }
 
 export type ParticipantListOthersItemType = (
@@ -54,10 +55,16 @@ const ParticipantListOthersItem: React.FC<ParticipantListOthersItemOptions> = ({
   participant,
   member,
   coHost,
-}) => (
-  <View style={styles.container}>
+  isDarkMode,
+}) => {
+  const themed = typeof isDarkMode === 'boolean';
+  const textColor = themed ? (isDarkMode ? '#f8fafc' : '#0f172a') : '#000000';
+  const rowBackgroundColor = themed ? (isDarkMode ? '#1e293b' : '#f8fafc') : 'transparent';
+
+  return (
+  <View style={[styles.container, { backgroundColor: rowBackgroundColor }] as any}>
     <View style={styles.nameContainer}>
-      <Text style={styles.nameText}>
+      <Text style={[styles.nameText, { color: textColor }] as any}>
         {participant.islevel === '2'
           ? participant.name === member
             ? `${participant.name} (you)`
@@ -77,13 +84,17 @@ const ParticipantListOthersItem: React.FC<ParticipantListOthersItemOptions> = ({
     </View>
     <View style={{ flex: 1, alignItems: 'flex-end' }} />
   </View>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
   },
   nameContainer: {
     flex: 8,

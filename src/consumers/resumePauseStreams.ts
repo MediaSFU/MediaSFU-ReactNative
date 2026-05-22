@@ -1,3 +1,4 @@
+import { resumePauseStreams as sharedResumePauseStreams } from 'mediasfu-shared';
 import { Participant, Transport, Stream } from '../@types/types';
 
 export interface ResumePauseStreamsParameters {
@@ -49,62 +50,6 @@ export type ResumePauseStreamsType = (options: ResumePauseStreamsOptions) => Pro
  * ```
  */
 
-export async function resumePauseStreams({
-  parameters,
-}: ResumePauseStreamsOptions): Promise<void> {
-  try {
-    // Destructure parameters
-    const {
-      participants, dispActiveNames, consumerTransports, screenId, islevel,
-    } = parameters;
-
-    // Get the videoID of the host (islevel=2)
-    const host = participants.find((obj) => obj.islevel === '2');
-    const hostVideoID = host ? host.videoID : null;
-
-    // Get videoIDs of participants in dispActiveNames and screenproducerId
-    const videosIDs = dispActiveNames.map((name) => {
-      const participant = participants.find((obj) => obj.name === name);
-      return participant ? participant.videoID : null;
-    });
-
-    // Add screenproducerId to allVideoIDs if it's not null or empty
-    if (screenId) {
-      videosIDs.push(screenId);
-    }
-
-    // Add hostVideoID to allVideoIDs if it's not null or empty (only if the user is not the host)
-    if (islevel !== '2' && hostVideoID) {
-      videosIDs.push(hostVideoID);
-    }
-
-    // Remove null or empty videoIDs
-    const allVideoIDs = videosIDs.filter(
-      (videoID): videoID is string => videoID !== null && videoID !== '',
-    );
-
-    if (allVideoIDs.length > 0) {
-      // Get consumer transports with producerId in allVideoIDs
-      const consumerTransportsToResume = consumerTransports.filter(
-        (transport) => allVideoIDs.includes(transport.producerId)
-          && transport.consumer.kind !== 'audio',
-      );
-
-      // Resume all consumerTransportsToResume
-      for (const transport of consumerTransportsToResume) {
-        transport.socket_.emit(
-          'consumer-resume',
-          { serverConsumerId: transport.serverConsumerTransportId },
-          async ({ resumed }: { resumed: boolean }) => {
-            if (resumed) {
-              transport.consumer.resume();
-            }
-          },
-        );
-      }
-    }
-  } catch (error) {
-    console.log('Error during resuming or pausing streams: ', error);
-    // Handle errors during the process of resuming or pausing streams
-  }
+export async function resumePauseStreams(options: ResumePauseStreamsOptions): Promise<void> {
+  await sharedResumePauseStreams(options);
 }

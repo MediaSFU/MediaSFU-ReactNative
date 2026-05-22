@@ -1,5 +1,6 @@
 import { Socket } from 'socket.io-client';
 import { ShowAlert } from '../../@types/types';
+import { handleEndPoll as sharedHandleEndPoll } from 'mediasfu-shared';
 
 export interface HandleEndPollOptions {
   pollId: string;
@@ -40,23 +41,11 @@ export const handleEndPoll = async (
     pollId, socket, showAlert, roomName, updateIsPollModalVisible,
   }: HandleEndPollOptions,
 ): Promise<void> => {
-  try {
-    socket.emit(
-      'endPoll',
-      { roomName, poll_id: pollId },
-      (response: { success: boolean; reason?: string }) => {
-        if (response.success) {
-          showAlert?.({
-            message: 'Poll ended successfully',
-            type: 'success',
-          });
-          updateIsPollModalVisible(false);
-        } else {
-          showAlert?.({ message: response.reason || 'Failed to end poll', type: 'danger' });
-        }
-      },
-    );
-  } catch (error) {
-    console.error('Error ending poll:', error);
-  }
+  await sharedHandleEndPoll({
+    pollId,
+    socket,
+    showAlert,
+    roomName,
+    updateIsPollModalVisible,
+  } as any);
 };

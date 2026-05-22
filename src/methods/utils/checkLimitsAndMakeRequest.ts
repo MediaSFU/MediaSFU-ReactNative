@@ -1,17 +1,29 @@
-
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { Socket } from 'socket.io-client';
 import { PreJoinPageParameters } from '../../@types/types';
-import { Socket } from 'socket.io-client';
 
+const MAX_ATTEMPTS = 10;
+const RATE_LIMIT_DURATION = 3 * 60 * 60 * 1000;
 
-const MAX_ATTEMPTS = 10; // Maximum number of unsuccessful attempts before rate limiting
-const RATE_LIMIT_DURATION = 3 * 60 * 60 * 1000; // 3 hours in milliseconds
+const readStoredNumber = async (key: string): Promise<number> => {
+    const value = await AsyncStorage.getItem(key);
+    const parsed = parseInt((value ?? '0').toString(), 10);
+    return Number.isNaN(parsed) ? 0 : parsed;
+};
 
+const writeStoredNumber = async (key: string, value: number): Promise<void> => {
+    await AsyncStorage.setItem(key, value.toString());
+};
 
-/**
- * Checks rate limits and makes a socket connection request.
- */
+const hasConnectedSocketId = (socket: unknown): socket is Socket & { id: string } => {
+    if (!socket || typeof socket !== 'object') {
+        return false;
+    }
+
+    const candidate = socket as { id?: unknown };
+    return typeof candidate.id === 'string' && candidate.id.length > 0;
+};
+
 export const checkLimitsAndMakeRequest = async ({
     apiUserName,
     apiToken,
@@ -29,117 +41,71 @@ export const checkLimitsAndMakeRequest = async ({
     parameters: PreJoinPageParameters;
     validate?: boolean;
 }) => {
-    const TIMEOUT_DURATION = 10000; // 10 seconds
+    const TIMEOUT_DURATION = 10000;
 
     try {
-        // Retrieve unsuccessful attempts and last request timestamp from AsyncStorage
-        let unsuccessfulAttempts = parseInt(
-            (await AsyncStorage.getItem('unsuccessfulAttempts')) || '0',
-            10);
-        const lastRequestTimestamp = parseInt(
-            (await AsyncStorage.getItem('lastRequestTimestamp')) || '0',
-            10);
+        let unsuccessfulAttempts = await readStoredNumber('unsuccessfulAttempts');
+        const lastRequestTimestamp = await readStoredNumber('lastRequestTimestamp');
 
-        // Check if user has exceeded maximum attempts
         if (
-            unsuccessfulAttempts >= MAX_ATTEMPTS
-            && Date.now() - lastRequestTimestamp < RATE_LIMIT_DURATION
+            unsuccessfulAttempts >= MAX_ATTEMPTS &&
+            Date.now() - lastRequestTimestamp < RATE_LIMIT_DURATION
         ) {
             parameters.showAlert?.({
                 message: 'Too many unsuccessful attempts. Please try again later.',
                 type: 'danger',
                 duration: 3000,
             });
-            await AsyncStorage.setItem(
-                'lastRequestTimestamp',
-                Date.now().toString(),
-            );
+            await writeStoredNumber('lastRequestTimestamp', Date.now());
             return;
-        } if (unsuccessfulAttempts >= MAX_ATTEMPTS) {
-            // Reset unsuccessful attempts after rate limit duration
-            unsuccessfulAttempts = 0;
-            await AsyncStorage.setItem(
-                'unsuccessfulAttempts',
-                unsuccessfulAttempts.toString(),
-            );
-            await AsyncStorage.setItem(
-                'lastRequestTimestamp',
-                Date.now().toString(),
-            );
         }
 
-        // Show loading modal
+        if (unsuccessfulAttempts >= MAX_ATTEMPTS) {
+            unsuccessfulAttempts = 0;
+            await writeStoredNumber('unsuccessfulAttempts', unsuccessfulAttempts);
+            await writeStoredNumber('lastRequestTimestamp', Date.now());
+        }
+
         parameters.updateIsLoadingModalVisible(true);
 
-        // Attempt to connect to socket with a timeout
-        const socketPromise = parameters.connectSocket({
-            apiUserName,
-            apiKey,
-            apiToken,
-            link,
-        });
-        const timeoutPromise = new Promise<never>((_, reject) => setTimeout(
-            () => reject(new Error('Request timed out')),
-            TIMEOUT_DURATION,
-        ));
+        const socketPromise = parameters.connectSocket({ apiUserName, apiKey, apiToken, link });
+        const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('Request timed out')), TIMEOUT_DURATION),
+        );
 
         const socket = await Promise.race([socketPromise, timeoutPromise]);
 
-        if (socket && socket instanceof Socket && socket.id) {
-            // Successful connection
+        if (hasConnectedSocketId(socket)) {
             unsuccessfulAttempts = 0;
-            await AsyncStorage.setItem(
-                'unsuccessfulAttempts',
-                unsuccessfulAttempts.toString(),
-            );
-            await AsyncStorage.setItem(
-                'lastRequestTimestamp',
-                Date.now().toString(),
-            );
+            await writeStoredNumber('unsuccessfulAttempts', unsuccessfulAttempts);
+            await writeStoredNumber('lastRequestTimestamp', Date.now());
 
-            // Update parent state with socket and user details
             if (validate) {
-                // only one connection is established, no local socket
                 parameters.updateSocket(socket);
             } else {
-                // local socket is also established, mediaSFU connection is now the local socket
                 parameters.updateLocalSocket?.(socket);
             }
+
             parameters.updateApiUserName(apiUserName);
             parameters.updateApiToken(apiToken);
             parameters.updateLink(link);
             parameters.updateRoomName(apiUserName);
             parameters.updateMember(userName);
-            if (validate) {parameters.updateValidated(true);}
+            if (validate) parameters.updateValidated(true);
         } else {
-            // Unsuccessful connection
             unsuccessfulAttempts += 1;
-            await AsyncStorage.setItem(
-                'unsuccessfulAttempts',
-                unsuccessfulAttempts.toString(),
-            );
-            await AsyncStorage.setItem(
-                'lastRequestTimestamp',
-                Date.now().toString(),
-            );
+            await writeStoredNumber('unsuccessfulAttempts', unsuccessfulAttempts);
+            await writeStoredNumber('lastRequestTimestamp', Date.now());
             parameters.updateIsLoadingModalVisible(false);
-
-            if (unsuccessfulAttempts >= MAX_ATTEMPTS) {
-                parameters.showAlert?.({
-                    message: 'Too many unsuccessful attempts. Please try again later.',
-                    type: 'danger',
-                    duration: 3000,
-                });
-            } else {
-                parameters.showAlert?.({
-                    message: 'Invalid credentials.',
-                    type: 'danger',
-                    duration: 3000,
-                });
-            }
+            parameters.showAlert?.({
+                message: unsuccessfulAttempts >= MAX_ATTEMPTS
+                    ? 'Too many unsuccessful attempts. Please try again later.'
+                    : 'Invalid credentials.',
+                type: 'danger',
+                duration: 3000,
+            });
         }
     } catch (error) {
-        // Handle errors during connection
         console.error('Error connecting to socket:', error);
         parameters.showAlert?.({
             message: 'Unable to connect. Check your credentials and try again.',
@@ -147,17 +113,9 @@ export const checkLimitsAndMakeRequest = async ({
             duration: 3000,
         });
 
-        // Increment unsuccessful attempts
-        let unsuccessfulAttempts = parseInt(
-            (await AsyncStorage.getItem('unsuccessfulAttempts')) || '0',
-            10);
-        unsuccessfulAttempts += 1;
-        await AsyncStorage.setItem(
-            'unsuccessfulAttempts',
-            unsuccessfulAttempts.toString(),
-        );
-        await AsyncStorage.setItem('lastRequestTimestamp', Date.now().toString());
+        const unsuccessfulAttempts = (await readStoredNumber('unsuccessfulAttempts')) + 1;
+        await writeStoredNumber('unsuccessfulAttempts', unsuccessfulAttempts);
+        await writeStoredNumber('lastRequestTimestamp', Date.now());
         parameters.updateIsLoadingModalVisible(false);
     }
-
 };

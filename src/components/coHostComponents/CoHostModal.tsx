@@ -23,6 +23,7 @@ import {
   ShowAlert,
 } from '../../@types/types';
 import { Socket } from 'socket.io-client';
+import { createThemedPickerSelectStyles, getModalBodyTheme } from '../../components_modern/core/modalBodyTheme';
 
 /**
  * Options for configuring the `CoHostModal` component.
@@ -65,6 +66,7 @@ export interface CoHostModalOptions {
   coHostResponsibility: CoHostResponsibility[];
   position?: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
   backgroundColor?: string;
+  isDarkMode?: boolean;
   roomName: string;
   showAlert?: ShowAlert;
   updateCoHostResponsibility: (
@@ -148,6 +150,7 @@ const CoHostModal: React.FC<CoHostModalOptions> = ({
   coHostResponsibility,
   position = 'topRight',
   backgroundColor = '#83c0e9',
+  isDarkMode,
   roomName,
   showAlert,
   updateCoHostResponsibility,
@@ -266,39 +269,46 @@ const CoHostModal: React.FC<CoHostModalOptions> = ({
   };
 
   const dimensions = { width: modalWidth, height: 0 };
+  const theme = getModalBodyTheme(isDarkMode);
+  const shouldUseModernTheme = typeof isDarkMode === 'boolean';
+  const themedPickerSelectStyles = createThemedPickerSelectStyles(theme);
 
   const defaultContent = (
     <>
       <ScrollView>
         <View style={styles.modalHeader}>
-          <Text style={styles.modalTitle}>Manage Co-Host</Text>
+          <Text style={[styles.modalTitle, { color: theme.textColor }]}>Manage Co-Host</Text>
           <Pressable
             onPress={onCoHostClose}
             style={styles.btnCloseSettings}
           >
-            <FontAwesome name="times" style={styles.icon} />
+            <FontAwesome name="times" style={[styles.icon, { color: theme.iconColor }]} />
           </Pressable>
         </View>
-        <View style={styles.hr} />
+        <View style={[styles.hr, { backgroundColor: theme.dividerColor }]} />
         <View style={styles.modalBody}>
           <View style={styles.formGroup}>
-            <Text style={[styles.label, { fontWeight: 'bold' }]}>
+            <Text style={[styles.label, { fontWeight: 'bold', color: theme.textColor }]}> 
               Current Co-host:
             </Text>
             <TextInput
-              style={[styles.input, styles.disabledInput]}
+              style={[
+                styles.input,
+                styles.disabledInput,
+                { backgroundColor: theme.inputBackgroundColor, borderColor: theme.borderColor, color: theme.inputTextColor },
+              ]}
               value={currentCohost}
               editable={false}
             />
           </View>
 
-          <View style={styles.sep} />
+          <View style={[styles.sep, { backgroundColor: theme.dividerColor }]} />
           <View style={styles.formGroup}>
-            <Text style={[styles.label, { fontWeight: 'bold' }]}>
+            <Text style={[styles.label, { fontWeight: 'bold', color: theme.textColor }]}> 
               Select New Co-host:
             </Text>
             <RNPickerSelect
-              style={pickerSelectStyles}
+              style={themedPickerSelectStyles}
               value={selectedCohost}
               onValueChange={(value: string) => setSelectedCohost(value)}
               items={
@@ -313,20 +323,20 @@ const CoHostModal: React.FC<CoHostModalOptions> = ({
               useNativeAndroidPickerStyle={false}
             />
           </View>
-          <View style={styles.sep} />
+          <View style={[styles.sep, { backgroundColor: theme.dividerColor }]} />
           <View style={styles.row}>
             <View style={styles.col5}>
-              <Text style={[styles.label, { fontWeight: 'bold' }]}>
+              <Text style={[styles.label, { fontWeight: 'bold', color: theme.textColor }]}> 
                 Responsibility
               </Text>
             </View>
             <View style={styles.col3}>
-              <Text style={[styles.label, { fontWeight: 'bold' }]}>
+              <Text style={[styles.label, { fontWeight: 'bold', color: theme.textColor }]}> 
                 Select
               </Text>
             </View>
             <View style={styles.col4}>
-              <Text style={[styles.label, { fontWeight: 'bold' }]}>
+              <Text style={[styles.label, { fontWeight: 'bold', color: theme.textColor }]}> 
                 Dedicated
               </Text>
             </View>
@@ -334,13 +344,13 @@ const CoHostModal: React.FC<CoHostModalOptions> = ({
           {responsibilityItems.map((item) => (
             <View style={styles.row} key={item.name}>
               <View style={styles.col5}>
-                <Text style={styles.label}>{item.label}</Text>
+                <Text style={[styles.label, { color: theme.textColor }]}>{item.label}</Text>
               </View>
               <View style={styles.col3}>
                 <Switch
-                  trackColor={{ false: '#767577', true: '#81b0ff' }}
+                  trackColor={{ false: theme.borderColor, true: theme.accentColor }}
                   thumbColor={
-                    responsibilities[item.name] ? '#f5dd4b' : '#f4f3f4'
+                    responsibilities[item.name] ? theme.successColor : theme.mutedTextColor
                   }
                   ios_backgroundColor="#3e3e3e"
                   onValueChange={() => handleToggleSwitch(item.name)}
@@ -349,12 +359,12 @@ const CoHostModal: React.FC<CoHostModalOptions> = ({
               </View>
               <View style={styles.col4}>
                 <Switch
-                  trackColor={{ false: '#767577', true: '#81b0ff' }}
+                  trackColor={{ false: theme.borderColor, true: theme.accentColor }}
                   thumbColor={
                     responsibilities[item.name] &&
                     responsibilities[`dedicateTo${item.name}`]
-                      ? '#f5dd4b'
-                      : '#f4f3f4'
+                      ? theme.successColor
+                      : theme.mutedTextColor
                   }
                   ios_backgroundColor="#3e3e3e"
                   onValueChange={() =>
@@ -371,8 +381,8 @@ const CoHostModal: React.FC<CoHostModalOptions> = ({
           ))}
         </View>
         <View style={styles.modalFooter}>
-          <Pressable onPress={handleSave} style={styles.btnApplySettings}>
-            <Text style={styles.btnText}>Save</Text>
+          <Pressable onPress={handleSave} style={[styles.btnApplySettings, { backgroundColor: theme.buttonBackgroundColor }]}> 
+            <Text style={[styles.btnText, { color: theme.buttonTextColor }]}>Save</Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -395,6 +405,7 @@ const CoHostModal: React.FC<CoHostModalOptions> = ({
           style={[
             styles.modalContent,
             { width: modalWidth, backgroundColor: backgroundColor },
+            shouldUseModernTheme ? { borderColor: theme.borderColor, borderWidth: 1 } : null,
             style,
           ]}
         >

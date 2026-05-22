@@ -1,3 +1,4 @@
+import { readjust as sharedReadjust } from 'mediasfu-shared';
 import { PrepopulateUserMediaType, PrepopulateUserMediaParameters, EventType } from '../@types/types';
 
 export interface ReadjustParameters extends PrepopulateUserMediaParameters {
@@ -68,98 +69,6 @@ export type ReadjustType = (options: ReadjustOptions) => Promise<void>;
  * ```
  */
 
-export async function readjust({ n, state, parameters }: ReadjustOptions): Promise<void> {
-  const { getUpdatedAllParams } = parameters;
-  parameters = getUpdatedAllParams();
-
-  try {
-    // Destructure parameters
-    let {
-      eventType,
-      shareScreenStarted,
-      shared,
-      mainHeightWidth,
-      prevMainHeightWidth,
-      hostLabel,
-      first_round,
-      lock_screen,
-      updateMainHeightWidth,
-      prepopulateUserMedia,
-    } = parameters;
-
-    if (state === 0) {
-      prevMainHeightWidth = mainHeightWidth;
-    }
-
-    let val1 = 6;
-    let val2 = 12 - val1;
-    let cal1 = Math.floor((val1 / 12) * 100);
-    let cal2 = 100 - cal1;
-
-    if (eventType === 'broadcast') {
-      val1 = 0;
-      val2 = 12 - val1;
-
-      if (n === 0) {
-        val1 = 0;
-        val2 = 12 - val1;
-      }
-    } else if (
-      eventType === 'chat'
-      || (eventType === 'conference' && !(shareScreenStarted || shared))
-    ) {
-      val1 = 12;
-      val2 = 12 - val1;
-    } else if (shareScreenStarted || shared) {
-      val2 = 10;
-      val1 = 12 - val2;
-    } else if (n === 0) {
-      val1 = 1;
-      val2 = 12 - val1;
-    } else if (n >= 1 && n < 4) {
-      val1 = 4;
-      val2 = 12 - val1;
-    } else if (n >= 4 && n < 6) {
-      val1 = 6;
-      val2 = 12 - val1;
-    } else if (n >= 6 && n < 9) {
-      val1 = 6;
-      val2 = 12 - val1;
-    } else if (n >= 9 && n < 12) {
-      val1 = 6;
-      val2 = 12 - val1;
-    } else if (n >= 12 && n < 20) {
-      val1 = 8;
-      val2 = 12 - val1;
-    } else if (n >= 20 && n < 50) {
-      val1 = 8;
-      val2 = 12 - val1;
-    } else {
-      val1 = 10;
-      val2 = 12 - val1;
-    }
-
-    if (state === 0) {
-      mainHeightWidth = val2;
-    }
-
-    cal1 = Math.floor((val1 / 12) * 100);
-    cal2 = 100 - cal1;
-
-    updateMainHeightWidth(cal2);
-
-    if (prevMainHeightWidth !== mainHeightWidth) {
-      if (!lock_screen && !shared) {
-        await prepopulateUserMedia({ name: hostLabel, parameters });
-      } else if (!first_round) {
-        await prepopulateUserMedia({ name: hostLabel, parameters });
-      }
-    }
-  } catch (error) {
-    if (error instanceof Error) {
-      console.log('Error updating grid sizes:', error.message);
-    } else {
-      console.log('Error updating grid sizes:', error);
-    }
-  }
+export async function readjust(options: ReadjustOptions): Promise<void> {
+  await sharedReadjust(options);
 }

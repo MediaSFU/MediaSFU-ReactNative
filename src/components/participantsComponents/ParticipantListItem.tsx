@@ -31,6 +31,7 @@ export interface ParticipantListItemOptions {
   updateStartDirectMessage: (start: boolean) => void;
   participants: Participant[];
   updateParticipants: (participants: Participant[]) => void;
+  isDarkMode?: boolean;
 }
 
 /**
@@ -100,7 +101,12 @@ const ParticipantListItem: React.FC<ParticipantListItemOptions> = ({
   updateStartDirectMessage,
   participants,
   updateParticipants,
+  isDarkMode,
 }) => {
+  const themed = typeof isDarkMode === 'boolean';
+  const textColor = themed ? (isDarkMode ? '#f8fafc' : '#0f172a') : '#000000';
+  const rowBackgroundColor = themed ? (isDarkMode ? '#1e293b' : '#f8fafc') : 'transparent';
+
   /**
    * Determines the appropriate icon based on the participant's mute status.
    * @returns {string} The icon name.
@@ -165,10 +171,10 @@ const ParticipantListItem: React.FC<ParticipantListItemOptions> = ({
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: rowBackgroundColor }] as any}>
       {/* Participant Name */}
       <View style={styles.nameContainer}>
-        <Text style={styles.nameText}>
+        <Text style={[styles.nameText, { color: textColor }] as any}>
           {participant.islevel === '2'
             ? `${participant.name} (host)`
             : participant.name}
@@ -250,6 +256,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
+    borderRadius: 8,
+    paddingHorizontal: 8,
   },
   nameContainer: {
     flex: 4,

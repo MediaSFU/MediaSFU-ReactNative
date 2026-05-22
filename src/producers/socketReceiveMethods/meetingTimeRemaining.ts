@@ -1,4 +1,5 @@
 import { EventType, ShowAlert } from '../../@types/types';
+import { meetingTimeRemaining as sharedMeetingTimeRemaining } from 'mediasfu-shared';
 
 export interface MeetingTimeRemainingOptions {
   timeRemaining: number;
@@ -36,17 +37,9 @@ export const meetingTimeRemaining = async ({
   timeRemaining,
   showAlert, eventType,
 }: MeetingTimeRemainingOptions): Promise<void> => {
-  // Convert time from milliseconds to readable format of minutes and seconds
-  const minutes = Math.floor(timeRemaining / 60000);
-  const seconds = Math.floor((timeRemaining % 60000) / 1000);
-  const timeRemainingString = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-
-  // Show alert with time remaining if eventType is not 'chat'
-  if (eventType !== 'chat') {
-    showAlert?.({
-      message: `The event will end in ${timeRemainingString} minutes.`,
-      type: 'success',
-      duration: 3000,
-    });
-  }
+  return sharedMeetingTimeRemaining({
+    timeRemaining,
+    showAlert,
+    eventType,
+  });
 };

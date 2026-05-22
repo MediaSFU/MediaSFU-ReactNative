@@ -1,13 +1,12 @@
 import React, { useMemo } from 'react';
 import {
-  FlatList,
+  ScrollView,
   View,
   Text,
   Pressable,
   StyleSheet,
   StyleProp,
   ViewStyle,
-  ListRenderItemInfo,
 } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { Socket } from 'socket.io-client';
@@ -139,9 +138,6 @@ const Pagination: React.FC<PaginationOptions> = ({
   showAspect = true,
   parameters,
 }) => {
-  // Update parameters using the provided function
-  const { getUpdatedAllParams } = parameters;
-  const updatedParameters = getUpdatedAllParams();
   const {
     mainRoomsLength,
     memberRoom,
@@ -154,7 +150,7 @@ const Pagination: React.FC<PaginationOptions> = ({
     islevel,
     showAlert,
     socket,
-  } = updatedParameters;
+  } = parameters;
 
   // Generate data for FlatList
   const data: PageItem[] = useMemo(
@@ -171,6 +167,21 @@ const Pagination: React.FC<PaginationOptions> = ({
    * @param {number} page - The page number that was clicked.
    */
   const onPagePress = async (page: number): Promise<void> => {
+    const updatedParameters = parameters.getUpdatedAllParams?.() ?? parameters;
+    const {
+      mainRoomsLength,
+      memberRoom,
+      breakOutRoomStarted,
+      breakOutRoomEnded,
+      member,
+      breakoutRooms,
+      hostNewRoom,
+      roomName,
+      islevel,
+      showAlert,
+      socket,
+    } = updatedParameters;
+
     if (page === currentUserPage) {
       return;
     }
@@ -248,11 +259,10 @@ const Pagination: React.FC<PaginationOptions> = ({
   /**
    * Renders each page item.
    *
-   * @param {ListRenderItemInfo<PageItem>} info - The item information returned by `FlatList`.
+   * @param {PageItem} item - The page item to render.
    * @returns {JSX.Element} The rendered page button.
    */
-  const renderItem = (info: ListRenderItemInfo<PageItem>) => {
-    const { item } = info;
+  const renderItem = (item: PageItem) => {
     const isActive = item.number === currentUserPage;
     const pageStyle = isActive ? [styles.activePage, activePageStyle] : [styles.inactivePage, inactivePageStyle];
 
@@ -344,17 +354,13 @@ const Pagination: React.FC<PaginationOptions> = ({
   };
 
   return (
-    <FlatList
-      data={data}
-      keyExtractor={(item) => item.id}
+    <ScrollView
       horizontal={direction === 'horizontal'}
-      renderItem={renderItem}
       contentContainerStyle={[
         styles.paginationContainer,
         getAlignmentStyle(),
-  { flexDirection: direction === 'vertical' ? 'column' : 'row' },
-  { justifyContent: 'space-evenly' },
-  { backgroundColor },
+        { flexDirection: direction === 'vertical' ? 'column' : 'row' },
+        { backgroundColor },
         buttonsContainerStyle,
       ]}
       showsHorizontalScrollIndicator={false}
@@ -368,7 +374,16 @@ const Pagination: React.FC<PaginationOptions> = ({
         maxHeight: direction === 'horizontal' ? paginationHeight : '100%',
         maxWidth: direction === 'horizontal' ? '100%' : paginationHeight,
       }}
-    />
+    >
+      <View
+        style={[
+          styles.paginationRail,
+          { flexDirection: direction === 'vertical' ? 'column' : 'row' },
+        ]}
+      >
+        {data.map((item) => renderItem(item))}
+      </View>
+    </ScrollView>
   );
 };
 
@@ -382,14 +397,22 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 0,
     margin: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  paginationRail: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   pageButton: {
-    paddingVertical: 3,
-    paddingHorizontal: 5,
+    minWidth: 36,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
     borderWidth: 1,
     borderColor: '#2c678f',
-    marginHorizontal: 5,
-    marginVertical: 5,
+    borderRadius: 999,
+    marginHorizontal: 4,
+    marginVertical: 4,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -404,7 +427,7 @@ const styles = StyleSheet.create({
   },
   pageText: {
     color: '#000000',
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: 'bold',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 1 },
@@ -414,6 +437,7 @@ const styles = StyleSheet.create({
   lockContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 4,
   },
   lockIcon: {
     marginLeft: 2,

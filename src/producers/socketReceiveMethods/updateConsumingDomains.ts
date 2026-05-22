@@ -1,6 +1,7 @@
 import {
   ConnectIpsType, GetDomainsType, ConnectIpsParameters, GetDomainsParameters, AltDomains, Participant, ConsumeSocket,
 } from '../../@types/types';
+import { updateConsumingDomains as sharedUpdateConsumingDomains } from 'mediasfu-shared';
 
 export interface UpdateConsumingDomainsParameters extends ConnectIpsParameters, GetDomainsParameters {
   participants: Participant[];
@@ -70,42 +71,12 @@ export const updateConsumingDomains = async ({
   apiKey,
   apiToken,
 }: UpdateConsumingDomainsOptions): Promise<void> => {
-  // Destructure necessary variables from parameters
-  let {
-    participants,
-    getDomains,
-    consume_sockets,
-
-    // mediasfu functions
-    connectIps,
-  } = parameters;
-
-  // Update consume_sockets with the latest value from getUpdatedAllParams
-  consume_sockets = parameters.getUpdatedAllParams().consume_sockets;
-
-  try {
-    // Check if participants array is not empty
-    if (participants.length > 0) {
-      // Check if alt_domains has keys and remove duplicates
-      if (Object.keys(alt_domains).length > 0) {
-        await getDomains({
-          domains, alt_domains, apiUserName, apiKey, apiToken, parameters,
-        });
-      } else {
-        // If no alt_domains, directly connect IPs with the provided domains
-        await connectIps({
-          consume_sockets,
-          remIP: domains,
-          parameters,
-          apiUserName,
-          apiKey,
-          apiToken,
-        });
-      }
-    }
-  } catch (error) {
-    console.log('Error in updateConsumingDomains: ', error);
-    // Optionally, throw the error if you want to handle it at a higher level
-    // throw new Error("Failed to update consuming domains.");
-  }
+  return sharedUpdateConsumingDomains<UpdateConsumingDomainsParameters, Participant, ConsumeSocket>({
+    domains,
+    alt_domains,
+    parameters,
+    apiUserName,
+    apiKey,
+    apiToken,
+  });
 };

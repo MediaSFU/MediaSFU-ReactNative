@@ -1,4 +1,5 @@
 /* eslint-disable eqeqeq */
+import { requestScreenShare as sharedRequestScreenShare } from 'mediasfu-shared';
 import { Socket } from 'socket.io-client';
 import { ShowAlert, StartShareScreenType, StartShareScreenParameters } from '../@types/types';
 
@@ -52,52 +53,6 @@ export type RequestScreenShareType = (options: RequestScreenShareOptions) => Pro
  * ```
  */
 
-export async function requestScreenShare({ parameters }: RequestScreenShareOptions): Promise<void> {
-  try {
-    // Destructure parameters
-    const {
-      socket,
-      showAlert,
-      localUIMode,
-      targetResolution = 'hd',
-      targetResolutionHost = 'hd',
-
-      // mediasfu functions
-      startShareScreen,
-    } = parameters;
-
-    let targetWidth = 1280;
-    let targetHeight = 720;
-
-    if (targetResolution == 'qhd' || targetResolutionHost == 'qhd') {
-      targetWidth = 2560;
-      targetHeight = 1440;
-    } else if (targetResolution == 'fhd' || targetResolutionHost == 'fhd') {
-      targetWidth = 1920;
-      targetHeight = 1080;
-    }
-
-    // Check if the user is in local UI mode
-    if (localUIMode === true) {
-      await startShareScreen({ parameters });
-      return;
-    }
-
-    socket.emit('requestScreenShare', async ({ allowScreenShare }: { allowScreenShare: boolean; }) => {
-      if (!allowScreenShare) {
-        // Send an alert to the user
-        showAlert?.({
-          message: 'You are not allowed to share screen',
-          type: 'danger',
-          duration: 3000,
-        });
-      } else {
-        await startShareScreen({ parameters: { ...parameters, targetWidth, targetHeight } });
-      }
-    });
-  } catch (error) {
-    // Handle errors during the process of requesting screen share
-    // throw new Error(`Error during requesting screen share: ${error.message}`);
-    console.log('Error during requesting screen share: ', error);
-  }
-}
+export const requestScreenShare = async (options: RequestScreenShareOptions): Promise<void> => {
+  await (sharedRequestScreenShare as unknown as RequestScreenShareType)(options);
+};

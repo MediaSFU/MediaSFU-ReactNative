@@ -1582,6 +1582,7 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
     useState<boolean>(false); // True if the settings modal is visible as boolean
   const [isRequestsModalVisible, setIsRequestsModalVisible] =
     useState<boolean>(false); // True if the requests modal is visible as boolean
+  const [, setRequestUiVersion] = useState<number>(0);
   const [isWaitingModalVisible, setIsWaitingModalVisible] =
     useState<boolean>(false); // True if the waiting room modal is visible as boolean
   const [isCoHostModalVisible, setIsCoHostModalVisible] =
@@ -1812,6 +1813,7 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
 
   const updateRequestCounter = (value: number) => {
     requestCounter.current = value;
+    setRequestUiVersion((current) => current + 1);
   };
 
   const updateRequestFilter = (value: string) => {
@@ -1822,6 +1824,7 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
     requestList.current = value;
     filteredRequestList.current = value;
     requestCounter.current = value.length;
+    setRequestUiVersion((current) => current + 1);
   };
 
   const updateTotalReqWait = (value: number) => {
@@ -3458,12 +3461,12 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
     await handleResize();
   };
 
-    const getMediaDevicesList = async (kind: 'videoinput' | 'audioinput') => {
+  const getMediaDevicesList = async (kind: 'videoinput' | 'audioinput') => {
     //get the list of available media devices
     try {
-      let devices = await mediaDevices.enumerateDevices();
+      const devices = (await mediaDevices.enumerateDevices()) as MediaDeviceInfo[];
 
-      let filtered = devices.filter((device) => device.kind === kind);
+      let filtered = devices.filter((device: MediaDeviceInfo) => device.kind === kind);
 
       return filtered;
     } catch {
