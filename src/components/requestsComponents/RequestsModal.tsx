@@ -41,6 +41,14 @@ export interface RequestsModalParameters {
   [key: string]: any;
 }
 
+export type SynchronousRequestRenderer = (
+  options: RenderRequestComponentOptions,
+) => React.ReactElement | null;
+
+const defaultRequestRenderer: SynchronousRequestRenderer = (options) => (
+  <RenderRequestComponent {...options} />
+);
+
 /**
  * Configuration options for the `RequestsModal` component.
  *
@@ -126,7 +134,7 @@ export interface RequestsModalOptions {
    * Component to render each request item.
    * Defaults to RenderRequestComponent.
    */
-  renderRequestComponent?: React.FC<RenderRequestComponentOptions>;
+  renderRequestComponent?: SynchronousRequestRenderer;
 
   /**
    * Background color of the modal.
@@ -256,7 +264,7 @@ const RequestsModal: React.FC<RequestsModalOptions> = ({
   updateRequestList,
   roomName,
   socket,
-  renderRequestComponent = RenderRequestComponent,
+  renderRequestComponent = defaultRequestRenderer,
   backgroundColor = '#83c0e9',
   isDarkMode,
   position = 'topRight',
@@ -397,7 +405,11 @@ export default RequestsModal;
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
     justifyContent: 'flex-end',
     alignItems: 'flex-end',
     zIndex: 9,

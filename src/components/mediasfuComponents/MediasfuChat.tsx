@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Text, View, Platform, Dimensions, StatusBar } from 'react-native';
-import Orientation from 'react-native-orientation-locker';
+import Orientation from '../../methods/utils/orientation/orientation';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -2310,7 +2310,7 @@ const MediasfuChat: React.FC<MediasfuChatOptions> = ({
   };
 
   function checkOrientation() {
-    // Check the device orientation using react-native-orientation-locker
+    // Check the current device orientation through the host-owned adapter.
     const isPortrait = Orientation?.getInitialOrientation() === 'PORTRAIT';
 
     return isPortrait ? 'portrait' : 'landscape';

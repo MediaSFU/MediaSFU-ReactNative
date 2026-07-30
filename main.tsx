@@ -1,3 +1,5 @@
+import './src/types/react19-jsx-compat';
+
 export * from './src/@types/types';
 
 // Utility and initial state

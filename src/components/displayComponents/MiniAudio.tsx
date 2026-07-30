@@ -347,7 +347,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 1,
   },
   backgroundImage: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
     width: 70,
     height: 70,
     justifyContent: 'center',

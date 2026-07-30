@@ -1,6 +1,10 @@
-import {
-  mediaDevices, RTCView as RNRTCView, registerGlobals, MediaStream, MediaStreamTrack,
-} from 'react-native-webrtc';
+import { loadNativeWebRTC } from './nativeWebRTC';
+
+const nativeWebRTC = loadNativeWebRTC();
+const {
+  RTCView: RNRTCView, registerGlobals, MediaStream, MediaStreamTrack,
+} = nativeWebRTC;
+const mediaDevices: any = nativeWebRTC.mediaDevices;
 
 const RTCView: any = RNRTCView;
 

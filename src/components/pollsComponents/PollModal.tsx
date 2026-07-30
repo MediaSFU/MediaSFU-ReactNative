@@ -600,7 +600,11 @@ const PollModal: React.FC<PollModalOptions> = ({
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,

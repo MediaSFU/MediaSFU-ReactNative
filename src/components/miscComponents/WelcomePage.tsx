@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 // import {RNCamera} from 'react-native-camera'; // Updated import for camera
 // import Icon from 'react-native-vector-icons/FontAwesome5'; // Updated import for icons
-import Orientation from 'react-native-orientation-locker';
+import Orientation from '../../methods/utils/orientation/orientation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Socket} from 'socket.io-client';
 import {ConnectSocketType} from '../../sockets/SocketManager';

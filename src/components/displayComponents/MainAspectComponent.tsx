@@ -1,6 +1,6 @@
 // MainAspectComponent.tsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   StyleSheet,
@@ -156,6 +156,13 @@ const MainAspectComponent: React.FC<MainAspectComponentOptions> = ({
   renderContent,
   renderContainer,
 }) => {
+  const updateIsWideScreenRef = useRef(updateIsWideScreen);
+  const updateIsMediumScreenRef = useRef(updateIsMediumScreen);
+  const updateIsSmallScreenRef = useRef(updateIsSmallScreen);
+  updateIsWideScreenRef.current = updateIsWideScreen;
+  updateIsMediumScreenRef.current = updateIsMediumScreen;
+  updateIsSmallScreenRef.current = updateIsSmallScreen;
+
   const [aspectStyles, setAspectStyles] = useState<{
     height: number;
     width: number;
@@ -184,16 +191,22 @@ const MainAspectComponent: React.FC<MainAspectComponentOptions> = ({
         isWideScreen = true;
       }
 
-      updateIsWideScreen(isWideScreen);
-      updateIsMediumScreen(isMediumScreen);
-      updateIsSmallScreen(isSmallScreen);
+      updateIsWideScreenRef.current(isWideScreen);
+      updateIsMediumScreenRef.current(isMediumScreen);
+      updateIsSmallScreenRef.current(isSmallScreen);
 
-      setAspectStyles({
+      const nextAspectStyles = {
         height: showControls
           ? Math.floor(containerHeightFraction * windowHeight * defaultFraction)
           : Math.floor(containerHeightFraction * windowHeight),
         width: Math.floor(containerWidthFraction * windowWidth),
-      });
+      };
+
+      setAspectStyles((current) =>
+        current.height === nextAspectStyles.height && current.width === nextAspectStyles.width
+          ? current
+          : nextAspectStyles
+      );
     };
 
     // Initial setup
@@ -224,9 +237,6 @@ const MainAspectComponent: React.FC<MainAspectComponentOptions> = ({
     containerHeightFraction,
     containerWidthFraction,
     defaultFraction,
-    updateIsWideScreen,
-    updateIsMediumScreen,
-    updateIsSmallScreen,
   ]);
 
   const dimensions = {
