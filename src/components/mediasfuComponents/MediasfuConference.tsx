@@ -265,6 +265,15 @@ export type MediasfuConferenceOptions = {
   imgSrc?: string;
   sourceParameters?: { [key: string]: any };
   updateSourceParameters?: (data: { [key: string]: any }) => void;
+  /**
+   * Called whenever the media graph changes — new/lost streams, a local
+   * track toggling, screen share starting, consumers changing. Reasons are
+   * coalesced into one microtask-deferred call per tick.
+   *
+   * The reliable way for a returnUI={false} surface to re-read media
+   * without polling.
+   */
+  onMediaChanged?: (info: { reasons: string[]; parameters: any }) => void;
   returnUI?: boolean;
   noUIPreJoinOptions?: CreateMediaSFURoomOptions | JoinMediaSFURoomOptions;
   joinMediaSFURoom?: JoinRoomOnMediaSFUType;
@@ -381,6 +390,7 @@ const MediasfuConference: React.FC<MediasfuConferenceOptions> = ({
   imgSrc = 'https://mediasfu.com/images/logo192.png',
   sourceParameters,
   updateSourceParameters,
+  onMediaChanged,
   returnUI = true,
   noUIPreJoinOptions,
   joinMediaSFURoom,
@@ -1124,8 +1134,36 @@ const MediasfuConference: React.FC<MediasfuConferenceOptions> = ({
     screenId.current = value;
   };
 
+  /**
+   * Coalesced media-change notifier. Several updaters fire in the same tick
+   * during a single transition (a new consumer touches consumerTransports and
+   * allVideoStreams), so reasons are batched into one microtask-deferred call
+   * rather than delivered N times.
+   */
+  const pendingMediaReasons = useRef<Set<string>>(new Set());
+  const mediaNotifyQueued = useRef(false);
+  const notifyMediaChanged = (reason: string) => {
+    if (!onMediaChanged) return;
+    pendingMediaReasons.current.add(reason);
+    if (mediaNotifyQueued.current) return;
+    mediaNotifyQueued.current = true;
+    Promise.resolve().then(() => {
+      mediaNotifyQueued.current = false;
+      const reasons = Array.from(pendingMediaReasons.current);
+      pendingMediaReasons.current.clear();
+      try {
+        onMediaChanged({
+          reasons,
+          parameters: { ...getAllParams(), ...mediaSFUFunctions() },
+        });
+      } catch {
+        // A consumer's observer must never break the media path.
+      }
+    });
+  };
   const updateAllVideoStreams = (value: (Participant | Stream)[]) => {
     allVideoStreams.current = value;
+    notifyMediaChanged('video-streams');
   };
 
   const updateNewLimitedStreams = (value: (Participant | Stream)[]) => {
@@ -1202,6 +1240,7 @@ const MediasfuConference: React.FC<MediasfuConferenceOptions> = ({
 
   const updateLocalStreamVideo = (value: MediaStreamType | null) => {
     localStreamVideo.current = value;
+    notifyMediaChanged('local-video');
   };
 
   const updateUserDefaultVideoInputDevice = (value: string) => {
@@ -1306,6 +1345,7 @@ const MediasfuConference: React.FC<MediasfuConferenceOptions> = ({
 
   const updateLocalStreamScreen = (value: MediaStreamType | null) => {
     localStreamScreen.current = value;
+    notifyMediaChanged('screen-share');
   };
 
   const updateScreenAlreadyOn = (value: boolean) => {
@@ -1322,6 +1362,7 @@ const MediasfuConference: React.FC<MediasfuConferenceOptions> = ({
 
   const updateOldAllStreams = (value: (Participant | Stream)[]) => {
     oldAllStreams.current = value;
+    notifyMediaChanged('video-streams');
   };
 
   const updateAdminVidID = (value: string) => {
@@ -1358,6 +1399,7 @@ const MediasfuConference: React.FC<MediasfuConferenceOptions> = ({
 
   const updateLocalStreamAudio = (value: MediaStreamType | null) => {
     localStreamAudio.current = value;
+    notifyMediaChanged('local-audio');
   };
 
   const updateDefAudioID = (value: string) => {
@@ -1526,6 +1568,7 @@ const MediasfuConference: React.FC<MediasfuConferenceOptions> = ({
 
   const updateAllAudioStreams = (value: (Participant | Stream)[]) => {
     allAudioStreams.current = value;
+    notifyMediaChanged('audio-streams');
   };
 
   const updateRemoteScreenStream = (value: Stream[]) => {
@@ -1570,6 +1613,7 @@ const MediasfuConference: React.FC<MediasfuConferenceOptions> = ({
 
   const updateAudioOnlyStreams = (value: JSX.Element[]) => {
     audioOnlyStreams.current = value;
+    notifyMediaChanged('audio-streams');
   };
 
   const updateVideoInputs = (value: MediaDeviceInfo[]) => {
@@ -1613,7 +1657,7 @@ const MediasfuConference: React.FC<MediasfuConferenceOptions> = ({
     meetingDisplayType.current ? meetingDisplayType.current : 'media',
   ); // Display option as string
 
-  const autoWave = useRef<boolean>(true); // Auto wave setting as boolean
+  const autoWave = useRef<boolean>(returnUI !== false); // Auto wave setting as boolean
 
   const forceFullDisplay = useRef<boolean>(
     eventType.current === 'webinar' || eventType.current === 'conference'
@@ -2250,6 +2294,7 @@ const MediasfuConference: React.FC<MediasfuConferenceOptions> = ({
 
   const updateConsumerTransports = (value: TransportType[]) => {
     consumerTransports.current = value;
+    notifyMediaChanged('consumers');
   };
 
   const updateConsumingTransports = (value: string[]) => {
@@ -2442,12 +2487,39 @@ const MediasfuConference: React.FC<MediasfuConferenceOptions> = ({
   };
 
   function checkOrientation() {
-    // Check the current device orientation through the host-owned adapter.
+    // Check the device orientation through the SDK orientation adapter.
     const isPortrait = Orientation?.getInitialOrientation() === 'PORTRAIT';
 
     return isPortrait ? 'portrait' : 'landscape';
   }
 
+  /** Publish after the current React render, coalesced to the latest bag. */
+  const pendingSourceParameters = useRef<{ [key: string]: any } | null>(null);
+  const sourcePublishHandle = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const publishSourceParameters = (bag: { [key: string]: any }) => {
+    if (!updateSourceParameters) return;
+    pendingSourceParameters.current = bag;
+    if (sourcePublishHandle.current !== null) return;
+    sourcePublishHandle.current = setTimeout(() => {
+      sourcePublishHandle.current = null;
+      const next = pendingSourceParameters.current;
+      pendingSourceParameters.current = null;
+      if (!next || !updateSourceParameters) return;
+      try {
+        updateSourceParameters(next);
+      } catch {
+        // A consumer observer must never break the room.
+      }
+    }, 0);
+  };
+
+  useEffect(() => () => {
+    if (sourcePublishHandle.current !== null) {
+      clearTimeout(sourcePublishHandle.current);
+      sourcePublishHandle.current = null;
+    }
+    pendingSourceParameters.current = null;
+  }, []);
   const getUpdatedAllParams = () => {
     // Get all the params for the room as well as the update functions for them and Media SFU functions and return them
     try {
@@ -2457,7 +2529,7 @@ const MediasfuConference: React.FC<MediasfuConferenceOptions> = ({
           ...mediaSFUFunctions(),
         };
         if (updateSourceParameters) {
-          updateSourceParameters(sourceParameters);
+          publishSourceParameters(sourceParameters);
         }
       }
     } catch {
@@ -2546,9 +2618,18 @@ const MediasfuConference: React.FC<MediasfuConferenceOptions> = ({
 
       getMediaDevicesList,
       getParticipantMedia,
+      getCurrentParams,
     };
   };
 
+  const getCurrentParams = () => {
+    // Same value as getUpdatedAllParams(), without the republish side effect.
+    // Safe to call from a render, an event handler, or a polling loop.
+    return {
+      ...getAllParams(),
+      ...mediaSFUFunctions(),
+    };
+  };
   const getAllParams = () => {
     //get all the params for the room as well as the update functions for them and return them
 
@@ -3324,6 +3405,23 @@ const MediasfuConference: React.FC<MediasfuConferenceOptions> = ({
     type: 'success' | 'danger';
     duration?: number;
   }) => {
+    // Alerts are the SDK's only signal for a refused or failed control, so a
+    // headless consumer (returnUI={false}) must receive them deterministically.
+    // React state alone never publishes; the fields are passed explicitly here
+    // because the setters queued below have not committed yet.
+    try {
+      if (sourceParameters !== null && updateSourceParameters) {
+        publishSourceParameters({
+          ...getAllParams(),
+          ...mediaSFUFunctions(),
+          alertMessage: message,
+          alertType: type,
+          alertVisible: true,
+        });
+      }
+    } catch {
+      // Publishing must never block the alert itself.
+    }
     // Show an alert message, type is 'danger', 'success', duration is in milliseconds
     setAlertMessage(message);
     setAlertType(type);
@@ -3911,52 +4009,70 @@ const MediasfuConference: React.FC<MediasfuConferenceOptions> = ({
     }
   };
 
-  const getParticipantMedia = async (id: string = '', name: string, kind: string = 'video') => {
-    //get the media stream of a participant by id
+  const getParticipantMedia = async (
+    idOrOptions:
+      | string
+      | { id?: string; name?: string; kind?: 'video' | 'audio' } = '',
+    nameArg: string = '',
+    kindArg: 'video' | 'audio' = 'video',
+  ): Promise<MediaStream | null> => {
+    // Resolve a participant's media stream by participant id, participant name,
+    // or a producer id. Accepts both the positional (id, name, kind) form and
+    // the documented object form so every MediaSFU component behaves the same.
     try {
-      let stream = null;
+      const options =
+        typeof idOrOptions === 'object' && idOrOptions !== null
+          ? idOrOptions
+          : { id: idOrOptions, name: nameArg, kind: kindArg };
+      const id = options.id || '';
+      const name = options.name || '';
+      const kind = options.kind || 'video';
 
-      if (id && id !== '') {
-        if (kind === 'video') {
-            const videoStreamObj = allVideoStreams.current.find(
-            (obj: Participant | Stream) => obj.producerId === id,
-            );
-          if (videoStreamObj) {
-            stream = videoStreamObj.stream;
-          }
-        } else if (kind === 'audio') {
-            const audioStreamObj = allAudioStreams.current.find(
-            (obj: Participant | Stream) => obj.producerId === id,
-            );
-          if (audioStreamObj) {
-            stream = audioStreamObj.stream;
-          }
-        }
-      } else if (name && name !== '') {
-        const participant = participants.current.find(
+      const participantsRef = participants.current || [];
+      const streams = (
+        kind === 'video' ? allVideoStreams.current : allAudioStreams.current
+      ) as (Participant | Stream)[] | undefined;
+      if (!streams || streams.length === 0) {
+        return null;
+      }
+
+      let participant = id
+        ? participantsRef.find((part: Participant) => part.id === id)
+        : undefined;
+      if (!participant && name) {
+        participant = participantsRef.find(
           (part: Participant) => part.name === name,
         );
-        if (participant) {
-          const participantId = participant.id;
-          if (kind === 'video') {
-            const videoStreamObj = allVideoStreams.current.find(
-              (obj: Participant | Stream) => obj.producerId === participantId,
-            );
-            if (videoStreamObj) {
-              stream = videoStreamObj.stream;
-            }
-          } else if (kind === 'audio') {
-            const audioStreamObj = allAudioStreams.current.find(
-              (obj: Participant | Stream) => obj.producerId === participantId,
-            );
-            if (audioStreamObj) {
-              stream = audioStreamObj.stream;
-            }
-          }
+      }
+
+      // allVideoStreams / allAudioStreams are keyed by producerId only. A
+      // participant's `id` is its membership id and never matches, so the
+      // producer reference has to come from videoID / audioID.
+      const producerId = participant
+        ? kind === 'video'
+          ? participant.videoID
+          : participant.audioID
+        : '';
+      if (producerId) {
+        const match = streams.find(
+          (stream: Participant | Stream) => stream.producerId === producerId,
+        );
+        if (match && match.stream) {
+          return match.stream;
         }
       }
 
-      return stream;
+      // A caller that already holds a producer id may pass it directly as `id`.
+      if (id) {
+        const direct = streams.find(
+          (stream: Participant | Stream) => stream.producerId === id,
+        );
+        if (direct && direct.stream) {
+          return direct.stream;
+        }
+      }
+
+      return null;
     } catch {
       return null;
     }
@@ -4811,7 +4927,7 @@ const MediasfuConference: React.FC<MediasfuConferenceOptions> = ({
             ...mediaSFUFunctions(),
           };
           if (updateSourceParameters) {
-            updateSourceParameters(sourceParameters);
+            publishSourceParameters(sourceParameters);
           }
         }
       } catch {

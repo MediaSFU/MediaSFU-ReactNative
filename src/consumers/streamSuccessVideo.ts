@@ -77,12 +77,16 @@ export const streamSuccessVideo: StreamSuccessVideoType = async ({
 }): Promise<void> => {
   await (sharedStreamSuccessVideo as unknown as (options: {
     stream: MediaStream;
-    parameters: StreamSuccessVideoParameters & { removeSingleVideoEncoding?: boolean };
+    parameters: StreamSuccessVideoParameters & {
+      removeSingleVideoEncoding?: boolean;
+      useNativeCodecSelection?: boolean;
+    };
   }) => Promise<void>)({
     stream,
     parameters: {
       ...parameters,
       removeSingleVideoEncoding: true,
+      useNativeCodecSelection: true,
     },
   });
 };

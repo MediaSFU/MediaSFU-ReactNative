@@ -20,6 +20,7 @@ export interface ModernConfirmExitModalProps extends Omit<ConfirmExitModalOption
 	title?: string;
 	message?: string;
 	confirmLabel?: string;
+	leaveLabel?: string;
 	cancelLabel?: string;
 }
 
@@ -41,6 +42,7 @@ export const ModernConfirmExitModal: React.FC<ModernConfirmExitModalProps> = ({
 	title,
 	message,
 	confirmLabel,
+	leaveLabel,
 	cancelLabel,
 }) => {
 	const { width: windowWidth } = useWindowDimensions();
@@ -48,27 +50,30 @@ export const ModernConfirmExitModal: React.FC<ModernConfirmExitModalProps> = ({
 	const colors = getModernColors(darkMode);
 	const modalWidth = Math.min(Math.max(windowWidth * 0.82, 320), 420);
 	const dimensions = { width: modalWidth, height: 0 };
+	const isHostExit = islevel === '2' && !ban;
 
 	if (!isConfirmExitModalVisible) {
 		return null;
 	}
 
-	const resolvedTitle = title ?? (islevel === '2' ? 'End Event' : ban ? 'Remove Participant' : 'Confirm Exit');
+	const resolvedTitle = title ?? (isHostExit ? 'Leave or end event' : ban ? 'Remove Participant' : 'Confirm Exit');
 	const resolvedMessage = message
-		?? (islevel === '2'
-			? 'This ends the event for everyone currently in the room.'
+		?? (isHostExit
+			? 'Leave room keeps the event active for everyone else and lets you rejoin. End for everyone closes it for all participants.'
 			: ban
 				? 'This removes the participant from the room.'
 				: 'Are you sure you want to leave this event?');
-	const resolvedConfirmLabel = confirmLabel ?? (islevel === '2' ? 'End Event' : ban ? 'Remove' : 'Exit');
+	const resolvedConfirmLabel = confirmLabel ?? (isHostExit ? 'End for everyone' : ban ? 'Remove' : 'Exit');
+	const resolvedLeaveLabel = leaveLabel ?? 'Leave room';
 	const resolvedCancelLabel = cancelLabel ?? 'Cancel';
 
-	const handleConfirmExit = () => {
+	const handleConfirmExit = (endRoomOnHostExit = true) => {
 		exitEventOnConfirm({
 			socket,
 			member,
 			roomName,
 			ban,
+			endRoomOnHostExit,
 		});
 		onConfirmExitClose();
 	};
@@ -97,10 +102,26 @@ export const ModernConfirmExitModal: React.FC<ModernConfirmExitModalProps> = ({
 				>
 					<Text style={[styles.secondaryButtonText, { color: colors.text }]}>{resolvedCancelLabel}</Text>
 				</Pressable>
+				{isHostExit && (
+					<Pressable
+						accessibilityRole="button"
+						accessibilityLabel="Leave room without ending it"
+						onPress={() => handleConfirmExit(false)}
+						style={({ pressed }) => [
+							styles.secondaryButton,
+							{
+								borderColor: colors.border,
+								backgroundColor: pressed ? colors.surfaceMuted : colors.surfaceStrong,
+							},
+						]}
+					>
+						<Text style={[styles.secondaryButtonText, { color: colors.text }]}>{resolvedLeaveLabel}</Text>
+					</Pressable>
+				)}
 				<Pressable
 					accessibilityRole="button"
 					accessibilityLabel={resolvedConfirmLabel}
-					onPress={handleConfirmExit}
+					onPress={() => handleConfirmExit(true)}
 					style={({ pressed }) => [
 						styles.primaryButton,
 						{
@@ -179,6 +200,7 @@ const styles = StyleSheet.create({
 	},
 	buttonRow: {
 		flexDirection: 'row',
+		flexWrap: 'wrap',
 		gap: 12,
 		marginTop: 22,
 		width: '100%',

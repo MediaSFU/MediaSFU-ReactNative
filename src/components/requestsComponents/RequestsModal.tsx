@@ -45,10 +45,6 @@ export type SynchronousRequestRenderer = (
   options: RenderRequestComponentOptions,
 ) => React.ReactElement | null;
 
-const defaultRequestRenderer: SynchronousRequestRenderer = (options) => (
-  <RenderRequestComponent {...options} />
-);
-
 /**
  * Configuration options for the `RequestsModal` component.
  *
@@ -264,7 +260,7 @@ const RequestsModal: React.FC<RequestsModalOptions> = ({
   updateRequestList,
   roomName,
   socket,
-  renderRequestComponent = defaultRequestRenderer,
+  renderRequestComponent = RenderRequestComponent,
   backgroundColor = '#83c0e9',
   isDarkMode,
   position = 'topRight',
@@ -306,7 +302,7 @@ const RequestsModal: React.FC<RequestsModalOptions> = ({
     <>
       {/* Header */}
       <View style={styles.modalHeader}>
-        <Text style={[styles.modalTitle, { color: theme.textColor }]}> 
+        <Text style={[styles.modalTitle, { color: theme.textColor }]}>
           Requests <Text style={[styles.badge, { backgroundColor: theme.badgeBackgroundColor, color: theme.badgeTextColor }]}>{localRequestCounter}</Text>
         </Text>
         <Pressable onPress={onRequestClose} style={styles.closeButton}>

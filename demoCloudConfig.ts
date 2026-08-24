@@ -7,11 +7,11 @@ export interface DemoCloudConfig {
   connectMediaSFU: boolean;
 }
 
-// Publish-safe defaults. Use scripts/configure-mediasfu-defaults.mjs
-// to temporarily swap in staging or other local test values when needed.
-export const DEMO_MEDIASFU_API_USERNAME = 'your-api-username';
-export const DEMO_MEDIASFU_API_KEY = 'your-api-key';
-export const DEMO_CONNECT_MEDIA_SFU = false;
+// Non-production placeholders for the included demo app. Replace them with
+// your own MediaSFU Cloud credentials or self-hosted configuration before connecting.
+export const DEMO_MEDIASFU_API_USERNAME = 'yourAPIUSERNAME';
+export const DEMO_MEDIASFU_API_KEY = 'yourAPIKEY';
+export const DEMO_CONNECT_MEDIA_SFU = true;
 
 export const getDemoCloudConfig = (): DemoCloudConfig => ({
   credentials: {

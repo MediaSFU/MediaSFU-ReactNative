@@ -699,3 +699,8 @@ export {
   checkLimitsAndMakeRequest,
   createResponseJoinRoom,
 };
+
+// Headless composition hook. Generated from the React SDK by
+// mediasfu-shared/scripts/port-headless-hook-native.cjs — edit there, not here.
+export { default as useMediasfuHeadless } from './src/hooks/useMediasfuHeadless';
+export type { MediasfuHeadless, HeadlessControls, HeadlessModeration, HeadlessSession, HeadlessProduction } from './src/hooks/useMediasfuHeadless';

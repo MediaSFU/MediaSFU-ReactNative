@@ -64,6 +64,7 @@ export interface AudioCardParameters {
   member: string;
   eventType: string;
   getUpdatedAllParams(): AudioCardParameters;
+  getCurrentParams?: () => any;
 }
 
 /**
@@ -202,7 +203,6 @@ const AudioCard: React.FC<AudioCardOptions> = ({
   renderContent,
   renderContainer,
 }) => {
-  const { getUpdatedAllParams } = parameters;
 
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
@@ -212,7 +212,10 @@ const AudioCard: React.FC<AudioCardOptions> = ({
 
   const [showWaveform, setShowWaveform] = useState<boolean>(true);
 
-  const latestParameters = useCallback(() => getUpdatedAllParams(), [getUpdatedAllParams]);
+  const latestParameters = useCallback(
+    (): AudioCardParameters => (parameters.getCurrentParams?.() ?? parameters) as AudioCardParameters,
+    [parameters],
+  );
 
   const getAnimationDuration = useCallback((index: number): number => {
     const durations = [474, 433, 407, 458, 400, 427, 441, 419, 487];

@@ -45,6 +45,7 @@ export default [
 
         rules: {
             '@typescript-eslint/no-explicit-any': 'off',
+            '@typescript-eslint/no-unused-vars': 'warn',
             'prefer-const': 'off',
             'react/react-in-jsx-scope': 'off', // Disable need for React to be in scope
             'react/prop-types': 'off', // Disable prop-types validation (using TypeScript)

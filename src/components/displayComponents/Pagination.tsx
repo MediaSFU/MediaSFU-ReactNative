@@ -31,6 +31,7 @@ export interface PaginationParameters extends GeneratePageContentParameters {
 
   // Function to get updated parameters
   getUpdatedAllParams: () => PaginationParameters;
+  getCurrentParams?: () => any;
   [key: string]: any;
 }
 
@@ -167,7 +168,7 @@ const Pagination: React.FC<PaginationOptions> = ({
    * @param {number} page - The page number that was clicked.
    */
   const onPagePress = async (page: number): Promise<void> => {
-    const updatedParameters = parameters.getUpdatedAllParams?.() ?? parameters;
+    const updatedParameters = (parameters.getCurrentParams?.() ?? parameters) as PaginationParameters;
     const {
       mainRoomsLength,
       memberRoom,

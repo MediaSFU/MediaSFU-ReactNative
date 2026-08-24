@@ -58,6 +58,7 @@ export interface VideoCardParameters {
   islevel: string;
   audioDecibels: AudioDecibels[];
   getUpdatedAllParams: () => VideoCardParameters;
+  getCurrentParams?: () => any;
   [key: string]: any;
 }
 
@@ -268,7 +269,7 @@ const VideoCard: React.FC<VideoCardOptions> = ({
    */
   useEffect(() => {
     const interval = setInterval(() => {
-      const updatedParams = parameters.getUpdatedAllParams();
+      const updatedParams = (parameters.getCurrentParams?.() ?? parameters);
       const { audioDecibels, participants } = updatedParams;
 
       const existingEntry = audioDecibels.find(
@@ -311,7 +312,7 @@ const VideoCard: React.FC<VideoCardOptions> = ({
    */
   const toggleAudio = async () => {
     if (!participant?.muted) {
-      const updatedParams = parameters.getUpdatedAllParams();
+      const updatedParams = (parameters.getCurrentParams?.() ?? parameters);
       await controlMedia({
         participantId: participant.id || '',
         participantName: participant.name,
@@ -333,7 +334,7 @@ const VideoCard: React.FC<VideoCardOptions> = ({
    */
   const toggleVideo = async () => {
     if (participant?.videoOn) {
-      const updatedParams = parameters.getUpdatedAllParams();
+      const updatedParams = (parameters.getCurrentParams?.() ?? parameters);
       await controlMedia({
         participantId: participant.id || '',
         participantName: participant.name,

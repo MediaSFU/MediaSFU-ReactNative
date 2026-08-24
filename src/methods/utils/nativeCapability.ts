@@ -4,6 +4,11 @@ export type NativeCapability = {
   platform: string;
 };
 
+/**
+ * Creates a concise setup error for a native module that is missing from the
+ * application binary. Keep this independent of React Native so it is easy to
+ * validate without loading native packages.
+ */
 export function createNativeCapabilityError(capability: NativeCapability): Error {
   const error = new Error(
     `MediaSFU could not load ${capability.packageName}: the native module ${capability.moduleName} is not registered on ${capability.platform}. ` +

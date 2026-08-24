@@ -12,6 +12,14 @@ import {it} from '@jest/globals';
 // Note: test renderer must be required after react-native.
 import renderer from 'react-test-renderer';
 
+jest.mock('react-native/Libraries/Linking/Linking', () => ({
+  __esModule: true,
+  default: {
+    addEventListener: jest.fn(() => ({ remove: jest.fn() })),
+    getInitialURL: jest.fn(() => Promise.resolve(null)),
+  },
+}));
+
 jest.mock('../src/components/mediasfuComponents/MediasfuGeneric', () => {
   const React = require('react');
   const { View } = require('react-native');
@@ -90,11 +98,33 @@ jest.mock('../src/methods/utils/joinRoomOnMediaSFU', () => ({
   joinRoomOnMediaSFU: jest.fn(),
 }));
 
+// The visual audit route loads native WebRTC-backed surfaces. This test covers
+// the default App shell, so keep that optional route outside the Jest runtime.
+jest.mock('../AppVisualAudit', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+
+  return {
+    __esModule: true,
+    default: function MockAppVisualAudit() {
+      return React.createElement(View, { testID: 'mock-app-visual-audit' });
+    },
+    resolveVisualAuditRoute: jest.fn(() => null),
+  };
+});
+
 const App = require('../App').default;
 
-it('renders correctly', () => {
-  const tree = renderer.create(<App />);
+it('renders correctly', async () => {
+  let tree: renderer.ReactTestRenderer;
+  await renderer.act(async () => {
+    tree = renderer.create(<App />);
+  });
 
-  expect(tree.root.findByProps({ testID: 'mock-mediasfu-generic' })).toBeTruthy();
-  expect(tree.root.findAllByType(View).length).toBeGreaterThan(0);
+  expect(tree!.root.findByProps({ testID: 'mock-mediasfu-generic' })).toBeTruthy();
+  expect(tree!.root.findAllByType(View).length).toBeGreaterThan(0);
+
+  await renderer.act(async () => {
+    tree!.unmount();
+  });
 });

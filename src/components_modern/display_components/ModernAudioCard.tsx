@@ -134,7 +134,7 @@ export const ModernAudioCard: React.FC<ModernAudioCardOptions> = (props) => {
         return;
       }
 
-      const updatedParams = parameters.getUpdatedAllParams();
+      const updatedParams = (parameters.getCurrentParams?.() ?? parameters);
       await controlUserMedia({
         participantId: participant.id,
         participantName: participant.name,

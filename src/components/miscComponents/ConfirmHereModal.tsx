@@ -221,16 +221,16 @@ const ConfirmHereModal: React.FC<ConfirmHereModalOptions> = ({
 
       {/* Modal Content */}
       <Text style={[styles.modalTitle, { color: theme.textColor }]}>Are you still there?</Text>
-      <Text style={[styles.modalMessage, { color: theme.textColor }]}> 
+      <Text style={[styles.modalMessage, { color: theme.textColor }]}>
         Please confirm if you are still present.
       </Text>
-      <Text style={[styles.modalCounter, { color: theme.mutedTextColor }]}> 
+      <Text style={[styles.modalCounter, { color: theme.mutedTextColor }]}>
         Time remaining: <Text style={[styles.counterText, { color: theme.textColor }]}>{counter}</Text>{' '}
         seconds
       </Text>
 
       {/* Confirm Button */}
-      <Pressable onPress={handleConfirmHere} style={[styles.confirmButton, { backgroundColor: theme.buttonBackgroundColor }]}> 
+      <Pressable onPress={handleConfirmHere} style={[styles.confirmButton, { backgroundColor: theme.buttonBackgroundColor }]}>
         <Text style={[styles.confirmButtonText, { color: theme.buttonTextColor }]}>Yes</Text>
       </Pressable>
     </View>

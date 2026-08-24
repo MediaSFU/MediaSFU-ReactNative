@@ -127,6 +127,7 @@ const ConfirmExitModal: React.FC<ConfirmExitModalOptions> = ({
   renderContainer,
 }) => {
   const [modalWidth, setModalWidth] = useState<number>(0.7 * Dimensions.get('window').width);
+  const isHostExit = islevel === '2' && !ban;
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -149,12 +150,13 @@ const ConfirmExitModal: React.FC<ConfirmExitModalOptions> = ({
   /**
    * Handles the logic when the user confirms exit.
    */
-  const handleConfirmExit = () => {
+  const handleConfirmExit = (endRoomOnHostExit = true) => {
     exitEventOnConfirm({
       socket,
       member,
       roomName,
       ban,
+      endRoomOnHostExit,
     });
     onConfirmExitClose();
   };
@@ -185,8 +187,8 @@ const ConfirmExitModal: React.FC<ConfirmExitModalOptions> = ({
       {/* Body */}
       <View style={styles.modalBody}>
         <Text style={[styles.confirmExitText, { color: textColor }] as any}>
-          {islevel === '2'
-            ? 'This will end the event for all. Confirm exit.'
+          {isHostExit
+            ? 'Leave room keeps the event active for everyone else and lets you rejoin. End for everyone closes it for all participants.'
             : 'Are you sure you want to exit?'}
         </Text>
       </View>
@@ -209,15 +211,29 @@ const ConfirmExitModal: React.FC<ConfirmExitModalOptions> = ({
         {/* Separator */}
         <View style={[styles.doubleBorder, { backgroundColor: borderColor }] as any} />
 
+        {isHostExit && (
+          <>
+            <Pressable
+              onPress={() => handleConfirmExit(false)}
+              style={[styles.confirmButton, styles.btnLeave]}
+              accessibilityRole="button"
+              accessibilityLabel="Leave room without ending it"
+            >
+              <Text style={[styles.confirmButtonText, styles.btnCancelText]}>Leave room</Text>
+            </Pressable>
+            <View style={[styles.doubleBorder, { backgroundColor: borderColor }] as any} />
+          </>
+        )}
+
         {/* Exit/End Event Button */}
         <Pressable
-          onPress={handleConfirmExit}
+          onPress={() => handleConfirmExit(true)}
           style={[styles.confirmButton, styles.btnExit]}
           accessibilityRole="button"
-          accessibilityLabel={islevel === '2' ? 'End Event' : 'Exit'}
+          accessibilityLabel={isHostExit ? 'End for everyone' : 'Exit'}
         >
           <Text style={[styles.confirmButtonText, styles.btnExitText]}>
-            {islevel === '2' ? 'End Event' : 'Exit'}
+            {isHostExit ? 'End for everyone' : 'Exit'}
           </Text>
         </Pressable>
       </View>
@@ -262,11 +278,11 @@ const styles = StyleSheet.create({
   },
 
   modalContent: {
-    height: '35%',
+    minHeight: '35%',
     backgroundColor: '#83c0e9',
     borderRadius: 10,
     padding: 20,
-    maxHeight: '35%',
+    maxHeight: '65%',
     maxWidth: '70%',
     zIndex: 9,
     elevation: 9,
@@ -321,13 +337,17 @@ const styles = StyleSheet.create({
 
   modalFooter: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
     justifyContent: 'space-between',
     marginTop: 10,
     alignItems: 'center',
   },
 
   confirmButton: {
-    padding: 5,
+    minWidth: 96,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     borderRadius: 5,
     alignItems: 'center',
     justifyContent: 'center',
@@ -339,6 +359,10 @@ const styles = StyleSheet.create({
 
   btnExit: {
     backgroundColor: '#dc3545',
+  },
+
+  btnLeave: {
+    backgroundColor: '#475569',
   },
 
   doubleBorder: {

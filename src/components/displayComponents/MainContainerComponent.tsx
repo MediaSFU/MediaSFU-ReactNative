@@ -9,6 +9,7 @@ import {
   StyleProp,
   ViewStyle,
 } from 'react-native';
+import { calculateEmbeddedLayout } from '../../utils/embeddedLayout';
 
 /**
  * Interface defining the props for the MainContainerComponent.
@@ -45,6 +46,8 @@ export interface MainContainerComponentOptions {
   children: React.ReactNode;
   containerWidthFraction?: number;
   containerHeightFraction?: number;
+  /** Measured host boundary. When supplied, viewport Dimensions are ignored. */
+  containerDimensions?: { width: number; height: number };
   marginLeft?: number;
   marginRight?: number;
   marginTop?: number;
@@ -125,6 +128,7 @@ const MainContainerComponent: React.FC<MainContainerComponentOptions> = ({
   children,
   containerWidthFraction = 1,
   containerHeightFraction = 1,
+  containerDimensions,
   marginLeft = 0,
   marginRight = 0,
   marginTop = 0,
@@ -135,16 +139,22 @@ const MainContainerComponent: React.FC<MainContainerComponentOptions> = ({
   renderContainer,
 }) => {
   // State to store calculated aspect styles
+  const initialBoundary = containerDimensions ?? Dimensions.get('window');
+  const initialDimensions = calculateEmbeddedLayout({
+    boundary: initialBoundary,
+    widthFraction: containerWidthFraction,
+    heightFraction: containerHeightFraction,
+  });
   const [aspectStyles, setAspectStyles] = useState<{
     height: number;
     width: number;
     maxHeight: number;
     maxWidth: number;
   }>({
-    height: Math.floor(containerHeightFraction * Dimensions.get('window').height),
-    width: Math.floor(containerWidthFraction * Dimensions.get('window').width),
-    maxHeight: Math.floor(containerHeightFraction * Dimensions.get('window').height),
-    maxWidth: Math.floor(containerWidthFraction * Dimensions.get('window').width),
+    height: initialDimensions.height,
+    width: initialDimensions.width,
+    maxHeight: initialDimensions.height,
+    maxWidth: initialDimensions.width,
   });
 
   useEffect(() => {
@@ -152,16 +162,16 @@ const MainContainerComponent: React.FC<MainContainerComponentOptions> = ({
       const windowHeight = window.height;
       const windowWidth = window.width;
 
-      setAspectStyles({
-        height: Math.floor(containerHeightFraction * windowHeight),
-        width: Math.floor(containerWidthFraction * windowWidth),
-        maxHeight: Math.floor(containerHeightFraction * windowHeight),
-        maxWidth: Math.floor(containerWidthFraction * windowWidth),
+      const dimensions = calculateEmbeddedLayout({
+        boundary: { width: windowWidth, height: windowHeight },
+        widthFraction: containerWidthFraction,
+        heightFraction: containerHeightFraction,
       });
+      setAspectStyles({ ...dimensions, maxHeight: dimensions.height, maxWidth: dimensions.width });
     };
 
     // Initial setup
-    const { width, height } = Dimensions.get('window');
+    const { width, height } = containerDimensions ?? Dimensions.get('window');
     updateAspectStyles({
       window: {
         width, height, scale: 1, fontScale: 1,
@@ -172,20 +182,20 @@ const MainContainerComponent: React.FC<MainContainerComponentOptions> = ({
     });
 
     // Subscribe to dimension changes
-    const subscription = Dimensions.addEventListener('change', updateAspectStyles);
+    const subscription = containerDimensions
+      ? undefined
+      : Dimensions.addEventListener('change', updateAspectStyles);
 
     return () => {
       // Cleanup listener on component unmount
       if (subscription && typeof subscription.remove === 'function') {
-        subscription.remove();
-      } else {
-        // For older React Native versions
         subscription.remove();
       }
     };
   }, [
     containerHeightFraction,
     containerWidthFraction,
+    containerDimensions,
   ]);
 
   const dimensions = {

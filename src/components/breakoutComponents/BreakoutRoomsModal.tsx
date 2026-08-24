@@ -214,7 +214,7 @@ const EditRoomModal: React.FC<EditRoomModalOptions> = ({
       <View style={styles.modalContainer}>
         <View style={[styles.modalContent, shouldUseModernTheme ? { backgroundColor: '#0f172a', borderColor: theme.borderColor } : null]}>
           <View style={styles.modalHeader}>
-            <Text style={[styles.modalTitle, { color: theme.textColor }]}> 
+            <Text style={[styles.modalTitle, { color: theme.textColor }]}>
               Edit Room {currentRoomIndex + 1} <FontAwesome5 name="pen" color={theme.iconColor} />
             </Text>
             <Pressable onPress={() => setEditRoomModalVisible(false)}>
@@ -226,12 +226,12 @@ const EditRoomModal: React.FC<EditRoomModalOptions> = ({
             renderItem={renderAssignedParticipant}
             keyExtractor={(item, index) => `${item.name}-${index}`}
             ListHeaderComponent={
-              <Text style={[styles.listTitle, { color: theme.textColor }]}> 
+              <Text style={[styles.listTitle, { color: theme.textColor }]}>
                 Assigned Participants <FontAwesome5 name="users" color={theme.iconColor} />
               </Text>
             }
             ListEmptyComponent={
-              <View style={[styles.listItem, { borderBottomColor: theme.dividerColor }]}> 
+              <View style={[styles.listItem, { borderBottomColor: theme.dividerColor }]}>
                 <Text style={{ color: theme.mutedTextColor }}>None assigned</Text>
               </View>
             }
@@ -243,12 +243,12 @@ const EditRoomModal: React.FC<EditRoomModalOptions> = ({
             renderItem={renderUnassignedParticipant}
             keyExtractor={(item, index) => `${item.name}-${index}`}
             ListHeaderComponent={
-              <Text style={[styles.listTitle, { color: theme.textColor }]}> 
+              <Text style={[styles.listTitle, { color: theme.textColor }]}>
                 Unassigned Participants <FontAwesome5 name="users" color={theme.iconColor} />
               </Text>
             }
             ListEmptyComponent={
-              <View style={[styles.listItem, { borderBottomColor: theme.dividerColor }]}> 
+              <View style={[styles.listItem, { borderBottomColor: theme.dividerColor }]}>
                 <Text style={{ color: theme.mutedTextColor }}>None pending</Text>
               </View>
             }

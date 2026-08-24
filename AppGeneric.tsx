@@ -65,9 +65,8 @@ const App = () => {
   const connectMediaSFU = localLink.trim() !== '';
   */
 
-  // Scenario B/C: Use the shared demo cloud helper for CE egress or direct cloud testing.
-  // - Defaults are publish-safe and do not connect until you configure them.
-  // - Use scripts/configure-mediasfu-defaults.mjs to swap in staging or custom values when needed.
+  // Scenario B/C: Use the shared demo cloud helper for cloud or self-hosted testing.
+  // Replace its sample values with your own configuration before connecting to a real room.
   const { credentials, localLink, connectMediaSFU } = getDemoCloudConfig();
 
   // =========================================================

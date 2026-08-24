@@ -288,7 +288,7 @@ const CoHostModal: React.FC<CoHostModalOptions> = ({
         <View style={[styles.hr, { backgroundColor: theme.dividerColor }]} />
         <View style={styles.modalBody}>
           <View style={styles.formGroup}>
-            <Text style={[styles.label, { fontWeight: 'bold', color: theme.textColor }]}> 
+            <Text style={[styles.label, { fontWeight: 'bold', color: theme.textColor }]}>
               Current Co-host:
             </Text>
             <TextInput
@@ -304,7 +304,7 @@ const CoHostModal: React.FC<CoHostModalOptions> = ({
 
           <View style={[styles.sep, { backgroundColor: theme.dividerColor }]} />
           <View style={styles.formGroup}>
-            <Text style={[styles.label, { fontWeight: 'bold', color: theme.textColor }]}> 
+            <Text style={[styles.label, { fontWeight: 'bold', color: theme.textColor }]}>
               Select New Co-host:
             </Text>
             <RNPickerSelect
@@ -326,17 +326,17 @@ const CoHostModal: React.FC<CoHostModalOptions> = ({
           <View style={[styles.sep, { backgroundColor: theme.dividerColor }]} />
           <View style={styles.row}>
             <View style={styles.col5}>
-              <Text style={[styles.label, { fontWeight: 'bold', color: theme.textColor }]}> 
+              <Text style={[styles.label, { fontWeight: 'bold', color: theme.textColor }]}>
                 Responsibility
               </Text>
             </View>
             <View style={styles.col3}>
-              <Text style={[styles.label, { fontWeight: 'bold', color: theme.textColor }]}> 
+              <Text style={[styles.label, { fontWeight: 'bold', color: theme.textColor }]}>
                 Select
               </Text>
             </View>
             <View style={styles.col4}>
-              <Text style={[styles.label, { fontWeight: 'bold', color: theme.textColor }]}> 
+              <Text style={[styles.label, { fontWeight: 'bold', color: theme.textColor }]}>
                 Dedicated
               </Text>
             </View>
@@ -381,7 +381,7 @@ const CoHostModal: React.FC<CoHostModalOptions> = ({
           ))}
         </View>
         <View style={styles.modalFooter}>
-          <Pressable onPress={handleSave} style={[styles.btnApplySettings, { backgroundColor: theme.buttonBackgroundColor }]}> 
+          <Pressable onPress={handleSave} style={[styles.btnApplySettings, { backgroundColor: theme.buttonBackgroundColor }]}>
             <Text style={[styles.btnText, { color: theme.buttonTextColor }]}>Save</Text>
           </Pressable>
         </View>

@@ -945,7 +945,7 @@ const PreJoinPage: React.FC<PreJoinPageOptions> = ({
   };
 
   /**
-   * Locks the orientation to portrait mode when the component mounts and unlocks on unmount.
+   * Keep the lifecycle boundary; orientation policy belongs to the host app.
    */
   useEffect(() => {
     Orientation.lockToPortrait();

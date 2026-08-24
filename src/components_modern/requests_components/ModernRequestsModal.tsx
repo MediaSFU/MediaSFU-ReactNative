@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import type { RequestsModalOptions } from '../../components/requestsComponents/RequestsModal';
+import type { RenderRequestComponentOptions } from '../../components/requestsComponents/RenderRequestComponent';
 import { respondToRequests } from '../../methods/requestsMethods/respondToRequests';
 import { getModalPosition } from '../../methods/utils/getModalPosition';
 import {
@@ -121,7 +122,7 @@ export const ModernRequestsModal: React.FC<ModernRequestsModalProps> = ({
 				roomName,
 				socket,
 				isDarkMode: darkMode,
-			});
+			} as RenderRequestComponentOptions);
 		}
 
 		return (
@@ -283,7 +284,7 @@ export const ModernRequestsModal: React.FC<ModernRequestsModalProps> = ({
 	);
 
 	return renderContainer
-		? renderContainer({ defaultContainer, dimensions })
+		? (renderContainer({ defaultContainer, dimensions }) as JSX.Element)
 		: defaultContainer;
 };
 

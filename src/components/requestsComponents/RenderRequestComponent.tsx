@@ -85,7 +85,7 @@ export interface RenderRequestComponentOptions {
  */
 
 
-const RenderRequestComponent: React.FC<RenderRequestComponentOptions> = ({
+const RenderRequestComponent = ({
   request,
   onRequestItemPress,
   requestList,
@@ -93,7 +93,7 @@ const RenderRequestComponent: React.FC<RenderRequestComponentOptions> = ({
   roomName,
   socket,
   isDarkMode,
-}) => {
+}: RenderRequestComponentOptions): React.ReactElement => {
   const theme = getModalBodyTheme(isDarkMode);
   /**
    * Maps the request.icon to the corresponding FontAwesome icon name.
@@ -122,7 +122,7 @@ const RenderRequestComponent: React.FC<RenderRequestComponentOptions> = ({
   };
 
   return (
-    <View style={[styles.requestRow, { borderBottomColor: theme.dividerColor }]}> 
+    <View style={[styles.requestRow, { borderBottomColor: theme.dividerColor }]}>
       {/* Request Name */}
       <View style={styles.requestNameContainer}>
         <Text style={[styles.requestNameText, { color: theme.textColor }]}>{request.name}</Text>

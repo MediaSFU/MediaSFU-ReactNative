@@ -28,6 +28,24 @@ export interface ConnectSendTransportVideoOptions {
 // Export the type definition for the function
 export type ConnectSendTransportVideoType = (options: ConnectSendTransportVideoOptions) => Promise<void>;
 
+/**
+ * React Native's WebRTC handler must negotiate the codec from its generated
+ * offer. A codec capability retained in a previously published parameter bag
+ * can be valid for the router yet fail the native handler's strict match.
+ * Strip that browser-oriented preference at the final producer boundary.
+ */
+export const normalizeNativeVideoProducerOptions = (
+  videoParams: ProducerOptions,
+): ProducerOptions => {
+  const { codec: _browserCodec, ...nativeParams } = videoParams;
+
+  if (nativeParams.encodings?.length === 1) {
+    delete nativeParams.encodings;
+  }
+
+  return nativeParams;
+};
+
 const connectLocalSendTransportVideo = async ({
   videoParams,
   parameters,
@@ -107,5 +125,8 @@ const connectLocalSendTransportVideo = async ({
  */
 
 export const connectSendTransportVideo: ConnectSendTransportVideoType = async (options): Promise<void> => {
-  await (sharedConnectSendTransportVideo as unknown as ConnectSendTransportVideoType)(options);
+  await (sharedConnectSendTransportVideo as unknown as ConnectSendTransportVideoType)({
+    ...options,
+    videoParams: normalizeNativeVideoProducerOptions(options.videoParams),
+  });
 };

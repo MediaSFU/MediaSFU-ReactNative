@@ -546,7 +546,7 @@ const WelcomePage: React.FC<WelcomePageOptions> = ({parameters}) => {
   }, [scannedData]);
 
   /**
-   * Locks the orientation to portrait when the component mounts and unlocks on unmount.
+   * Keep the lifecycle boundary; orientation policy belongs to the host app.
    */
   useEffect(() => {
     Orientation.lockToPortrait();

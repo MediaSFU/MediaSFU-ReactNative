@@ -227,7 +227,7 @@ const WaitingRoomModal: React.FC<WaitingRoomModalOptions> = ({
     <>
       {/* Header */}
       <View style={styles.modalHeader}>
-        <Text style={[styles.modalTitle, { color: theme.textColor }]}> 
+        <Text style={[styles.modalTitle, { color: theme.textColor }]}>
           Waiting <Text style={[styles.badge, { backgroundColor: theme.badgeBackgroundColor, color: theme.badgeTextColor }]}>{waitingRoomCounter_s}</Text>
         </Text>
         <Pressable onPress={onWaitingRoomClose} style={styles.closeButton}>
@@ -266,9 +266,9 @@ const WaitingRoomModal: React.FC<WaitingRoomModalOptions> = ({
             {filteredWaitingRoomList &&
             filteredWaitingRoomList.length > 0 ? (
               filteredWaitingRoomList.map((participant, index) => (
-                <View key={index} style={[styles.waitingItem, { borderBottomColor: theme.dividerColor }]}> 
+                <View key={index} style={[styles.waitingItem, { borderBottomColor: theme.dividerColor }]}>
                   <View style={styles.participantName}>
-                    <Text style={[styles.participantText, { color: theme.textColor }]}> 
+                    <Text style={[styles.participantText, { color: theme.textColor }]}>
                       {participant.name}
                     </Text>
                   </View>
@@ -312,7 +312,7 @@ const WaitingRoomModal: React.FC<WaitingRoomModalOptions> = ({
                 </View>
               ))
             ) : (
-              <Text style={[styles.noParticipantsText, { color: theme.mutedTextColor }]}> 
+              <Text style={[styles.noParticipantsText, { color: theme.mutedTextColor }]}>
                 No participants found.
               </Text>
             )}

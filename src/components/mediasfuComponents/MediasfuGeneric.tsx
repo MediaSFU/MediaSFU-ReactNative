@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Text, View, Pressable, Platform, Dimensions, StatusBar, StyleSheet } from 'react-native';
-import Orientation from '../../methods/utils/orientation/orientation';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -347,6 +346,15 @@ export type MediasfuGenericOptions = {
   imgSrc?: string;
   sourceParameters?: { [key: string]: any };
   updateSourceParameters?: (data: { [key: string]: any }) => void;
+  /**
+   * Called whenever the media graph changes — new/lost streams, a local
+   * track toggling, screen share starting, consumers changing. Reasons are
+   * coalesced into one microtask-deferred call per tick.
+   *
+   * The reliable way for a returnUI={false} surface to re-read media
+   * without polling.
+   */
+  onMediaChanged?: (info: { reasons: string[]; parameters: any }) => void;
   returnUI?: boolean;
   noUIPreJoinOptions?: CreateMediaSFURoomOptions | JoinMediaSFURoomOptions;
   autoProceedPreJoin?: boolean;
@@ -359,6 +367,8 @@ export type MediasfuGenericOptions = {
   customMiniCard?: CustomMiniCardType;
   customComponent?: React.FC<{ parameters: any }>;
   containerStyle?: object; // React Native ViewStyle
+  /** Explicit embedded boundary. Otherwise the root is measured with onLayout. */
+  containerDimensions?: { width: number; height: number };
   useModernUI?: boolean;
   uiOverrides?: import('../../@types/types').MediasfuUICustomOverrides;
 };
@@ -472,6 +482,7 @@ const MediasfuGeneric: React.FC<MediasfuGenericOptions> = ({
   imgSrc = 'https://mediasfu.com/images/logo192.png',
   sourceParameters,
   updateSourceParameters,
+  onMediaChanged,
   returnUI = true,
   noUIPreJoinOptions,
   autoProceedPreJoin,
@@ -482,6 +493,7 @@ const MediasfuGeneric: React.FC<MediasfuGenericOptions> = ({
   customMiniCard,
   customComponent,
   containerStyle,
+  containerDimensions,
   useModernUI = true,
   uiOverrides: providedUIOverrides,
 }) => {
@@ -497,10 +509,10 @@ const MediasfuGeneric: React.FC<MediasfuGenericOptions> = ({
   );
   const neutralControlIconColor = isDarkMode ? '#f8fafc' : '#0f172a';
   const [windowWidth, setWindowWidth] = useState<number>(
-    Dimensions.get('window').width,
+    containerDimensions?.width ?? Dimensions.get('window').width,
   );
   const [windowHeight, setWindowHeight] = useState<number>(
-    Dimensions.get('window').height,
+    containerDimensions?.height ?? Dimensions.get('window').height,
   );
   const uiOverrides = React.useMemo(
     () =>
@@ -512,14 +524,31 @@ const MediasfuGeneric: React.FC<MediasfuGenericOptions> = ({
 
   useEffect(() => {
     const subscription = Dimensions.addEventListener('change', ({ window }) => {
-      setWindowWidth(window.width);
-      setWindowHeight(window.height);
+      if (!containerDimensions) {
+        setWindowWidth(window.width);
+        setWindowHeight(window.height);
+      }
     });
 
     return () => {
       subscription?.remove?.();
     };
-  }, []);
+  }, [containerDimensions]);
+
+  useEffect(() => {
+    if (containerDimensions) {
+      setWindowWidth(containerDimensions.width);
+      setWindowHeight(containerDimensions.height);
+    }
+  }, [containerDimensions]);
+
+  const handleContainerLayout = React.useCallback((event: any) => {
+    if (containerDimensions) return;
+    const width = Math.floor(event?.nativeEvent?.layout?.width ?? 0);
+    const height = Math.floor(event?.nativeEvent?.layout?.height ?? 0);
+    if (width > 0) setWindowWidth((current) => current === width ? current : width);
+    if (height > 0) setWindowHeight((current) => current === height ? current : height);
+  }, [containerDimensions]);
 
   const shouldAttachSidebar =
     (Platform.OS === 'web' && windowWidth >= 768) ||
@@ -1437,8 +1466,36 @@ const MediasfuGeneric: React.FC<MediasfuGenericOptions> = ({
     screenId.current = value;
   };
 
+  /**
+   * Coalesced media-change notifier. Several updaters fire in the same tick
+   * during a single transition (a new consumer touches consumerTransports and
+   * allVideoStreams), so reasons are batched into one microtask-deferred call
+   * rather than delivered N times.
+   */
+  const pendingMediaReasons = useRef<Set<string>>(new Set());
+  const mediaNotifyQueued = useRef(false);
+  const notifyMediaChanged = (reason: string) => {
+    if (!onMediaChanged) return;
+    pendingMediaReasons.current.add(reason);
+    if (mediaNotifyQueued.current) return;
+    mediaNotifyQueued.current = true;
+    Promise.resolve().then(() => {
+      mediaNotifyQueued.current = false;
+      const reasons = Array.from(pendingMediaReasons.current);
+      pendingMediaReasons.current.clear();
+      try {
+        onMediaChanged({
+          reasons,
+          parameters: { ...getAllParams(), ...mediaSFUFunctions() },
+        });
+      } catch {
+        // A consumer's observer must never break the media path.
+      }
+    });
+  };
   const updateAllVideoStreams = (value: (Participant | Stream)[]) => {
     allVideoStreams.current = value;
+    notifyMediaChanged('video-streams');
   };
 
   const updateNewLimitedStreams = (value: (Participant | Stream)[]) => {
@@ -1515,6 +1572,7 @@ const MediasfuGeneric: React.FC<MediasfuGenericOptions> = ({
 
   const updateLocalStreamVideo = (value: MediaStreamType | null) => {
     localStreamVideo.current = value;
+    notifyMediaChanged('local-video');
   };
 
   const updateUserDefaultVideoInputDevice = (value: string) => {
@@ -1619,6 +1677,7 @@ const MediasfuGeneric: React.FC<MediasfuGenericOptions> = ({
 
   const updateLocalStreamScreen = (value: MediaStreamType | null) => {
     localStreamScreen.current = value;
+    notifyMediaChanged('screen-share');
   };
 
   const updateScreenAlreadyOn = (value: boolean) => {
@@ -1635,6 +1694,7 @@ const MediasfuGeneric: React.FC<MediasfuGenericOptions> = ({
 
   const updateOldAllStreams = (value: (Participant | Stream)[]) => {
     oldAllStreams.current = value;
+    notifyMediaChanged('video-streams');
   };
 
   const updateAdminVidID = (value: string) => {
@@ -1671,6 +1731,7 @@ const MediasfuGeneric: React.FC<MediasfuGenericOptions> = ({
 
   const updateLocalStreamAudio = (value: MediaStreamType | null) => {
     localStreamAudio.current = value;
+    notifyMediaChanged('local-audio');
   };
 
   const updateDefAudioID = (value: string) => {
@@ -1839,6 +1900,7 @@ const MediasfuGeneric: React.FC<MediasfuGenericOptions> = ({
 
   const updateAllAudioStreams = (value: (Participant | Stream)[]) => {
     allAudioStreams.current = value;
+    notifyMediaChanged('audio-streams');
   };
 
   const updateRemoteScreenStream = (value: Stream[]) => {
@@ -1894,6 +1956,7 @@ const MediasfuGeneric: React.FC<MediasfuGenericOptions> = ({
 
   const updateAudioOnlyStreams = (value: JSX.Element[]) => {
     audioOnlyStreams.current = value;
+    notifyMediaChanged('audio-streams');
   };
 
   const updateTranslationStreams = (value: JSX.Element[]) => {
@@ -1949,7 +2012,7 @@ const MediasfuGeneric: React.FC<MediasfuGenericOptions> = ({
     meetingDisplayType.current ? meetingDisplayType.current : 'media',
   ); // Display option as string
 
-  const autoWave = useRef<boolean>(true); // Auto wave setting as boolean
+  const autoWave = useRef<boolean>(returnUI !== false); // Auto wave setting as boolean
 
   const forceFullDisplay = useRef<boolean>(
     eventType.current === 'webinar' || eventType.current === 'conference'
@@ -3140,6 +3203,7 @@ const MediasfuGeneric: React.FC<MediasfuGenericOptions> = ({
 
   const updateConsumerTransports = (value: TransportType[]) => {
     consumerTransports.current = value;
+    notifyMediaChanged('consumers');
   };
 
   const updateConsumingTransports = (value: string[]) => {
@@ -3340,12 +3404,39 @@ const MediasfuGeneric: React.FC<MediasfuGenericOptions> = ({
   };
 
   function checkOrientation() {
-    // Check the current device orientation through the host-owned adapter.
-    const isPortrait = Orientation?.getInitialOrientation() === 'PORTRAIT';
+    // Check the device orientation through the SDK orientation adapter.
+    const isPortrait = windowWidth <= windowHeight;
 
     return isPortrait ? 'portrait' : 'landscape';
   }
 
+  /** Publish after the current React render, coalesced to the latest bag. */
+  const pendingSourceParameters = useRef<{ [key: string]: any } | null>(null);
+  const sourcePublishHandle = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const publishSourceParameters = (bag: { [key: string]: any }) => {
+    if (!updateSourceParameters) return;
+    pendingSourceParameters.current = bag;
+    if (sourcePublishHandle.current !== null) return;
+    sourcePublishHandle.current = setTimeout(() => {
+      sourcePublishHandle.current = null;
+      const next = pendingSourceParameters.current;
+      pendingSourceParameters.current = null;
+      if (!next || !updateSourceParameters) return;
+      try {
+        updateSourceParameters(next);
+      } catch {
+        // A consumer observer must never break the room.
+      }
+    }, 0);
+  };
+
+  useEffect(() => () => {
+    if (sourcePublishHandle.current !== null) {
+      clearTimeout(sourcePublishHandle.current);
+      sourcePublishHandle.current = null;
+    }
+    pendingSourceParameters.current = null;
+  }, []);
   const getUpdatedAllParams = () => {
     // Get all the params for the room as well as the update functions for them and Media SFU functions and return them
     try {
@@ -3355,7 +3446,7 @@ const MediasfuGeneric: React.FC<MediasfuGenericOptions> = ({
           ...mediaSFUFunctions(),
         };
         if (updateSourceParameters) {
-          updateSourceParameters(sourceParameters);
+          publishSourceParameters(sourceParameters);
         }
       }
     } catch {
@@ -3446,9 +3537,18 @@ const MediasfuGeneric: React.FC<MediasfuGenericOptions> = ({
 
       getMediaDevicesList,
       getParticipantMedia,
+      getCurrentParams,
     };
   };
 
+  const getCurrentParams = () => {
+    // Same value as getUpdatedAllParams(), without the republish side effect.
+    // Safe to call from a render, an event handler, or a polling loop.
+    return {
+      ...getAllParams(),
+      ...mediaSFUFunctions(),
+    };
+  };
   const getAllParams = () => {
     //get all the params for the room as well as the update functions for them and return them
 
@@ -4296,6 +4396,23 @@ const MediasfuGeneric: React.FC<MediasfuGenericOptions> = ({
     type: 'success' | 'danger';
     duration?: number;
   }) => {
+    // Alerts are the SDK's only signal for a refused or failed control, so a
+    // headless consumer (returnUI={false}) must receive them deterministically.
+    // React state alone never publishes; the fields are passed explicitly here
+    // because the setters queued below have not committed yet.
+    try {
+      if (sourceParameters !== null && updateSourceParameters) {
+        publishSourceParameters({
+          ...getAllParams(),
+          ...mediaSFUFunctions(),
+          alertMessage: message,
+          alertType: type,
+          alertVisible: true,
+        });
+      }
+    } catch {
+      // Publishing must never block the alert itself.
+    }
     // Show an alert message, type is 'danger', 'success', duration is in milliseconds
     setAlertMessage(message);
     setAlertType(type);
@@ -6148,9 +6265,9 @@ const MediasfuGeneric: React.FC<MediasfuGenericOptions> = ({
     defaultFraction: number;
   }): ComponentSizes => {
     //const marginTop = Platform.OS === 'ios' ? 0 : Constants.statusBarHeight;
-    const parentWidth = Dimensions.get('window').width * containerWidthFraction;
+    const parentWidth = windowWidth * containerWidthFraction;
     const parentHeight =
-      Dimensions.get('window').height *
+      windowHeight *
       containerHeightFraction *
       defaultFraction; // - marginTop;
 
@@ -6199,14 +6316,14 @@ const MediasfuGeneric: React.FC<MediasfuGenericOptions> = ({
         : 40;
 
     if (eventType.current === 'webinar' || eventType.current === 'conference') {
-      const currentHeight = Dimensions.get('window').height;
+      const currentHeight = windowHeight;
       fraction = Number((controlBarHeightPx / currentHeight).toFixed(3));
       if (fraction !== controlHeight) {
         updateControlHeight(fraction);
       }
     } else {
       // Set default control button height for portrait mode or other event types
-      const currentHeight = Dimensions.get('window').height;
+      const currentHeight = windowHeight;
       fraction = Number((controlBarHeightPx / currentHeight).toFixed(3));
       if (fraction !== controlHeight) {
         updateControlHeight(fraction);
@@ -6283,52 +6400,70 @@ const MediasfuGeneric: React.FC<MediasfuGenericOptions> = ({
     }
   };
 
-  const getParticipantMedia = async (id: string = '', name: string, kind: string = 'video') => {
-    //get the media stream of a participant by id
+  const getParticipantMedia = async (
+    idOrOptions:
+      | string
+      | { id?: string; name?: string; kind?: 'video' | 'audio' } = '',
+    nameArg: string = '',
+    kindArg: 'video' | 'audio' = 'video',
+  ): Promise<MediaStream | null> => {
+    // Resolve a participant's media stream by participant id, participant name,
+    // or a producer id. Accepts both the positional (id, name, kind) form and
+    // the documented object form so every MediaSFU component behaves the same.
     try {
-      let stream = null;
+      const options =
+        typeof idOrOptions === 'object' && idOrOptions !== null
+          ? idOrOptions
+          : { id: idOrOptions, name: nameArg, kind: kindArg };
+      const id = options.id || '';
+      const name = options.name || '';
+      const kind = options.kind || 'video';
 
-      if (id && id !== '') {
-        if (kind === 'video') {
-            const videoStreamObj = allVideoStreams.current.find(
-            (obj: Participant | Stream) => obj.producerId === id,
-            );
-          if (videoStreamObj) {
-            stream = videoStreamObj.stream;
-          }
-        } else if (kind === 'audio') {
-            const audioStreamObj = allAudioStreams.current.find(
-            (obj: Participant | Stream) => obj.producerId === id,
-            );
-          if (audioStreamObj) {
-            stream = audioStreamObj.stream;
-          }
-        }
-      } else if (name && name !== '') {
-        const participant = participants.current.find(
+      const participantsRef = participants.current || [];
+      const streams = (
+        kind === 'video' ? allVideoStreams.current : allAudioStreams.current
+      ) as (Participant | Stream)[] | undefined;
+      if (!streams || streams.length === 0) {
+        return null;
+      }
+
+      let participant = id
+        ? participantsRef.find((part: Participant) => part.id === id)
+        : undefined;
+      if (!participant && name) {
+        participant = participantsRef.find(
           (part: Participant) => part.name === name,
         );
-        if (participant) {
-          const participantId = participant.id;
-          if (kind === 'video') {
-            const videoStreamObj = allVideoStreams.current.find(
-              (obj: Participant | Stream) => obj.producerId === participantId,
-            );
-            if (videoStreamObj) {
-              stream = videoStreamObj.stream;
-            }
-          } else if (kind === 'audio') {
-            const audioStreamObj = allAudioStreams.current.find(
-              (obj: Participant | Stream) => obj.producerId === participantId,
-            );
-            if (audioStreamObj) {
-              stream = audioStreamObj.stream;
-            }
-          }
+      }
+
+      // allVideoStreams / allAudioStreams are keyed by producerId only. A
+      // participant's `id` is its membership id and never matches, so the
+      // producer reference has to come from videoID / audioID.
+      const producerId = participant
+        ? kind === 'video'
+          ? participant.videoID
+          : participant.audioID
+        : '';
+      if (producerId) {
+        const match = streams.find(
+          (stream: Participant | Stream) => stream.producerId === producerId,
+        );
+        if (match && match.stream) {
+          return match.stream;
         }
       }
 
-      return stream;
+      // A caller that already holds a producer id may pass it directly as `id`.
+      if (id) {
+        const direct = streams.find(
+          (stream: Participant | Stream) => stream.producerId === id,
+        );
+        if (direct && direct.stream) {
+          return direct.stream;
+        }
+      }
+
+      return null;
     } catch {
       return null;
     }
@@ -7592,7 +7727,7 @@ const MediasfuGeneric: React.FC<MediasfuGenericOptions> = ({
             ...mediaSFUFunctions(),
           };
           if (updateSourceParameters) {
-            updateSourceParameters(sourceParameters);
+            publishSourceParameters(sourceParameters);
           }
         }
       } catch {
@@ -7611,6 +7746,7 @@ const MediasfuGeneric: React.FC<MediasfuGenericOptions> = ({
 
   return (
     <SafeAreaProvider
+      onLayout={handleContainerLayout}
       style={{
         marginTop: Platform.OS === 'ios' ? 0 : getStatusBarHeight(),
       }}
@@ -7656,9 +7792,13 @@ const MediasfuGeneric: React.FC<MediasfuGenericOptions> = ({
       ) : customComponent ? (
         React.createElement(customComponent, { parameters: { ...getAllParams(), ...mediaSFUFunctions() } })
       ) : returnUI ? (
-        <MainContainer style={containerStyle}>
+        <MainContainer
+          style={containerStyle}
+          containerDimensions={{ width: windowWidth, height: windowHeight }}
+        >
           {/* Main aspect component containsa ll but the control buttons (as used for webinar and conference) */}
           <MainAspect
+            containerDimensions={{ width: windowWidth, height: windowHeight }}
             backgroundColor={themedSurfaceColor}
             containerWidthFraction={1}
             defaultFraction={1 - controlHeight}
@@ -7677,6 +7817,7 @@ const MediasfuGeneric: React.FC<MediasfuGenericOptions> = ({
               showSubtitlesOnCards={showSubtitlesOnCards.current}
             >
               <MainScreen
+                containerDimensions={{ width: windowWidth, height: windowHeight }}
                 doStack={true}
                 mainSize={effectiveMainHeightWidth}
                 containerWidthFraction={mainContentWidthFraction}
