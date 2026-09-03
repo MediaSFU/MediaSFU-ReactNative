@@ -80,3 +80,4 @@ dist/
 docs/
 refNative/
 CUSTOM-COMPONENTS.md
+.local-validation/

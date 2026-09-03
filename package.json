@@ -1,6 +1,6 @@
 {
   "name": "mediasfu-reactnative",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "private": false,
   "main": "dist/main.js",
   "module": "dist/main.js",
@@ -70,7 +70,7 @@
     "socket.io-client": "^4.8.0"
   },
   "dependencies": {
-    "mediasfu-shared": "^1.1.0"
+    "mediasfu-shared": "^1.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

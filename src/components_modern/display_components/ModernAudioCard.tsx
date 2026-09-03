@@ -13,6 +13,7 @@ import type { AudioCardOptions } from '../../components/displayComponents/AudioC
 import { getModernColors, modernShadow, resolveIsDarkMode } from '../core/modernTheme';
 import { ModernMiniCard } from './ModernMiniCard';
 import { SubtitleOverlay } from './SubtitleOverlay';
+import { stageCardPropsEqual } from './stageCardMemo';
 
 export interface ModernAudioCardOptions extends AudioCardOptions {
   isDarkMode?: boolean;
@@ -20,7 +21,7 @@ export interface ModernAudioCardOptions extends AudioCardOptions {
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
-export const ModernAudioCard: React.FC<ModernAudioCardOptions> = (props) => {
+const ModernAudioCardComponent: React.FC<ModernAudioCardOptions> = (props) => {
   const {
     controlUserMedia = controlMedia,
     customStyle,
@@ -476,5 +477,8 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
 });
+
+export const ModernAudioCard = React.memo(ModernAudioCardComponent, stageCardPropsEqual);
+ModernAudioCard.displayName = 'ModernAudioCard';
 
 export default ModernAudioCard;

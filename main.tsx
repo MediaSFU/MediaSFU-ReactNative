@@ -37,6 +37,7 @@ export * from './src/components/miscComponents/PreJoinPage';
 
 // Modern React Native UI surfaces
 export * from './src/components_modern/mediasfu_components/ModernMediasfuGeneric';
+export * from './src/components_modern/mediasfu_components/ModernMediasfuGenericHead';
 export * from './src/components_modern/modernOverrides';
 export * from './src/components_modern/display_components/ModernLoadingModal';
 export * from './src/components_modern/display_components/ModernAlertComponent';

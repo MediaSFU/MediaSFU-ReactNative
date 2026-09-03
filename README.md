@@ -31,6 +31,7 @@ npm install mediasfu-reactnative
 | Keep the room but brand selected surfaces | `uiOverrides`, `customVideoCard`, `customAudioCard`, and `customMiniCard` |
 | Replace the whole room shell | `customComponent` |
 | Render and control everything yourself | `returnUI={false}` with `useMediasfuHeadless()` |
+| Move the standard UI around one headless engine | `ModernMediasfuGenericHead` |
 
 The SDK includes microphone, camera, screen sharing, remote audio/video,
 participants, chat, waiting and request flows, moderation, recording,
@@ -152,6 +153,96 @@ export function BrandedRoom() {
 Use `customComponent` when your app owns the entire visible workspace but still
 wants the component-managed room lifecycle. Move to the headless adapter when
 your UI also needs a clean state/action interface.
+
+## Reuse SDK panels in your own layout
+
+Headless mode can combine your application layout with exported SDK controls.
+Keep the room engine mounted with `returnUI={false}`, receive its parameter
+publications, and pass the latest room parameters to the panel you import.
+
+Keep modal visibility connected to the room:
+
+1. Open the panel through the room's matching updater, such as
+   `updateIsRecordingModalVisible(true)`.
+2. Bind the component's `isRecordingModalVisible` prop to the current room
+   value, and make its `onClose` callback call
+   `updateIsRecordingModalVisible(false)`.
+3. Pass the current room parameters and the component's required callbacks,
+   including recording confirmation and start actions.
+4. Customize supported styles, wrappers, or overrides without replacing the
+   underlying room callbacks.
+
+Visibility props differ between components; use the exported component's
+contract, not a generic `isVisible` prop for every panel. Do not maintain a
+second independent visibility flag. With headless mode, built-in sidebar
+navigation is not your application's navigation.
+
+Opening a panel does not start recording or grant media permission. Keep
+confirmation, permission checks, and teardown under the room engine's control.
+
+## Reuse SDK panels in your own layout
+
+Headless mode can combine your application layout with exported SDK controls.
+Keep the room engine mounted with `returnUI={false}`, receive its parameter
+publications, and pass the latest room parameters to the panel you import.
+
+Keep modal visibility connected to the room:
+
+1. Open the panel through the room's matching updater, such as
+   `updateIsRecordingModalVisible(true)`.
+2. Bind the component's `isRecordingModalVisible` prop to the current room
+   value, and make its `onClose` callback call
+   `updateIsRecordingModalVisible(false)`.
+3. Pass the current room parameters and the component's required callbacks,
+   including recording confirmation and start actions.
+4. Customize supported styles, wrappers, or overrides without replacing the
+   underlying room callbacks.
+
+Visibility props differ between components; use the exported component's
+contract, not a generic `isVisible` prop for every panel. Do not maintain a
+second independent visibility flag. With headless mode, built-in sidebar
+navigation is not your application's navigation.
+
+Opening a panel does not start recording or grant media permission. Keep
+confirmation, permission checks, and teardown under the room engine's control.
+
+## Render the standard UI from one headless engine
+
+Use `ModernMediasfuGenericHead` when you want the complete standard native UI
+in a different part of your component tree. The Head is only a renderer: the
+original Generic remains the sole owner of sockets, transports, media, room
+state, modal visibility, and sidebar navigation.
+
+```tsx
+import { View } from 'react-native';
+import {
+  ModernMediasfuGeneric,
+  ModernMediasfuGenericHead,
+  useMediasfuHeadless,
+} from 'mediasfu-reactnative';
+
+export function RelocatedStandardRoom() {
+  const room = useMediasfuHeadless();
+
+  return (
+    <View style={{ flex: 1 }}>
+      <ModernMediasfuGeneric
+        returnUI={false}
+        renderUIExternally
+        sourceParameters={room.sourceParameters}
+        updateSourceParameters={room.updateSourceParameters}
+        onMediaChanged={room.onMediaChanged}
+      />
+      <ModernMediasfuGenericHead parameters={room.parameters} />
+    </View>
+  );
+}
+```
+
+Do not mount a second Generic for the visible surface. Keep
+`sourceParameters` stable and let the Head call the engine's pure
+`getCurrentParams()` reader; it never calls `getUpdatedAllParams()` during
+render.
 
 ## Feature-rich headless quick start
 
@@ -275,6 +366,20 @@ publication, and bind `onMediaChanged`—no polling is required. Never call
 - [Expo SDK](https://www.npmjs.com/package/mediasfu-reactnative-expo)
 
 ## Working examples
+
+## Virtual backgrounds and breakout rooms in a custom native UI
+
+Keep `ModernBackgroundModal` mounted with the room and drive it from the latest
+published parameters. Do not copy its camera-processing lifecycle into screen
+state. Render self-view from `useMediasfuHeadless().localVideo`; the resolver
+prefers the active virtual stream over the raw camera so local and remote views
+agree.
+
+For breakout rooms, pass the current room bag to
+`ModernBreakoutRoomsModal`, save assignments before Start, and show validation
+failures in your own native notice. A participant moves only through the SDK's
+room transition; filtering cards locally cannot update membership or consumer
+pause/resume state.
 
 - [MediaSFU QuickStart Apps](https://github.com/MediaSFU/MediaSFU-QuickStart-Apps) — runnable Cloud, MediaSFU Open, custom-prejoin, backend-proxy, and custom-UI examples across SDKs.
 - [SpacesTek Initial](https://github.com/MediaSFU/SpacesTekInitial) → [Final](https://github.com/MediaSFU/SpacesTekFinal) → [Advanced](https://github.com/MediaSFU/SpacesTekAdvanced) — a staged path from a starter room to a product-owned Spaces-style experience.

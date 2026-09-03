@@ -124,6 +124,18 @@ Cloud room helpers target `https://mediasfu.com/v1/rooms/` by default. For self-
 - Use `customComponent` or `returnUI={false}` when your app should own the entire native experience.
 - Expo users should use `mediasfu-reactnative-expo` for the Expo-managed workflow.
 
+## Relocate the standard UI without a second engine
+
+`ModernMediasfuGenericHead` renders the exact native component tree retained by
+one existing `ModernMediasfuGeneric`. Mount the engine with `returnUI={false}`
+and `renderUIExternally`, keep its source seed stable, and pass the latest
+published parameters to the Head. The engine remains the only owner of sockets,
+media, room state, modal visibility, and native sidebar navigation.
+
+Do not mount another Generic as the visible surface. The Head performs a pure
+`getCurrentParams()` read and invokes the engine-owned renderer; it does not
+create or approximate a second room.
+
 ## Headless quick start
 
 Use headless mode when MediaSFU should keep the room, signaling, transports,
@@ -224,6 +236,7 @@ Every primary MediaSFU UI export—`MediasfuGeneric`, `ModernMediasfuGeneric`, `
 | `sourceParameters` | `Record<string, unknown>` | `undefined` | Shared helper bag (media devices, participant helpers, layout handlers). Pair with `updateSourceParameters` to mirror the SDK's internal utilities. |
 | `updateSourceParameters` | `(helpers) => void` | `undefined` | Receive the latest helper bundle so you can bridge MediaSFU logic into your own components. |
 | `returnUI` | `boolean` | `true` | When `false`, mount the logic only—a perfect stepping stone to a fully bespoke interface. |
+| `renderUIExternally` | `boolean` | `false` | With `returnUI={false}`, keep the standard native UI lifecycle active for `ModernMediasfuGenericHead`. |
 | `noUIPreJoinOptions` | `CreateMediaSFURoomOptions \| JoinMediaSFURoomOptions` | `undefined` | Feed pre-join data when `returnUI` is `false` and you want to bypass the on-screen wizard. |
 | `joinMediaSFURoom`, `createMediaSFURoom` | Functions | `undefined` | Inject your own networking layers for joining or creating rooms. |
 | `customComponent` | `CustomComponentType` | `undefined` | Replace the entire UI while retaining transports, sockets, and helpers. |

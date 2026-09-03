@@ -9,6 +9,7 @@ import {
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import type { MiniCardOptions } from '../../components/displayComponents/MiniCard';
 import { getModernColors, modernShadow, resolveIsDarkMode } from '../core/modernTheme';
+import { stageCardPropsEqual } from './stageCardMemo';
 
 export interface ModernMiniCardOptions extends MiniCardOptions {
   isDarkMode?: boolean;
@@ -20,7 +21,7 @@ export interface ModernMiniCardOptions extends MiniCardOptions {
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
-export const ModernMiniCard: React.FC<ModernMiniCardOptions> = ({
+const ModernMiniCardComponent: React.FC<ModernMiniCardOptions> = ({
   initials,
   fontSize = 14,
   textColor,
@@ -338,5 +339,8 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
 });
+
+export const ModernMiniCard = React.memo(ModernMiniCardComponent, stageCardPropsEqual);
+ModernMiniCard.displayName = 'ModernMiniCard';
 
 export default ModernMiniCard;
