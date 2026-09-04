@@ -7,6 +7,13 @@ const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 const packageJson = JSON.parse(readFileSync(path.join(packageRoot, 'package.json'), 'utf8'));
 const failures = [];
 const entryFields = ['main', 'module', 'react-native'];
+if (packageJson.type !== 'commonjs') failures.push('root package type must remain commonjs for Metro/Babel config compatibility');
+const exportsRoot = packageJson.exports?.['.'];
+if (exportsRoot?.import !== './dist/main.js' || exportsRoot?.default !== './dist/main.js') failures.push('exports must map import/default to ./dist/main.js');
+if (exportsRoot?.require) failures.push('package does not ship a CommonJS build; remove the require export');
+const distMetadataPath = path.join(packageRoot, 'dist', 'package.json');
+if (!existsSync(distMetadataPath)) failures.push('dist/package.json is missing (must mark dist/main.js as ESM)');
+else if (JSON.parse(readFileSync(distMetadataPath, 'utf8')).type !== 'module') failures.push('dist/package.json must declare type module');
 
 for (const field of entryFields) {
   if (packageJson[field] !== 'dist/main.js') {
@@ -39,7 +46,7 @@ if (packed.status !== 0) {
   try {
     const archive = JSON.parse(packed.stdout)[0];
     const files = new Set((archive.files ?? []).map((file) => file.path));
-    for (const entry of ['dist/main.js', 'dist/types/main.d.ts', 'package.json']) {
+    for (const entry of ['dist/main.js', 'dist/package.json', 'dist/types/main.d.ts', 'package.json']) {
       if (!files.has(entry)) failures.push(`packed archive omits ${entry}`);
     }
   } catch (error) {

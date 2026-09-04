@@ -1,11 +1,23 @@
 {
   "name": "mediasfu-reactnative",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "private": false,
   "main": "dist/main.js",
   "module": "dist/main.js",
   "react-native": "dist/main.js",
   "types": "dist/types/main.d.ts",
+  "exports": {
+    ".": {
+      "react-native": {
+        "types": "./dist/types/main.d.ts",
+        "default": "./dist/main.js"
+      },
+      "types": "./dist/types/main.d.ts",
+      "import": "./dist/main.js",
+      "default": "./dist/main.js"
+    },
+    "./package.json": "./package.json"
+  },
   "author": "MediaSFU",
   "license": "MIT",
   "description": "mediasfu-reactnative – React Native WebRTC SDK for video conferencing, webinars, live streaming, broadcast, screen sharing, whiteboard, chat, recording, live subtitles, translation, and AI agent rooms on iOS and Android. Prebuilt rooms, uiOverrides, and fully custom UIs — powered by MediaSFU Cloud or self-hosted MediaSFU Open.",
@@ -28,13 +40,14 @@
     "ios": "react-native run-ios",
     "start": "react-native start",
     "test": "jest",
-    "build": "npm run build:clean && npm run build:ts",
+    "build": "npm run build:clean && npm run build:ts && npm run build:metadata",
     "build:clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
     "build:ts": "tsc --project tsconfig.build.json",
+    "build:metadata": "node ./scripts/write-dist-package-metadata.mjs",
     "check:package-entry": "node ./scripts/check-package-entry.mjs",
     "build:bundle": "rollup -c",
     "build:copy": "cp -r src/assets dist/assets",
-    "buildnpm": "npm run build:clean && npm run build:ts",
+    "buildnpm": "npm run build:clean && npm run build:ts && npm run build:metadata",
     "lint": "eslint src/**/*.ts src/**/*.tsx",
     "lint:fix": "eslint src/**/*.ts src/**/*.tsx --fix",
     "lint:all": "eslint \"src/**/*.{ts,tsx}\" \"*.tsx\" --no-error-on-unmatched-pattern",
