@@ -8,10 +8,19 @@ const loudnessFor = (source: unknown, name?: string): number | undefined => {
   }
   return undefined;
 };
+
 export function stageCardPropsEqual<P extends object>(prev: Readonly<P>, next: Readonly<P>): boolean {
-  const a = prev as any; const b = next as any; const keys = Object.keys(a);
+  const a = prev as any;
+  const b = next as any;
+  const keys = Object.keys(a);
   if (keys.length !== Object.keys(b).length) return false;
-  for (const key of keys) { if (key === 'parameters' || key === 'audioDecibels') continue; if (!Object.prototype.hasOwnProperty.call(b, key) || a[key] !== b[key]) return false; }
-  return loudnessFor(a.audioDecibels, a.participant?.name ?? a.name) === loudnessFor(b.audioDecibels, b.participant?.name ?? b.name);
+  for (const key of keys) {
+    if (key === 'parameters' || key === 'audioDecibels') continue;
+    if (!Object.prototype.hasOwnProperty.call(b, key) || a[key] !== b[key]) return false;
+  }
+  const prevName = a.participant?.name ?? a.name;
+  const nextName = b.participant?.name ?? b.name;
+  return loudnessFor(a.audioDecibels, prevName) === loudnessFor(b.audioDecibels, nextName);
 }
+
 export default stageCardPropsEqual;

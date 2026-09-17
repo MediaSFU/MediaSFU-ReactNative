@@ -180,32 +180,6 @@ navigation is not your application's navigation.
 Opening a panel does not start recording or grant media permission. Keep
 confirmation, permission checks, and teardown under the room engine's control.
 
-## Reuse SDK panels in your own layout
-
-Headless mode can combine your application layout with exported SDK controls.
-Keep the room engine mounted with `returnUI={false}`, receive its parameter
-publications, and pass the latest room parameters to the panel you import.
-
-Keep modal visibility connected to the room:
-
-1. Open the panel through the room's matching updater, such as
-   `updateIsRecordingModalVisible(true)`.
-2. Bind the component's `isRecordingModalVisible` prop to the current room
-   value, and make its `onClose` callback call
-   `updateIsRecordingModalVisible(false)`.
-3. Pass the current room parameters and the component's required callbacks,
-   including recording confirmation and start actions.
-4. Customize supported styles, wrappers, or overrides without replacing the
-   underlying room callbacks.
-
-Visibility props differ between components; use the exported component's
-contract, not a generic `isVisible` prop for every panel. Do not maintain a
-second independent visibility flag. With headless mode, built-in sidebar
-navigation is not your application's navigation.
-
-Opening a panel does not start recording or grant media permission. Keep
-confirmation, permission checks, and teardown under the room engine's control.
-
 ## Render the standard UI from one headless engine
 
 Use `ModernMediasfuGenericHead` when you want the complete standard native UI
@@ -341,32 +315,6 @@ publication, and bind `onMediaChanged`—no polling is required. Never call
 `getUpdatedAllParams()` from render or a timer; it republishes. Pure reads use
 `getCurrentParams()`.
 
-## Platform and release checklist
-
-- Configure Android/iOS microphone, camera, Bluetooth, and screen-capture
-  permissions required by your product.
-- Test on physical Android and iOS devices, including background/foreground,
-  route changes, permission denial, network loss, and rejoin.
-- Keep all prepared audio entries mounted, even when their video tile is on a
-  different page.
-- Hide moderation/session controls until the corresponding permission and room
-  state allow them.
-- Await Leave before dismissing the room screen; stop any app-created tracks.
-- Never ship reusable Cloud credentials in a public application bundle.
-
-## Documentation
-
-- [Detailed repository guide](README_DETAILED.md)
-- [SDK guides and generated API references](https://mediasfu.com/docs/)
-- [Complete headless guide](https://mediasfu.com/docs/usage/headless)
-- [REST API Sandbox — run GET/POST requests and copy code](https://mediasfu.com/sandbox)
-- [Create and manage MediaSFU API keys](https://mediasfu.com/api-keys)
-- [Developer Console and room API guide](https://mediasfu.com/documentation)
-- [MediaSFU Open — deploy your own media server](https://github.com/MediaSFU/MediaSFUOpen)
-- [Expo SDK](https://www.npmjs.com/package/mediasfu-reactnative-expo)
-
-## Working examples
-
 ## Virtual backgrounds and breakout rooms in a custom native UI
 
 Keep `ModernBackgroundModal` mounted with the room and drive it from the latest
@@ -381,15 +329,57 @@ failures in your own native notice. A participant moves only through the SDK's
 room transition; filtering cards locally cannot update membership or consumer
 pause/resume state.
 
+## Host leave and rejoin
+
+Hosts can choose **Leave room** or **End for everyone**. **Leave room** keeps the room running so the host can rejoin later; **End for everyone** closes it for all participants. Programmatic callers pass `endRoomOnHostExit: false` to leave without ending the room; the default is `true`.
+
+## Platform and release checklist
+
+- Configure Android/iOS microphone, camera, Bluetooth, and screen-capture
+  permissions required by your product.
+- Test on physical Android and iOS devices, including background/foreground,
+  route changes, permission denial, network loss, and rejoin.
+- Keep all prepared audio entries mounted, even when their video tile is on a
+  different page.
+- Hide moderation/session controls until the corresponding permission and room
+  state allow them.
+- Await Leave before dismissing the room screen; stop any app-created tracks.
+- Never ship reusable Cloud credentials in a public application bundle.
+
+## Troubleshooting
+
+| What you see | Likely cause | What to do |
+|---|---|---|
+| "Unable to connect. Check your credentials and try again." | The room service rejected the credentials, or your create/join backend returned an error. | Check the API username and key on your server, and make sure your create/join adapters pass the room service's response through. For MediaSFU Open, use an address the device can reach — on a physical phone, `localhost` is the phone itself. |
+| The camera or microphone never starts | The platform permission is missing or was denied. | Declare the camera and microphone permissions your app needs (see [Platform and release checklist](#platform-and-release-checklist)), then grant access in the device settings. |
+| "You must turn on your video before you can start recording" | The recording is set to capture video while your camera is off. | Turn the camera on first, or switch the recording to audio only. The same applies to audio recordings and the microphone. |
+| "You can only re-configure recording after pausing it" | Recording settings are locked while a recording is running. | Pause the recording, change the settings, then resume. |
+| "You cannot turn off your camera while recording video…" | Turning the camera off would interrupt the recording. | Pause or stop the recording first. |
+| A message ending in "Access denied by host." | The host has restricted that action for participants. | Ask the host to change the participant's permissions. |
+| "Screen share is not allowed when whiteboard is active" | Screen sharing and the whiteboard cannot run at the same time. | Close the whiteboard, then start screen sharing. |
+
+## Documentation
+
+- [Detailed repository guide](README_DETAILED.md)
+- [Changelog](CHANGELOG.md)
+- [SDK guides and generated API references](https://mediasfu.com/docs/)
+- [Complete headless guide](https://mediasfu.com/docs/usage/headless)
+- [REST API Sandbox — run GET/POST requests and copy code](https://mediasfu.com/sandbox)
+- [Create and manage MediaSFU API keys](https://mediasfu.com/api-keys)
+- [Developer Console and room API guide](https://mediasfu.com/documentation)
+- [MediaSFU Open — deploy your own media server](https://github.com/MediaSFU/MediaSFUOpen)
+- [Expo SDK](https://www.npmjs.com/package/mediasfu-reactnative-expo)
+
+## Working examples
+
+- [Familiar Calls](https://github.com/MediaSFU/mediasfu-familiar-calls) — chat-style audio and video calling with incoming-call accept/decline; includes a React Native app and one shared backend.
+- [Live Auction](https://github.com/MediaSFU/mediasfu-live-auction) — host and bidder views, timed lots, and live media; includes a React Native app.
+- [Watch Together](https://github.com/MediaSFU/mediasfu-watch-together) — a watch party with a realtime conversation floor and HLS audience; includes a React Native app.
 - [MediaSFU QuickStart Apps](https://github.com/MediaSFU/MediaSFU-QuickStart-Apps) — runnable Cloud, MediaSFU Open, custom-prejoin, backend-proxy, and custom-UI examples across SDKs.
 - [SpacesTek Initial](https://github.com/MediaSFU/SpacesTekInitial) → [Final](https://github.com/MediaSFU/SpacesTekFinal) → [Advanced](https://github.com/MediaSFU/SpacesTekAdvanced) — a staged path from a starter room to a product-owned Spaces-style experience.
 - [MediaSFU Agents](https://github.com/MediaSFU/Agents) — multimodal voice/vision agent starters across supported frameworks.
 - [MediaSFU VOIP](https://github.com/MediaSFU/VOIP) — telephony, dialer, room-lifecycle, and agent/human handoff reference clients.
 
 ## License
-
-### Host leave and rejoin
-
-Hosts now see **Leave room** and **End for everyone**. **Leave room** sends `endRoomOnHostExit: false`, keeping the room active for participants and later host rejoin. Existing integrations default to `true`.
 
 MIT. See [LICENSE](LICENSE).
