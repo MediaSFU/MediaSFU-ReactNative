@@ -237,6 +237,7 @@ Every primary MediaSFU UI export—`MediasfuGeneric`, `ModernMediasfuGeneric`, `
 | `updateSourceParameters` | `(helpers) => void` | `undefined` | Receive the latest helper bundle so you can bridge MediaSFU logic into your own components. |
 | `returnUI` | `boolean` | `true` | When `false`, mount the logic only—a perfect stepping stone to a fully bespoke interface. |
 | `renderUIExternally` | `boolean` | `false` | With `returnUI={false}`, keep the standard native UI lifecycle active for `ModernMediasfuGenericHead`. |
+| `renderUIExternally` | `boolean` | `false` | With `returnUI={false}`, keep the standard native UI lifecycle active for `ModernMediasfuGenericHead`. |
 | `noUIPreJoinOptions` | `CreateMediaSFURoomOptions \| JoinMediaSFURoomOptions` | `undefined` | Feed pre-join data when `returnUI` is `false` and you want to bypass the on-screen wizard. |
 | `joinMediaSFURoom`, `createMediaSFURoom` | Functions | `undefined` | Inject your own networking layers for joining or creating rooms. |
 | `customComponent` | `CustomComponentType` | `undefined` | Replace the entire UI while retaining transports, sockets, and helpers. |
