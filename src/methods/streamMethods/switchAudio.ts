@@ -15,6 +15,7 @@ export interface SwitchAudioParameters extends SwitchUserAudioParameters {
 }
 
 export interface SwitchAudioOptions {
+  audioProcessing?: { echoCancellation?: boolean; noiseSuppression?: boolean; autoGainControl?: boolean };
   audioPreference: string;
   parameters: SwitchAudioParameters;
 }
@@ -24,9 +25,11 @@ export type SwitchAudioType = (options: SwitchAudioOptions) => Promise<void>;
 export const switchAudio: SwitchAudioType = async ({
   audioPreference,
   parameters,
+  audioProcessing,
 }): Promise<void> => {
   await (sharedSwitchAudio as unknown as (options: SwitchAudioOptions) => Promise<void>)({
     audioPreference,
     parameters,
+    audioProcessing,
   });
 };

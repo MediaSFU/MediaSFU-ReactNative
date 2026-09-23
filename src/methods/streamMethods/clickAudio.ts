@@ -60,6 +60,7 @@ export interface ClickAudioParameters extends DisconnectSendTransportAudioParame
 }
 
 export interface ClickAudioOptions {
+  audioProcessing?: { echoCancellation?: boolean; noiseSuppression?: boolean; autoGainControl?: boolean };
   parameters: ClickAudioParameters;
 }
 
@@ -67,8 +68,10 @@ export type ClickAudioType = (options: ClickAudioOptions) => Promise<void>;
 
 export const clickAudio: ClickAudioType = async ({
   parameters,
+  audioProcessing,
 }): Promise<void> => {
   await (sharedClickAudio as unknown as (options: ClickAudioOptions) => Promise<void>)({
     parameters,
+    audioProcessing,
   });
 };

@@ -558,6 +558,7 @@ export interface RecordingParams {
 }
 
 export interface CreateRoomOptions {
+  backendAudioDenoise?: { enabled: boolean; profile?: 'arnndn' | 'dtln' };
   action: 'create' | 'join'; // Either 'create' or 'join' based on the requirement
   meetingID: string; // The meeting ID, initially an empty string
   duration: number; // Duration of the meeting in minutes
@@ -582,6 +583,7 @@ export interface CreateRoomOptions {
 
 
 export interface CreateMediaSFURoomOptions {
+  backendAudioDenoise?: { enabled: boolean; profile?: 'arnndn' | 'dtln' };
   action: 'create'; // 'create' action
   duration: number; // Duration of the meeting in minutes
   capacity: number; // Max number of participants allowed
@@ -950,5 +952,4 @@ export interface MediasfuUICustomOverrides {
   consumerResume?: import('../components/mediasfuComponents/overrideHelpers').CustomFunctionOverride<any>;
   addVideosGrid?: import('../components/mediasfuComponents/overrideHelpers').CustomFunctionOverride<any>;
 }
-
 
