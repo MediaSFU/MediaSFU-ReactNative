@@ -114,6 +114,10 @@ export interface UpdateRoomParametersClientParameters {
 
 export type UpdateRoomParametersClientOptions = {
   parameters: UpdateRoomParametersClientParameters;
+  /** Disable camera simulcast even in larger rooms. */
+  simulcastOff?: boolean;
+  /** Capacity hint used only when the server does not return capacity. */
+  roomCapacity?: number;
 };
 
 // Export type definition for the function
@@ -222,8 +226,10 @@ export type UpdateRoomParametersClientType = (options: UpdateRoomParametersClien
  * });
  */
 
-export const updateRoomParametersClient = ({ parameters }: UpdateRoomParametersClientOptions): void => {
+export const updateRoomParametersClient = ({ parameters, simulcastOff, roomCapacity }: UpdateRoomParametersClientOptions): void => {
   sharedUpdateRoomParametersClient({
     parameters,
+    simulcastOff,
+    roomCapacity,
   });
 };

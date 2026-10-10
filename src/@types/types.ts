@@ -611,6 +611,8 @@ export interface JoinMediaSFURoomOptions {
 }
 
 export interface ResponseJoinLocalRoom {
+  /** Authoritative configured room capacity, when supplied by the server. */
+  capacity?: number;
   rtpCapabilities?: RtpCapabilities | null; // Object containing the RTP capabilities
   isHost: boolean; // Indicates whether the user joining the room is the host.
   eventStarted: boolean; // Indicates whether the event has started.
@@ -627,6 +629,8 @@ export interface ResponseJoinLocalRoom {
 
 
 export interface ResponseJoinRoom {
+  /** Authoritative configured room capacity, when supplied by the server. */
+  capacity?: number;
   rtpCapabilities?: RtpCapabilities | null; // Object containing the RTP capabilities
   success: boolean; // Indicates whether the operation (joining the room) was successful.
   roomRecvIPs: string[]; // Array of strings containing information about the domains that must be connected to in order to receive media.
@@ -952,4 +956,3 @@ export interface MediasfuUICustomOverrides {
   consumerResume?: import('../components/mediasfuComponents/overrideHelpers').CustomFunctionOverride<any>;
   addVideosGrid?: import('../components/mediasfuComponents/overrideHelpers').CustomFunctionOverride<any>;
 }
-
