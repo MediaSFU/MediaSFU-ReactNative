@@ -333,6 +333,105 @@ pause/resume state.
 
 Hosts can choose **Leave room** or **End for everyone**. **Leave room** keeps the room running so the host can rejoin later; **End for everyone** closes it for all participants. Programmatic callers pass `endRoomOnHostExit: false` to leave without ending the room; the default is `true`.
 
+## Screen-share audio
+
+When a participant shares a browser tab or screen together with its sound, everyone in the room hears it, including
+Android and iOS users. The audio plays through its own card, labelled `<name> · Screen audio`, which appears while sound
+is playing. It never counts as the sharer speaking, so it does not move the active-speaker tile or the sharer's audio
+level. Tapping the card mutes or unmutes the screen audio on that device only.
+
+| Platform | Hears screen audio | Can share screen audio |
+|---|---|---|
+| Android and iOS apps | Yes | Only through [your own capture](#screen-sharing-from-android-and-ios-with-your-own-capture) that supports audio |
+| Web build in Chrome, Edge, Opera or Brave on desktop | Yes | Yes, for a tab (and the whole screen on Windows and ChromeOS) |
+| Web build in Firefox, Safari or a mobile browser | Yes | No: the share is video only and no audio prompt is shown |
+
+On a web build that can capture audio, starting a screen share first asks **Share audio too?** with **Screen + audio**,
+**Screen only** and **Cancel**, then opens the browser's picker. Nothing changes on media servers that do not accept
+screen audio: the share stays video only and the question is not shown.
+
+The room parameters let you change the default:
+
+```tsx
+import { toggleScreenAudio } from 'mediasfu-reactnative';
+
+parameters.updateScreenAudioMode('always'); // 'ask' (default), 'always' or 'never'
+parameters.updateScreenAudioEnabled(false); // never request screen audio
+
+// Mute or unmute the audio you are sharing without stopping the screen share.
+toggleScreenAudio({ parameters });
+```
+
+`ScreenAudioPlayer` and `ScreenAudioPrompt` are exported if you build your own room UI.
+
+## Screen sharing from Android and iOS with your own capture
+
+The SDK does not include native screen capture: on Android and iOS the share button reports that screen sharing is not
+available. If your app already captures the screen, for example with an Android MediaProjection foreground service or an
+iOS ReplayKit broadcast extension that produces a react-native-webrtc `MediaStream`, hand it to the room and the SDK
+does the rest: it publishes the stream as a screen share with the usual screen layout, stop handling and, when the
+media server supports it, the stream's audio as screen audio.
+
+```tsx
+import { Platform } from 'react-native';
+import { ModernMediasfuGeneric, ScreenCaptureProvider } from 'mediasfu-reactnative';
+
+const screenCapture: ScreenCaptureProvider = {
+  // Return the stream to share, or null if the user cancelled. Throwing shows "Could not share screen".
+  getDisplayMedia: async ({ width, height, frameRate, audio }) =>
+    myScreenCapture.start({ width, height, frameRate, audio }),
+  // Only if your capture can include device or app audio; enables the "Share audio too?" question.
+  supportsAudio: Platform.OS === 'android',
+  // Runs once when the share stops (share button, host action, or the video track ending).
+  onStop: () => myScreenCapture.stop(),
+};
+
+<ModernMediasfuGeneric credentials={credentials} uiOverrides={{ screenCapture }} />;
+```
+
+`screenCapture` can also be just the `getDisplayMedia` function. It is used on every platform when set, so a web build
+can share a canvas or another custom source the same way. To replace the whole start flow instead, pass
+`uiOverrides.startShareScreen` as `{ implementation }` or `{ wrap: (defaultStart) => ... }`.
+
+Test your capture on physical devices: platform permissions, the Android foreground-service notification and the iOS
+broadcast picker belong to your app.
+
+## Connection errors
+
+When a room cannot be joined, the welcome and pre-join pages say why instead of showing a generic failure. For your own
+flows, `connectSocket` rejects with a `MediaSocketConnectError`:
+
+| Field | Meaning |
+|---|---|
+| `phase` | `before-open` (the server could not be reached), `after-open` (the connection closed before the room was ready), `rejected` (the media server refused the join and said why) or `timeout` |
+| `reason`, `stage` | Why the media server refused the join, when `phase` is `rejected` |
+| `elapsedMs`, `online` | How long the attempt took, and whether the device reported a network connection |
+| `retryable` | `false` when trying again with the same credentials cannot succeed |
+
+```tsx
+import { describeMediaSocketError, isRetryableMediaSocketError } from 'mediasfu-reactnative';
+
+try {
+  await connectSocket({ apiUserName, apiToken, link });
+} catch (error) {
+  showAlert({ message: describeMediaSocketError(error), type: 'danger' });
+  if (!isRetryableMediaSocketError(error)) {
+    // Ask your backend to join the room again for fresh credentials.
+  }
+}
+```
+
+| Reason | What the user sees | Retry? |
+|---|---|---|
+| `invalid-credentials` | The room did not accept these credentials. Check the room ID and your access, or rejoin the room. | No. Rejoin through your backend; joining the same name twice replaces the earlier credentials. |
+| `meeting-minutes-unavailable` | This room cannot start because its account has no meeting minutes left. Contact the room host. | No |
+| `invalid-request` | The connection request was incomplete or invalid. Check the room details and try again. | No |
+| `api-check-failed` | The media server could not verify this room right now. Please try again shortly. | Yes |
+| Any other refusal | The media server closed the connection before the room was ready. Please try again. | Yes |
+
+Refusals that cannot succeed are never retried automatically. Failures caused by the device being offline or unable to
+reach the server do not count toward the join page's limit of ten attempts.
+
 ## Platform and release checklist
 
 - Configure Android/iOS microphone, camera, Bluetooth, and screen-capture
@@ -350,6 +449,8 @@ Hosts can choose **Leave room** or **End for everyone**. **Leave room** keeps th
 
 | What you see | Likely cause | What to do |
 |---|---|---|
+| "The room did not accept these credentials…" | The media server refused the room credentials, often because the same name joined twice and the newer join replaced them. | Join the room again through your backend to get fresh credentials. See [Connection errors](#connection-errors) for the other reasons. |
+| "You appear to be offline…" or "Could not reach the media server…" | The device has no network, or a firewall or proxy blocks the media server. | Check the connection and try again. These attempts do not count toward the join limit. |
 | "Unable to connect. Check your credentials and try again." | The room service rejected the credentials, or your create/join backend returned an error. | Check the API username and key on your server, and make sure your create/join adapters pass the room service's response through. For MediaSFU Open, use an address the device can reach — on a physical phone, `localhost` is the phone itself. |
 | The camera or microphone never starts | The platform permission is missing or was denied. | Declare the camera and microphone permissions your app needs (see [Platform and release checklist](#platform-and-release-checklist)), then grant access in the device settings. |
 | "You must turn on your video before you can start recording" | The recording is set to capture video while your camera is off. | Turn the camera on first, or switch the recording to audio only. The same applies to audio recordings and the microphone. |

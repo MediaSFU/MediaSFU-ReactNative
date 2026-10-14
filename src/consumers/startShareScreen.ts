@@ -1,5 +1,9 @@
+import { Platform } from 'react-native';
 import { startShareScreen as sharedStartShareScreen } from 'mediasfu-shared';
 import { StreamSuccessScreenType, StreamSuccessScreenParameters, ShowAlert, MediaDevices as RNMediaDevices} from '../@types/types';
+import { canCaptureDisplayAudioOnPlatform, ScreenAudioChoice, ScreenAudioMode } from './screenAudio';
+import { promptScreenAudioChoice } from '../components/miscComponents/ScreenAudioPrompt';
+import { resolveScreenCapture, startCustomScreenCapture, ScreenCaptureOverride } from './screenCapture';
 
 
 export interface StartShareScreenParameters extends StreamSuccessScreenParameters {
@@ -10,6 +14,22 @@ export interface StartShareScreenParameters extends StreamSuccessScreenParameter
   onWeb: boolean;
   targetWidth?: number;
   targetHeight?: number;
+
+  /** Set from the join response: the media server accepts screen audio. */
+  supportsScreenAudio?: boolean;
+  /** Ask for the screen's audio too (default true). */
+  screenAudioEnabled?: boolean;
+  /** `ask` (default) shows "Screen + audio" / "Screen only" first, `always` requests audio, `never` shares video only. */
+  screenAudioMode?: ScreenAudioMode;
+  /** Replace the "share audio too?" dialog: resolve `audio`, `video` or `null` (cancel). */
+  screenAudioPrompt?: () => Promise<ScreenAudioChoice>;
+  /**
+   * Whether this platform can capture display audio. Defaults to React Native Web on a Chromium desktop browser;
+   * always false on Android and iOS.
+   */
+  displayAudioCapable?: boolean;
+  /** App-supplied screen capture (`uiOverrides.screenCapture`); used on every platform when set. */
+  screenCapture?: ScreenCaptureOverride | null;
 
   // mediasfu functions
   streamSuccessScreen: StreamSuccessScreenType;
@@ -65,5 +85,21 @@ export type StartShareScreenType = (options: StartShareScreenOptions) => Promise
  */
 
 export const startShareScreen = async (options: StartShareScreenOptions): Promise<void> => {
-  await (sharedStartShareScreen as unknown as StartShareScreenType)(options);
+  const { parameters } = options;
+  // An app-supplied capture replaces the platform's own (and makes screen sharing possible on Android and iOS).
+  const provider = resolveScreenCapture(parameters.screenCapture);
+  if (provider) {
+    await startCustomScreenCapture({ parameters: parameters as any, provider });
+    return;
+  }
+  // Native builds never request display audio (and never show the prompt), even if a polyfill fakes a browser.
+  const displayAudioCapable = Platform.OS === 'web'
+    ? parameters.displayAudioCapable ?? canCaptureDisplayAudioOnPlatform()
+    : false;
+  const screenAudioPrompt = parameters.screenAudioPrompt
+    ?? (() => promptScreenAudioChoice({ isDarkMode: parameters.isDarkModeValue }));
+  await (sharedStartShareScreen as unknown as StartShareScreenType)({
+    ...options,
+    parameters: { ...parameters, displayAudioCapable, screenAudioPrompt },
+  });
 };

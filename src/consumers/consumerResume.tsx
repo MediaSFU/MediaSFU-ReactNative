@@ -4,6 +4,8 @@ import React from 'react';
 import { Platform } from 'react-native';
 import { Socket } from 'socket.io-client';
 import MiniAudioPlayer from '../methods/utils/MiniAudioPlayer/MiniAudioPlayer';
+import ScreenAudioPlayer from '../methods/utils/ScreenAudioPlayer/ScreenAudioPlayer';
+import { isScreenAudioProducer } from './screenAudio';
 import MiniAudio from '../components/displayComponents/MiniAudio';
 import VideoCard from '../components/displayComponents/VideoCard';
 import AudioCard from '../components/displayComponents/AudioCard';
@@ -280,6 +282,43 @@ export const consumerResume = async ({
         activeTranslationProducerIds?.has(remoteProducerId)
         || consumer.appData?.type === 'translation'
         || consumer.appData?.isTranslation;
+
+      // Screen-share audio: play it, but never as the sharer's voice (no participant card, no speaking or
+      // audio-level state). Runs before the microphone lookup below.
+      if (
+        !isTranslationAudio
+        && isScreenAudioProducer({
+          producerId: remoteProducerId,
+          participants,
+          appData: consumer.appData as Record<string, unknown>,
+        })
+      ) {
+        const screenAudioStream = new NativeMediaStream([track]);
+        audioOnlyStreams = [
+          ...audioOnlyStreams.filter(
+            (element: any) => String(element?.key ?? '') !== remoteProducerId,
+          ),
+          <ScreenAudioPlayer
+            key={remoteProducerId}
+            remoteProducerId={remoteProducerId}
+            stream={screenAudioStream}
+            consumer={consumer as any}
+            ownerName={
+              participants.find((p) => p.ScreenAudioID === remoteProducerId)?.name
+              || participants.find((p) => p.ScreenOn && p.ScreenID)?.name
+              || ''
+            }
+            MiniAudioComponent={MiniAudioComponentToUse as any}
+          />,
+        ];
+        updateAudioOnlyStreams(audioOnlyStreams);
+        allAudioStreams = [
+          ...allAudioStreams.filter((item) => item.producerId !== remoteProducerId),
+          { producerId: remoteProducerId, stream: screenAudioStream },
+        ];
+        updateAllAudioStreams(allAudioStreams);
+        return;
+      }
 
       // Check if the participant with audioID == remoteProducerId has a valid videoID
       const participant = participants.filter(

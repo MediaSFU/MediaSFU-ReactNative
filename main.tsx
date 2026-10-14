@@ -122,6 +122,9 @@ export * from './src/methods/whiteboardMethods/launchConfigureWhiteboard';
 
 // Socket and Media Functions
 export * from './src/sockets/SocketManager';
+export * from './src/sockets/mediaSocketErrors';
+export * from './src/consumers/screenAudio';
+export * from './src/consumers/screenCapture';
 export * from './src/ProducerClient/producerClientEmits/joinRoomClient';
 export * from './src/producers/producerEmits/joinLocalRoom';
 export * from './src/ProducerClient/producerClientEmits/updateRoomParametersClient';
@@ -294,6 +297,8 @@ export * from './src/components/displayComponents/VideoCard';
 export * from './src/components/displayComponents/CardVideoDisplay';
 export * from './src/components/displayComponents/MiniCardAudio';
 export * from './src/methods/utils/MiniAudioPlayer/MiniAudioPlayer';
+export * from './src/methods/utils/ScreenAudioPlayer/ScreenAudioPlayer';
+export * from './src/components/miscComponents/ScreenAudioPrompt';
 export * from './src/methods/utils/SoundPlayer';
 
 // new utils
@@ -507,6 +512,8 @@ import VideoCard from './src/components/displayComponents/VideoCard';
 import CardVideoDisplay from './src/components/displayComponents/CardVideoDisplay';
 import MiniCardAudio from './src/components/displayComponents/MiniCardAudio';
 import MiniAudioPlayer from './src/methods/utils/MiniAudioPlayer/MiniAudioPlayer';
+import ScreenAudioPlayer from './src/methods/utils/ScreenAudioPlayer/ScreenAudioPlayer';
+import ScreenAudioPrompt from './src/components/miscComponents/ScreenAudioPrompt';
 import { SoundPlayer } from './src/methods/utils/SoundPlayer';
 
 //new utils
@@ -676,6 +683,8 @@ export {
   CardVideoDisplay,
   MiniCardAudio,
   MiniAudioPlayer,
+  ScreenAudioPlayer,
+  ScreenAudioPrompt,
   SoundPlayer,
   captureCanvasStream,
   resumePauseAudioStreams,

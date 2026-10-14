@@ -287,6 +287,8 @@ export interface Participant {
     audioID: string;
     videoID: string;
     ScreenID?: string;
+    /** Producer id of the audio shared with this participant's screen share ("" or absent when none). */
+    ScreenAudioID?: string;
     ScreenOn?: boolean;
     islevel?: string;
     isAdmin?: boolean;
@@ -647,6 +649,7 @@ export interface ResponseJoinRoom {
   banned?: boolean; // Indicates whether the user is banned from the room.
   suspended?: boolean; // Indicates whether the user is suspended from the room.
   noAdmin?: boolean; // Indicates whether the room has no host in it.
+  supportsScreenAudio?: boolean; // The media server accepts audio shared with a screen share ("screen-audio" producers).
 }
 
 export interface AllMembersData {
@@ -955,4 +958,11 @@ export interface MediasfuUICustomOverrides {
   // Function overrides
   consumerResume?: import('../components/mediasfuComponents/overrideHelpers').CustomFunctionOverride<any>;
   addVideosGrid?: import('../components/mediasfuComponents/overrideHelpers').CustomFunctionOverride<any>;
+  /** Replace or wrap the whole screen-share start (`implementation` or `wrap`). */
+  startShareScreen?: import('../components/mediasfuComponents/overrideHelpers').CustomFunctionOverride<import('../consumers/startShareScreen').StartShareScreenType>;
+  /**
+   * Your own screen capture (e.g. a native MediaProjection or ReplayKit module) returning a MediaStream. The SDK ships
+   * none for Android and iOS; with this set, the share button works there and the stream is published as a screen share.
+   */
+  screenCapture?: import('../consumers/screenCapture').ScreenCaptureOverride;
 }

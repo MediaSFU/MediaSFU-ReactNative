@@ -103,6 +103,8 @@ import { dispStreams } from '../../consumers/dispStreams';
 import { stopShareScreen } from '../../consumers/stopShareScreen';
 import { checkScreenShare } from '../../consumers/checkScreenShare';
 import { startShareScreen } from '../../consumers/startShareScreen';
+import { ScreenAudioPromptHost } from '../../components/miscComponents/ScreenAudioPrompt';
+import type { ScreenAudioMode } from '../../consumers/screenAudio';
 import { requestScreenShare } from '../../consumers/requestScreenShare';
 import { reorderStreams } from '../../consumers/reorderStreams';
 import { prepopulateUserMedia } from '../../consumers/prepopulateUserMedia';
@@ -447,6 +449,10 @@ const MediasfuConference: React.FC<MediasfuConferenceOptions> = ({
   const MiniAudioPlayerComponent = React.useMemo(() => withOverride(uiOverrides?.miniAudioPlayer, MiniAudioPlayer), [uiOverrides?.miniAudioPlayer]);
 
   const consumerResumeFn = React.useMemo(() => withFunctionOverride(uiOverrides?.consumerResume, consumerResume), [uiOverrides?.consumerResume]);
+  const startShareScreenFn = React.useMemo(
+    () => withFunctionOverride(uiOverrides?.startShareScreen, startShareScreen),
+    [uiOverrides?.startShareScreen],
+  );
   const addVideosGridFn = React.useMemo(() => withFunctionOverride(uiOverrides?.addVideosGrid, addVideosGrid), [uiOverrides?.addVideosGrid]);
 
   const updateStatesToInitialValues = async () => {
@@ -774,6 +780,10 @@ const MediasfuConference: React.FC<MediasfuConferenceOptions> = ({
   const allAudioStreams = useRef<(Participant | Stream)[]>([]); // Array of all audio streams
   const remoteScreenStream = useRef<Stream[]>([]); // Array of remote screen streams
 
+  const screenAudioProducer = useRef<Producer | null>(null); // Audio shared with the screen share, or null
+  const supportsScreenAudio = useRef<boolean>(false); // The media server accepts screen-share audio
+  const screenAudioEnabled = useRef<boolean>(true); // Ask for the screen's audio when sharing (web only)
+  const screenAudioMode = useRef<ScreenAudioMode>('ask'); // Offer "Screen + audio" before sharing (web only)
   const screenProducer = useRef<Producer | null>(null); // Screen producer as Producer or null
   const localScreenProducer = useRef<Producer | null>(null); // Local screen producer as Producer or null
   const gotAllVids = useRef<boolean>(false); // True if all videos have been received
@@ -978,6 +988,22 @@ const MediasfuConference: React.FC<MediasfuConferenceOptions> = ({
 
   const updateRecordingMultiFormatsSupport = (value: boolean) => {
     recordingMultiFormatsSupport.current = value;
+  };
+
+  const updateScreenAudioProducer = (value: Producer | null) => {
+    screenAudioProducer.current = value;
+  };
+
+  const updateSupportsScreenAudio = (value: boolean) => {
+    supportsScreenAudio.current = value;
+  };
+
+  const updateScreenAudioEnabled = (value: boolean) => {
+    screenAudioEnabled.current = value;
+  };
+
+  const updateScreenAudioMode = (value: ScreenAudioMode) => {
+    screenAudioMode.current = value;
   };
 
   const updateUserRecordingParams = (value: UserRecordingParams) => {
@@ -2558,7 +2584,8 @@ const MediasfuConference: React.FC<MediasfuConferenceOptions> = ({
       dispStreams,
       stopShareScreen,
       checkScreenShare,
-      startShareScreen,
+      startShareScreen: startShareScreenFn,
+      screenCapture: uiOverrides?.screenCapture,
       requestScreenShare,
       reorderStreams,
       prepopulateUserMedia,
@@ -2704,6 +2731,10 @@ const MediasfuConference: React.FC<MediasfuConferenceOptions> = ({
       recordingSupportForOtherOrientation:
         recordingSupportForOtherOrientation.current,
       recordingMultiFormatsSupport: recordingMultiFormatsSupport.current,
+      screenAudioProducer: screenAudioProducer.current,
+      supportsScreenAudio: supportsScreenAudio.current,
+      screenAudioEnabled: screenAudioEnabled.current,
+      screenAudioMode: screenAudioMode.current,
 
       userRecordingParams: userRecordingParams.current,
       canRecord: canRecord.current,
@@ -3086,6 +3117,10 @@ const MediasfuConference: React.FC<MediasfuConferenceOptions> = ({
       updateRecordingPreferredOrientation,
       updateRecordingSupportForOtherOrientation,
       updateRecordingMultiFormatsSupport,
+      updateScreenAudioProducer,
+      updateSupportsScreenAudio,
+      updateScreenAudioEnabled,
+      updateScreenAudioMode,
 
       updateUserRecordingParams,
       updateCanRecord,
@@ -5421,6 +5456,8 @@ const MediasfuConference: React.FC<MediasfuConferenceOptions> = ({
               ...mediaSFUFunctions(),
             }}
           />
+
+          <ScreenAudioPromptHost />
 
           <AlertComponentOverride
             visible={alertVisible}

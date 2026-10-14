@@ -1,4 +1,5 @@
 import { stopShareScreen as sharedStopShareScreen } from 'mediasfu-shared';
+import { finishCustomScreenCapture } from './screenCapture';
 import {
   DisconnectSendTransportScreenType, PrepopulateUserMediaType, ReorderStreamsType, GetVideosType, DisconnectSendTransportScreenParameters,
    PrepopulateUserMediaParameters, ReorderStreamsParameters, EventType, MediaStream, MediaStreamTrack,
@@ -139,4 +140,6 @@ export type StopShareScreenType = (options: StopShareScreenOptions) => Promise<v
 
 export const stopShareScreen = async (options: StopShareScreenOptions): Promise<void> => {
   await (sharedStopShareScreen as unknown as StopShareScreenType)(options);
+  // Let an app-supplied capture (uiOverrides.screenCapture) release its native resources.
+  await finishCustomScreenCapture(options.parameters);
 };

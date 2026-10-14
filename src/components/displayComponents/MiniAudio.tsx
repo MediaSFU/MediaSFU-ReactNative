@@ -53,6 +53,12 @@ export interface MiniAudioOptions {
   imageSource: string;
   roundedImage?: boolean;
   imageStyle?: StyleProp<ImageStyle>;
+
+  /** Called on a tap (not a drag), e.g. to mute a screen-audio card for this listener. */
+  onPress?: () => void;
+
+  /** Accessibility label for the card when it is tappable. */
+  accessibilityLabel?: string;
 }
 
 export type MiniAudioType = (options: MiniAudioOptions) => JSX.Element;
@@ -106,8 +112,13 @@ const MiniAudio: React.FC<MiniAudioOptions> = ({
   imageSource,
   roundedImage = false,
   imageStyle,
+  onPress,
+  accessibilityLabel,
 }) => {
   const pan = useRef<any>(new Animated.ValueXY()).current;
+  // The pan responder is created once; read the latest press handler through a ref.
+  const onPressRef = useRef(onPress);
+  onPressRef.current = onPress;
 
   const panResponder = useRef(
     PanResponder.create({
@@ -124,8 +135,12 @@ const MiniAudio: React.FC<MiniAudioOptions> = ({
       onPanResponderMove: Animated.event([null, { dx: pan.x, dy: pan.y }], {
         useNativeDriver: false,
       }),
-      onPanResponderRelease: () => {
+      onPanResponderRelease: (_event, gesture) => {
         pan.flattenOffset();
+        // A tap (barely moved) is a press; anything longer is a drag.
+        if (Math.abs(gesture.dx) < 6 && Math.abs(gesture.dy) < 6) {
+          onPressRef.current?.();
+        }
       },
     }),
   ).current;
@@ -197,6 +212,9 @@ const MiniAudio: React.FC<MiniAudioOptions> = ({
           styles.modalContainer,
         ]}
         {...panResponder.panHandlers}
+        accessible={onPress ? true : undefined}
+        accessibilityRole={onPress ? 'button' : undefined}
+        accessibilityLabel={accessibilityLabel}
       >
         <View style={[styles.card, StyleSheet.flatten(customStyle)]}>
           {imageSource && (

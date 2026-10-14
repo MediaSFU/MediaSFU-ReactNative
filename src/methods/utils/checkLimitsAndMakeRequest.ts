@@ -1,6 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Socket } from 'socket.io-client';
 import { PreJoinPageParameters } from '../../@types/types';
+import {
+    describeMediaSocketError,
+    isMediaSocketConnectError,
+    isNetworkOnlyMediaSocketError,
+} from '../../sockets/mediaSocketErrors';
 
 const MAX_ATTEMPTS = 10;
 const RATE_LIMIT_DURATION = 3 * 60 * 60 * 1000;
@@ -106,16 +111,24 @@ export const checkLimitsAndMakeRequest = async ({
             });
         }
     } catch (error) {
-        console.error('Error connecting to socket:', error);
+        // Say why (rejected credentials, no minutes, offline, unreachable) instead of a generic failure. Only a refusal
+        // or an unknown failure counts toward the attempt limit; a device/network problem is not a credential guess.
+        if (isMediaSocketConnectError(error)) {
+            console.warn('MediaSFU media socket:', error.message);
+        } else {
+            console.error('Error connecting to socket:', error);
+        }
         parameters.showAlert?.({
-            message: 'Unable to connect. Check your credentials and try again.',
+            message: describeMediaSocketError(error),
             type: 'danger',
-            duration: 3000,
+            duration: isMediaSocketConnectError(error) ? 6000 : 3000,
         });
 
-        const unsuccessfulAttempts = (await readStoredNumber('unsuccessfulAttempts')) + 1;
-        await writeStoredNumber('unsuccessfulAttempts', unsuccessfulAttempts);
-        await writeStoredNumber('lastRequestTimestamp', Date.now());
+        if (!isNetworkOnlyMediaSocketError(error)) {
+            const unsuccessfulAttempts = (await readStoredNumber('unsuccessfulAttempts')) + 1;
+            await writeStoredNumber('unsuccessfulAttempts', unsuccessfulAttempts);
+            await writeStoredNumber('lastRequestTimestamp', Date.now());
+        }
         parameters.updateIsLoadingModalVisible(false);
     }
 };
