@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.5.2 — 2026-10-18
+
+- **Readable names on camera-off tiles.** Grid tiles for members with no camera or microphone (mini cards) now show the member's `displayName`, like video and audio cards already do, falling back to the member name. A room creator who set a display name no longer appears to others as their user name.
+
+## 2.5.1 — 2026-10-14
+
+- Requires `mediasfu-shared` 1.3.2 or later.
+- **Unmute in audio-only rooms.** The microphone could not be turned on in rooms created with `mediaType: "audio"` (it showed a camera message). Audio-only rooms now only block cameras.
+- **Readable names.** Video and audio cards, participant lists and the join notice show a member's `displayName` when the room has one, falling back to the member name.
+- **Waiting rooms for API rooms** through `mediasfu-shared`'s `joinRoomOnMediaSFU`: a guest waits until the host lets them in.
+- New room-create options: `region` (`asia`, `europe`, `us`, `general`), `regionStrict` (refuse instead of placing the room in another region) and `waitRoom`. Servers that do not support them ignore them.
+
 ## 2.5.0 — 2026-10-09
 
 - Requires `mediasfu-shared` 1.3.0 or later.

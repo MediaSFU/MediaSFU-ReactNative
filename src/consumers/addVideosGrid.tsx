@@ -433,7 +433,7 @@ export async function addVideosGrid({
         newComponents[0].push(
           buildMiniCard({
             key: `mini-${participant.id}`,
-            initials: participant.name,
+            initials: participant.displayName?.trim() || participant.name,
             fontSize: 20,
             customStyle: {
               backgroundColor: 'transparent',
@@ -573,7 +573,7 @@ export async function addVideosGrid({
           newComponents[1].push(
             buildMiniCard({
               key: `mini-alt-${participant.id}`,
-              initials: participant.name,
+              initials: participant.displayName?.trim() || participant.name,
               fontSize: 20,
               customStyle: {
                 backgroundColor: 'transparent',

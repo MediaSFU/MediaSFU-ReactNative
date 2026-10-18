@@ -14,6 +14,13 @@ import {
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { CustomMiniCardType } from '../../@types/types';
 
+// Display names can be up to 80 characters; keep the tile readable: up to 12 characters, cut at a word when possible.
+const fitTileLabel = (label: string): string => {
+  if (label.length <= 12) return label;
+  const cut = label.lastIndexOf(' ', 12);
+  return `${(cut >= 4 ? label.slice(0, cut) : label.slice(0, 11)).trimEnd()}…`;
+};
+
 /**
  * Options for rendering a `MiniCard`.
  *
@@ -111,7 +118,7 @@ const MiniCard: React.FC<MiniCardOptions> = ({
       return '?';
     }
 
-    return rawValue.slice(0, 10);
+    return fitTileLabel(rawValue);
   }, [initials, name]);
 
   const cardStyle: StyleProp<ViewStyle> = useMemo(

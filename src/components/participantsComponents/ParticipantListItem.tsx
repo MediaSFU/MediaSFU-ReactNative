@@ -176,8 +176,8 @@ const ParticipantListItem: React.FC<ParticipantListItemOptions> = ({
       <View style={styles.nameContainer}>
         <Text style={[styles.nameText, { color: textColor }] as any}>
           {participant.islevel === '2'
-            ? `${participant.name} (host)`
-            : participant.name}
+            ? `${participant.displayName || participant.name} (host)`
+            : participant.displayName || participant.name}
         </Text>
       </View>
 
@@ -217,7 +217,7 @@ const ParticipantListItem: React.FC<ParticipantListItemOptions> = ({
                   backgroundColor: pressed ? '#0056b3' : '#007bff',
                 },
               ]}
-              accessibilityLabel={`Message ${participant.name}`}
+              accessibilityLabel={`Message ${participant.displayName || participant.name}`}
               accessibilityRole="button"
             >
               <FontAwesome name="comment" size={20} color="white" />
@@ -236,7 +236,7 @@ const ParticipantListItem: React.FC<ParticipantListItemOptions> = ({
               backgroundColor: pressed ? '#c82333' : '#dc3545',
             },
           ]}
-          accessibilityLabel={`Remove ${participant.name}`}
+          accessibilityLabel={`Remove ${participant.displayName || participant.name}`}
           accessibilityRole="button"
         >
           <FontAwesome name="trash" size={20} color="white" />

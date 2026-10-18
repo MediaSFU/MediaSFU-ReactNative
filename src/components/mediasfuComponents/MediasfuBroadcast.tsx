@@ -4292,9 +4292,10 @@ const MediasfuBroadcast: React.FC<MediasfuBroadcastOptions> = ({
           },
         );
 
-        socketDefault.on('personJoined', async ({ name }: { name: string }) => {
+        socketDefault.on('personJoined', async ({ name, displayName }: { name: string; displayName?: string }) => {
           await personJoined({
-            name,
+            // The notice only displays this name, so the readable label (displayName) rides in it.
+            name: displayName || participants.current.find((p) => p.name === name)?.displayName || name,
             showAlert,
           });
         });

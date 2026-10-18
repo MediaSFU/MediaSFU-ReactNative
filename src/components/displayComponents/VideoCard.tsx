@@ -415,7 +415,7 @@ const VideoCard: React.FC<VideoCardOptions> = ({
       >
         <View style={styles.nameColumn}>
           <Text style={[styles.nameText, { color: textColor }]}>
-            {participant?.name}
+            {participant?.displayName || participant?.name}
           </Text>
         </View>
         {showWaveform && (

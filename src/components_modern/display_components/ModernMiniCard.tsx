@@ -11,6 +11,13 @@ import type { MiniCardOptions } from '../../components/displayComponents/MiniCar
 import { getModernColors, modernShadow, resolveIsDarkMode } from '../core/modernTheme';
 import { stageCardPropsEqual } from './stageCardMemo';
 
+// Display names can be up to 80 characters; keep the tile readable: up to 12 characters, cut at a word when possible.
+const fitTileLabel = (label: string): string => {
+  if (label.length <= 12) return label;
+  const cut = label.lastIndexOf(' ', 12);
+  return `${(cut >= 4 ? label.slice(0, cut) : label.slice(0, 11)).trimEnd()}…`;
+};
+
 export interface ModernMiniCardOptions extends MiniCardOptions {
   isDarkMode?: boolean;
   backgroundColor?: string;
@@ -49,7 +56,7 @@ const ModernMiniCardComponent: React.FC<ModernMiniCardOptions> = ({
 
   const resolvedLabel = useMemo(() => {
     const rawAvatarLabel = initials?.trim() || name?.trim() || '?';
-    return rawAvatarLabel.slice(0, 10);
+    return fitTileLabel(rawAvatarLabel);
   }, [initials, name]);
 
   const resolvedTextColor = useMemo(

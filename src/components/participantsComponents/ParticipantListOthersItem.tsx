@@ -67,13 +67,13 @@ const ParticipantListOthersItem: React.FC<ParticipantListOthersItemOptions> = ({
       <Text style={[styles.nameText, { color: textColor }] as any}>
         {participant.islevel === '2'
           ? participant.name === member
-            ? `${participant.name} (you)`
-            : `${participant.name} (host)`
+            ? `${participant.displayName || participant.name} (you)`
+            : `${participant.displayName || participant.name} (host)`
           : participant.name === member
-            ? `${participant.name} (you)`
+            ? `${participant.displayName || participant.name} (you)`
             : coHost === participant.name
-              ? `${participant.name} (co-host)`
-              : participant.name}
+              ? `${participant.displayName || participant.name} (co-host)`
+              : participant.displayName || participant.name}
       </Text>
     </View>
     <View style={styles.iconContainer}>

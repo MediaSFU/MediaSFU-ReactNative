@@ -193,8 +193,8 @@ const ModernAudioCardComponent: React.FC<ModernAudioCardOptions> = (props) => {
 
         <View style={{ width: avatarSize, height: avatarSize }}>
           <ModernMiniCard
-            initials={name}
-            name={name}
+            initials={participant?.displayName || name}
+            name={participant?.displayName || name}
             imageSource={imageSource}
             imageStyle={imageStyle}
             roundedImage={roundedImage}
@@ -347,7 +347,7 @@ const ModernAudioCardComponent: React.FC<ModernAudioCardOptions> = (props) => {
 
       <SubtitleOverlay
         speakerId={participant?.id || ''}
-        speakerName={participant?.name || name || ''}
+        speakerName={participant?.displayName || participant?.name || name || ''}
         fallbackText={liveSubtitleText}
         showSubtitles={showSubtitles}
         isDarkMode={darkMode}

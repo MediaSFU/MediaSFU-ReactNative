@@ -480,7 +480,7 @@ const AudioCard: React.FC<AudioCardOptions> = ({
             />
           ) : (
             <MiniCard
-              initials={name}
+              initials={participant?.displayName || name}
               name={name}
               fontSize={20}
               textColor={textColor}
